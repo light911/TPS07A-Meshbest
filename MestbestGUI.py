@@ -221,7 +221,16 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.Zoom2.clicked.connect(self.Zoom2clicked)
         self.Zoom3.clicked.connect(self.Zoom3clicked)
         self.Zoom4.clicked.connect(self.Zoom4clicked)
-        
+        #move box
+        self.viwe1_move_down.clicked.connect(self.viwe1_move_down_clicked)
+        self.viwe1_move_up.clicked.connect(self.viwe1_move_up_clicked)
+        self.viwe1_move_left.clicked.connect(self.viwe1_move_left_clicked)
+        self.viwe1_move_right.clicked.connect(self.viwe1_move_right_clicked)
+        self.viwe2_move_down.clicked.connect(self.viwe2_move_down_clicked)
+        self.viwe2_move_up.clicked.connect(self.viwe2_move_up_clicked)
+        self.viwe2_move_left.clicked.connect(self.viwe2_move_left_clicked)
+        self.viwe2_move_right.clicked.connect(self.viwe2_move_right_clicked)
+
         #get mouse pos on sample video view
         self.SampleViedo.mousePressEvent = self.SampleViedoClicked
         
@@ -2714,7 +2723,65 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.RasterPar[view]['resArray'][:]=50#set all value to 50
         self.RasterPar[view]['spotsArray']=np.zeros((numofXbox, numofYbox))
         self.RasterPar[view]['spotsArray'][:] = np.nan
+
+    def movefactor(self):
+        return 1
+    def viwe1_move_down_clicked(self):
+        self.move_button_clicked("View1",'down')
+    def viwe1_move_up_clicked(self):
+        self.move_button_clicked("View1",'up')
+    def viwe1_move_left_clicked(self):
+        self.move_button_clicked("View1",'left')
+    def viwe1_move_right_clicked(self):
+        self.move_button_clicked("View1",'right')
+    def viwe2_move_down_clicked(self):
+        self.move_button_clicked("View2",'down')
+    def viwe2_move_up_clicked(self):
+        self.move_button_clicked("View2",'up')
+    def viwe2_move_left_clicked(self):
+        self.move_button_clicked("View2",'left')
+    def viwe2_move_right_clicked(self):
+        self.move_button_clicked("View2",'right')
+
+    def move_button_clicked(self,view,direction):
+        x1=self.RasterPar['View1']['box'].x()
+        y1=self.RasterPar['View1']['box'].y()
+        w1=self.RasterPar['View1']['box'].width()
+        h1=self.RasterPar['View1']['box'].height()
         
+        x2=self.RasterPar['View2']['box'].x()
+        y2=self.RasterPar['View2']['box'].y()
+        w2=self.RasterPar['View2']['box'].width()
+        h2=self.RasterPar['View2']['box'].height()
+        if direction == 'down':
+            y1=y1+self.movefactor()
+            y2=y2+self.movefactor()
+        elif direction == 'up':
+            y1=y1-self.movefactor()
+            y2=y2-self.movefactor()
+        elif direction == 'left':
+            if view == 'View1':
+                x1=x1-self.movefactor()
+            else:
+                x2=x2-self.movefactor()
+        elif direction == 'right':
+            if view == 'View1':
+                x1=x1+self.movefactor()
+            else:
+                x2=x2+self.movefactor()
+
+        self.RasterPar['View1']['box'] = QRectF(x1,y1,w1,h1)
+        self.RasterPar['View2']['box'] = QRectF(x2,y2,w2,h2)
+        self.plotView12()
+        self.send_RasterInfo_to_meshbest()
+
+     
+    # self.viwe1_move_down.clicked.connect(self.viwe1_move_down_clicked)
+    #     self.viwe1_move_up.clicked.connect(self.viwe1_move_up_clicked)
+    #     self.viwe1_move_left.clicked.connect(self.viwe1_move_left_clicked)
+    #     self.viwe1_move_right.clicked.connect(self.viwe1_move_right_clicked)
+
+
     def closeEvent(self, event):
         self.quit("","")
     def send_RasterInfo_to_meshbest(self)  :
