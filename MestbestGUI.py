@@ -38,7 +38,6 @@ class MainUI(QMainWindow,Ui_MainWindow):
         signal.signal(signal.SIGINT, self.quit)
         signal.signal(signal.SIGTERM, self.quit)
         self.setupUi(self)
-        
         self.pid = os.getpid()
         #setup par
         self.bluicekey = key
@@ -2877,7 +2876,17 @@ if __name__ == "__main__":
         if args.key:
             key = args.key
         else:
-            key = ""
+            #try to find seesion keey
+            home = Path.home()
+            print(home)
+            seesionfile = home.joinpath('.bluice/session')
+            print(f'{seesionfile=},{seesionfile.exists()=}')
+            if seesionfile.exists():
+                with open(seesionfile,'r') as f:
+                    context= f.readline()#line one only
+                    key = context.rstrip() 
+            else:
+                key = ""
         if args.user :
             user = args.user
         else:
@@ -2901,12 +2910,11 @@ if __name__ == "__main__":
             with open(pwdpath,'r') as f:
                 context= f.readline()#line one only
                 base64passwd = context.rstrip() 
-                print(context)
+                # print(context)
         #reading setup
         info = beamlineinfo.BeamlineInfo[beamline]
             
         window = MainUI(folder,key,user,stra,beamline,info,passwd,base64passwd)
-        print("Here")
         window.show()
         sys.exit(app.exec_())
         
