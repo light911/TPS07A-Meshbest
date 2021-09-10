@@ -1,0 +1,1318 @@
+{
+    "MeshBest": {
+        "Dtable": "",
+        "Ztable": "",
+        "difminpar": 0.02,
+        "positionReference": ""
+    },
+    "beamlineInfo": {
+        "beamlineApertures": [
+            50,
+            30,
+            10,
+            5
+        ],
+        "detectorPixelSize": 0.075
+    },
+    "grid_info": {
+        "beam_height": 0.05,
+        "beam_width": 0.05,
+        "steps_x": 11,
+        "steps_y": 13
+    },
+    "inputDozor": {
+        "detectorDistance": 200.00006,
+        "orgx": 1034.0,
+        "orgy": 1081.0,
+        "wavelength": 0.9762462370224789
+    },
+    "meshPositions": [
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00001.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 0,
+            "indexY": 11,
+            "indexZ": 0,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00003.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 2,
+            "indexY": 10,
+            "indexZ": 1,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00002.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 1,
+            "indexY": 10,
+            "indexZ": 0,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00004.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 3,
+            "indexY": 10,
+            "indexZ": 2,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00007.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 6,
+            "indexY": 10,
+            "indexZ": 5,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00006.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 5,
+            "indexY": 10,
+            "indexZ": 4,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00005.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 4,
+            "indexY": 10,
+            "indexZ": 3,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00009.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 8,
+            "indexY": 10,
+            "indexZ": 7,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00011.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 10,
+            "indexY": 10,
+            "indexZ": 9,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00008.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 7,
+            "indexY": 10,
+            "indexZ": 6,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00010.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 9,
+            "indexY": 10,
+            "indexZ": 8,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00012.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 11,
+            "indexY": 10,
+            "indexZ": 10,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00013.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 12,
+            "indexY": 10,
+            "indexZ": 11,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00014.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 13,
+            "indexY": 10,
+            "indexZ": 12,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00015.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 14,
+            "indexY": 9,
+            "indexZ": 12,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00018.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 17,
+            "indexY": 9,
+            "indexZ": 9,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00016.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 15,
+            "indexY": 9,
+            "indexZ": 11,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00019.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 18,
+            "indexY": 9,
+            "indexZ": 8,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00022.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 21,
+            "indexY": 9,
+            "indexZ": 5,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00020.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 19,
+            "indexY": 9,
+            "indexZ": 7,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00017.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 16,
+            "indexY": 9,
+            "indexZ": 10,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00023.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 22,
+            "indexY": 9,
+            "indexZ": 4,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00021.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 20,
+            "indexY": 9,
+            "indexZ": 6,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00024.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 23,
+            "indexY": 9,
+            "indexZ": 3,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00025.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 24,
+            "indexY": 9,
+            "indexZ": 2,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00026.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 25,
+            "indexY": 9,
+            "indexZ": 1,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00027.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 26,
+            "indexY": 9,
+            "indexZ": 0,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00028.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 27,
+            "indexY": 8,
+            "indexZ": 0,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00029.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 28,
+            "indexY": 8,
+            "indexZ": 1,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00030.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 29,
+            "indexY": 8,
+            "indexZ": 2,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00033.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 32,
+            "indexY": 8,
+            "indexZ": 5,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00032.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 31,
+            "indexY": 8,
+            "indexZ": 4,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00035.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 34,
+            "indexY": 8,
+            "indexZ": 7,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00031.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 30,
+            "indexY": 8,
+            "indexZ": 3,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00036.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 35,
+            "indexY": 8,
+            "indexZ": 8,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00034.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 33,
+            "indexY": 8,
+            "indexZ": 6,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00037.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 36,
+            "indexY": 8,
+            "indexZ": 9,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00038.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 37,
+            "indexY": 8,
+            "indexZ": 10,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00039.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 38,
+            "indexY": 8,
+            "indexZ": 11,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00040.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 39,
+            "indexY": 8,
+            "indexZ": 12,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00041.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 40,
+            "indexY": 7,
+            "indexZ": 12,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00042.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 41,
+            "indexY": 7,
+            "indexZ": 11,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00043.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 42,
+            "indexY": 7,
+            "indexZ": 10,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00044.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 43,
+            "indexY": 7,
+            "indexZ": 9,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00047.cbf",
+            "dozorSpotList": "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",
+            "dozor_score": 834.388,
+            "index": 46,
+            "indexY": 7,
+            "indexZ": 6,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00045.cbf",
+            "dozorSpotList": "AAAAAAAACEAzMzMzM8mSQGZmZmZmFopAAAAAAIBMsEDNzMzMzIxSQAAAAAAAAAhAzczMzMzUk0AzMzMzM6eMQM3MzMzMQpFAMzMzMzOzSEAAAAAAAAAIQGZmZmZmaodAAAAAAAC4j0CamZmZmVGyQGZmZmZmZlNA",
+            "dozor_score": 1.966,
+            "index": 44,
+            "indexY": 7,
+            "indexZ": 8,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00048.cbf",
+            "dozorSpotList": "AAAAAAAA8D8AAAAAAHCRQGZmZmZmXJRAmpmZmZn5pkAAAAAAAIBTQAAAAAAAAABAAAAAAAAckkCamZmZma+UQJqZmZkZDctAAAAAAACAX0AAAAAAAAAIQGZmZmZmyJJAmpmZmZklikBmZmZmNgztQDMzMzMz829AAAAAAAAACEDNzMzMzNSTQM3MzMzMsIxAZmZmZoYx7UAzMzMzMwNwQAAAAAAAAAhAAAAAAABsh0AzMzMzM8+PQAAAAADARu1AAAAAAAAIcEAAAAAAAAAQQM3MzMzMdIZAzczMzMzKkUAzMzMzs1WwQDMzMzMzk1NAAAAAAAAAEEDNzMzMzMCMQM3MzMzMnJVAzczMzMyQlUCamZmZmdlMQAAAAAAAABhAAAAAAAA4i0AAAAAAAHiHQDMzMzMzk2xAmpmZmZnZRUAAAAAAAAAcQAAAAAAABJJAAAAAAAAwhkDNzMzMzPRzQAAAAAAAQElAAAAAAAAAHEBmZmZmZmiWQAAAAAAAPJBAmpmZmZl5UkAAAAAAAABIQAAAAAAAABxAAAAAAAAAi0AzMzMzM5OWQAAAAAAAKJtAAAAAAACAT0AAAAAAAAAiQAAAAAAApJFAzczMzMw0hEBmZmZmhlDXQDMzMzMzI2RAAAAAAAAAIkBmZmZmZgaFQM3MzMzM6IlAMzMzM2Ok4kBmZmZmZhZpQAAAAAAAACJAmpmZmZkLl0CamZmZmSuQQM3MzMzMjFlAZmZmZmZmR0AAAAAAAAAiQAAAAAAA8JZAzczMzMwukEDNzMzMzAxYQGZmZmZmZkdAAAAAAAAAJEBmZmZmZlKHQDMzMzMzs4ZAzczMzIylxEAAAAAAAOBbQAAAAAAAACRAzczMzMwgh0BmZmZmZkCWQGZmZmZmPpFAMzMzMzMzS0AAAAAAAAAmQJqZmZmZ3YJAMzMzMzOtk0CamZmZuXzzQDMzMzMzo3JAAAAAAAAAKEAAAAAAABCOQGZmZmZm2oJAmpmZmdmC2UDNzMzMzPxkQAAAAAAAAChAZmZmZmaQlUCamZmZmcGGQM3MzMzMGqRAAAAAAAAAUUAAAAAAAAAoQAAAAAAAoJZAAAAAAABYiUAzMzMzM1NyQAAAAAAAQEhAAAAAAAAAKEDNzMzMzH6VQM3MzMzMTpZAzczMzEzRyUBmZmZmZuZeQAAAAAAAAChAAAAAAACUikAzMzMzM9+XQJqZmZl5otBAZmZmZmZGYUAAAAAAAAAoQJqZmZmZG5JAmpmZmZkzmEBmZmZmZoZ7QDMzMzMz80hAAAAAAAAAKkAzMzMzMyuVQAAAAAAAYIVAZmZmZmZKhEDNzMzMzAxLQAAAAAAAACpAAAAAAABElUBmZmZmZo6FQAAAAAAAXI9AZmZmZmamTEAAAAAAAAAqQAAAAAAAcJVAAAAAAADYhUAzMzMzM3eSQGZmZmZmZk1AAAAAAAAAKkAzMzMzM0uWQGZmZmZmWodAAAAAAIDWsEDNzMzMzExUQAAAAAAAACpAAAAAAADYl0AAAAAAABiTQAAAAAAAoG9AZmZmZmYmSUAAAAAAAAAqQJqZmZmZx5JAAAAAAACImECamZmZmSGjQDMzMzMzM1FAAAAAAAAALEAAAAAAADiVQAAAAAAAxIRAMzMzM/O+6UBmZmZmZvZtQAAAAAAAACxAZmZmZmZQl0AzMzMzM/eJQDMzMzMzQZhAmpmZmZnZU0AAAAAAAAAsQAAAAAAALINAzczMzMzolUDNzMzMLKXRQAAAAAAA4GJAAAAAAAAALEAAAAAAACyWQJqZmZmZn5ZAZmZmZqZdxUDNzMzMzExfQAAAAAAAAC5AAAAAAAAsikBmZmZmZhaCQJqZmZn5OtNAAAAAAAAwZkAAAAAAAAAuQAAAAAAAEIdAzczMzMxQg0DNzMzMzJyTQDMzMzMzk1xAAAAAAAAALkAzMzMzM+WVQDMzMzMzZ4VAMzMzMzOhz0DNzMzMzOxkQAAAAAAAAC5AZmZmZmb0lkAAAAAAAACIQM3MzMxMnrFAMzMzMzPzX0AAAAAAAAAuQM3MzMzMXH5AAAAAAABokEBmZmZmZhyqQGZmZmZmxl5AAAAAAAAALkBmZmZmZjqRQM3MzMzMLJlAMzMzM1uv9EAzMzMzM2tzQAAAAAAAADBAZmZmZmbQlEAzMzMzM8OCQM3MzMxM97ZAZmZmZmYmV0AAAAAAAAAwQAAAAAAABJhAAAAAAACQikBmZmZmZgZ0QDMzMzMzc0tAAAAAAAAAMEDNzMzMzCCKQGZmZmZmKplAZmZmZmY6hEBmZmZmZuZMQAAAAAAAADFAmpmZmZmHlUAzMzMzM2eDQGZmZmZmrnZAMzMzMzOTUEAAAAAAAAAxQM3MzMzM7INAZmZmZmaOhEDNzMzM3CPoQGZmZmZm5mxAAAAAAAAAMUDNzMzMzJiBQJqZmZmZyYdAZmZmZoaW5kCamZmZmQlsQAAAAAAAADJAAAAAAADYjUBmZmZmZv5+QM3MzMzMEJFAMzMzMzPTUUAAAAAAAAAyQM3MzMzMrHxAzczMzMzYjkAAAAAAwH7AQAAAAAAA4FtAAAAAAAAAMkAzMzMzM5+AQAAAAAAA6JVAZmZmZmZGfUAzMzMzM7NQQAAAAAAAADJAMzMzMzO/gkAzMzMzMzuXQGZmZmZmuoRAMzMzMzMTUUAAAAAAAAAyQJqZmZmZlZJAmpmZmZnXmUAAAAAAgOiwQM3MzMzMzFZAAAAAAAAAM0AAAAAAANSRQAAAAAAA4H5AmpmZmZlhd0BmZmZmZmZOQAAAAAAAADNAAAAAAADQhECamZmZmYGYQGZmZmamZsxAMzMzMzOzYEAAAAAAAAA0QGZmZmZmKJVAZmZmZmZegUCamZmZqUD7QDMzMzMzy3dAAAAAAAAANECamZmZmdF8QAAAAAAAmJRAmpmZmRmXtkCamZmZmbloQAAAAAAAADVAAAAAAABojkAzMzMzMxN8QGZmZmYGh9dAZmZmZma2ZEAAAAAAAAA1QAAAAAAA4HhAAAAAAABkkEAAAAAAAIhzQJqZmZmZWU5AAAAAAAAANUAAAAAAALSWQGZmZmZmRJhAAAAAAEDP1EAzMzMzM6NjQAAAAAAAADZAzczMzMzEhkAzMzMzM9N/QM3MzMysX+lAZmZmZmY2bkAAAAAAAAA2QAAAAAAA4H1AmpmZmZmhh0AzMzMzsxTHQGZmZmZm5mBAAAAAAAAANkDNzMzMzKiJQM3MzMzMgJpAZmZmZmahwEAzMzMzM5NeQAAAAAAAADZAZmZmZma0kUCamZmZmdOaQDMzMzMzGqBAMzMzMzMTV0AAAAAAAAA3QAAAAAAAqINAZmZmZmZCgUCamZmZmW2AQAAAAAAAoFlAAAAAAAAAN0CamZmZmcOZQJqZmZmZaYpAzczMzMx5wUAzMzMzMzNhQAAAAAAAADdAzczMzMw8mkDNzMzMzGiTQJqZmZmpJO1AZmZmZmZ+cEAAAAAAAAA3QAAAAAAAlphAMzMzMzP7lkAzMzMzo77sQGZmZmZmZnBAAAAAAAAAOEDNzMzMzPCOQAAAAAAAQHlAzczMzMwgjkAzMzMzMxNeQAAAAAAAADhAzczMzMx4lUAAAAAAANB/QM3MzMzM/IVAzczMzMzMXUAAAAAAAAA4QJqZmZmZw5lAmpmZmZlblUCamZmZmQO2QM3MzMzMTGFAAAAAAAAAOUBmZmZmZnaKQDMzMzMze3pAAAAAAECd0UAzMzMzMxNjQAAAAAAAADlAzczMzMxwmkBmZmZmZgqLQDMzMzOzQrhAZmZmZmbGWkAAAAAAAAA7QDMzMzMzt5FAzczMzMzUd0AzMzMzs0azQM3MzMzM7FdAAAAAAAAAO0CamZmZmQ+VQGZmZmZmzntAZmZmZmYmkUCamZmZmTlSQAAAAAAAADtAZmZmZmbElUBmZmZmZh59QGZmZmZmVpNAmpmZmZl5UkAAAAAAAAA7QJqZmZmZwXVAZmZmZmack0AzMzMzM0N/QM3MzMzMLFFAAAAAAAAAPEAzMzMzMweLQJqZmZmZoXdAZmZmZmZygEBmZmZmZoZSQAAAAAAAADxAMzMzMzN7eEAAAAAAAICHQGZmZmam4ctAZmZmZmZWYUAAAAAAAAA9QJqZmZmZsXhAmpmZmZkphkDNzMzMzLiWQDMzMzMzM1NAAAAAAAAAPUCamZmZmbWBQM3MzMzM3JlAZmZmZmbfwECamZmZmZlcQAAAAAAAAD1AAAAAAAA8l0DNzMzMzOqZQAAAAABAYsBAMzMzMzNTXEAAAAAAAAA9QAAAAAAAMIlAAAAAAADUm0DNzMzMzHyFQGZmZmZm5lFAAAAAAAAAPkAAAAAAANB0QAAAAAAAYIlAAAAAAAAAc0CamZmZmdlOQAAAAAAAAD5AzczMzMxUdkBmZmZmZuiVQGZmZmYGI9JAMzMzMzOTYkAAAAAAAAA+QM3MzMzMjIpAAAAAAAAwnEDNzMzMTG3KQAAAAAAAUGBAAAAAAAAAP0AzMzMzMwWSQDMzMzMz43RAAAAAAABgo0BmZmZmZoZTQAAAAAAAAD9AAAAAAABglUCamZmZmeF4QM3MzMzMVpZAAAAAAADAUUAAAAAAAAA/QJqZmZmZF5ZAAAAAAAAwekCamZmZmWWNQAAAAAAA4FBAAAAAAAAAP0DNzMzMzIKbQDMzMzMzR4pAAAAAAMCuz0CamZmZmZlhQAAAAAAAAD9AzczMzMwgmUCamZmZmaOYQDMzMzMzpqFAzczMzMwsU0AAAAAAAABAQJqZmZmZLYVAzczMzMyGm0BmZmZmZk7OQJqZmZmZGWFAAAAAAACAQEAzMzMzM/+GQGZmZmZm7nVAzczMzMwnqUAAAAAAAMBXQAAAAAAAgEBAzczMzMyCm0CamZmZmVuVQAAAAAAAU7pAAAAAAAAAXEAAAAAAAABBQGZmZmZmzoNAMzMzMzNreEAAAAAAwL7FQM3MzMzMzF1AAAAAAAAAQUBmZmZmZtibQM3MzMzM6IhAzczMzMzMf0BmZmZmZuZNQAAAAAAAAEFAZmZmZmYQl0DNzMzMzEKbQJqZmZnZmNRAzczMzMxsY0AAAAAAAIBBQGZmZmZmUJJAmpmZmZnxcUCamZmZGUG5QDMzMzMzM1lAAAAAAACAQUCamZmZmWuWQGZmZmZmLndAZmZmZqYS0EDNzMzMzLxhQAAAAAAAgEFAZmZmZmYGbUAAAAAAAJSSQAAAAAAAHaJAAAAAAABgU0AAAAAAAABCQGZmZmZmJoFAMzMzMzMzm0DNzMzMzFabQJqZmZmZGVFAAAAAAAAAQkAAAAAAADSWQM3MzMzMRpxAmpmZmZmSo0DNzMzMzGxSQAAAAAAAAENAAAAAAAD2lkDNzMzMzNR2QM3MzMzM+IBAAAAAAACAVEAAAAAAAABDQJqZmZmZIZ1AzczMzMyukkBmZmZmZh7vQGZmZmZmhnBAAAAAAAAAQ0AzMzMzM+eaQGZmZmZmrJhAmpmZmZnPxUBmZmZmZnZgQAAAAAAAAENAzczMzMwoikCamZmZmZ2dQM3MzMzMMIFAAAAAAACAVEAAAAAAAABDQAAAAAAAQIpAAAAAAACinUDNzMzMzJx2QJqZmZmZOVRAAAAAAAAAQ0AAAAAAAKiKQJqZmZmZrZ1AMzMzMzO7hEDNzMzMzKxUQAAAAAAAAENAAAAAAABwi0AAAAAAAOSdQJqZmZmZAXhAAAAAAABAVEAAAAAAAIBDQM3MzMzMIIFAMzMzMzMDeEBmZmZm5jWzQDMzMzMzE1ZAAAAAAACAQ0AAAAAAACBmQAAAAAAAkJBAMzMzMzP3gkDNzMzMzIxNQAAAAAAAgENAMzMzMzPjZ0AAAAAAACiTQGZmZmZmfnJAMzMzMzMzTEAAAAAAAIBDQAAAAAAAHJxAZmZmZmYEl0AzMzMzMw+AQGZmZmZmJk1AAAAAAACAQ0AzMzMzMweGQDMzMzMzO51AmpmZmVkizkCamZmZmelgQAAAAAAAgENAMzMzMzNRlUAzMzMzM0udQAAAAAAAtbRAAAAAAACgVkAAAAAAAABEQM3MzMzMoJBAzczMzMzcakDNzMzMzHSPQDMzMzMzk1BAAAAAAAAAREAzMzMzMxuIQAAAAAAAAHBAAAAAAMAgwECamZmZmflaQAAAAAAAAERAzczMzMy+lkCamZmZmTF0QJqZmZmZfKBAzczMzMyMUkAAAAAAAABEQGZmZmZmPnJAmpmZmZnZg0AzMzMzM/+dQJqZmZmZOVJAAAAAAAAARECamZmZmaF4QAAAAAAA7JlAmpmZmZkliEAAAAAAACBQQAAAAAAAAERAAAAAAADQjEAAAAAAAECeQM3MzMzM9rRAZmZmZmZmV0AAAAAAAIBEQM3MzMzM8JxAmpmZmZkRiEAAAAAAAGOhQAAAAAAAIFJAAAAAAACAREAAAAAAANB8QDMzMzMzOZtAZmZmZuZTwEDNzMzMzKxaQAAAAAAAgERAAAAAAAAwjkAAAAAAAJyeQDMzMzPzgM9AzczMzMxMYUAAAAAAAABFQGZmZmZmxmxAzczMzMzAhUBmZmZmZkmiQGZmZmZmJlJAAAAAAACARUAzMzMzM6eTQM3MzMzMfGpAzczMzMwQoUAzMzMzM5NRQAAAAAAAgEVAZmZmZmb2gUAzMzMzM+ucQAAAAAAAsJ5AzczMzMwsUUAAAAAAAIBFQAAAAAAABJZAZmZmZmaknUCamZmZmY6rQDMzMzMz01NAAAAAAACARUAAAAAAAGyUQGZmZmZmUJ5AzczMzMysdkBmZmZmZuZLQAAAAAAAAEZAzczMzMyoiEBmZmZmZgZqQAAAAAAA1bZAzczMzMyMV0AAAAAAAABGQJqZmZmZwXxAAAAAAACQd0AAAAAAAACGQM3MzMzMjE5AAAAAAAAARkBmZmZmZkidQDMzMzMzr4ZAAAAAAACglkCamZmZmblQQAAAAAAAAEZAZmZmZmZKnkCamZmZmV2PQAAAAAAAIsdAAAAAAACAXkAAAAAAAIBGQJqZmZmZ8ZBAzczMzMycZEAzMzMzM/2zQM3MzMzM7FZAAAAAAACARkBmZmZmZgyXQGZmZmZmLnFAAAAAAADEmECamZmZmXlRQAAAAAAAgEZAAAAAAADQkkCamZmZmf+eQJqZmZmZ/5BAzczMzMyMUEAAAAAAAABHQM3MzMzMypdAzczMzMxkckCamZmZmd7IQAAAAAAAIF9AAAAAAAAAR0DNzMzMzNxyQJqZmZmZ6ZlAZmZmZgYN2kAzMzMzM3NlQAAAAAAAAEdAZmZmZmasmEAzMzMzM7OcQGZmZmbGG9BAmpmZmZlZYUAAAAAAAIBHQM3MzMzM3GxAMzMzMzOPmECamZmZmVWWQJqZmZmZGVFAAAAAAACAR0BmZmZmZk53QAAAAAAAQJtAZmZmZma6iUBmZmZmZuZPQAAAAAAAAEhAAAAAAAA4iUAzMzMzM+NjQM3MzMzMqa1AMzMzMzMTVUAAAAAAAABIQDMzMzMz95NAZmZmZmY2ZEAzMzMzs2fCQDMzMzMzM1xAAAAAAAAASECamZmZmf+dQM3MzMzMSIdAAAAAAAAoi0DNzMzMzCxQQAAAAAAAAEhAzczMzMyMV0AAAAAAANySQJqZmZmZ7Y5AZmZmZmZmUEAAAAAAAABIQGZmZmZmfn5AMzMzMzP3nECamZmZmdWkQDMzMzMzU1NAAAAAAAAASECamZmZmYOTQGZmZmZmWJ9AZmZmZmbQk0DNzMzMzOxQQAAAAAAAAEhAAAAAAAA2kUBmZmZmZqifQM3MzMzMVIRAMzMzMzNzT0AAAAAAAIBIQGZmZmZmJmtAMzMzMzM7gkDNzMzMTK65QDMzMzMz01dAAAAAAACASEBmZmZmZoZaQDMzMzMzl4lAZmZmZialxECamZmZmZlcQAAAAAAAgEhAZmZmZmZOiEBmZmZmZlSfQM3MzMzMMJJAmpmZmZlZTkA=",
+            "dozor_score": 1024.771,
+            "index": 47,
+            "indexY": 7,
+            "indexZ": 5,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00049.cbf",
+            "dozorSpotList": "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",
+            "dozor_score": 669.802,
+            "index": 48,
+            "indexY": 7,
+            "indexZ": 4,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00051.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 50,
+            "indexY": 7,
+            "indexZ": 2,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00050.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 49,
+            "indexY": 7,
+            "indexZ": 3,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00052.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 51,
+            "indexY": 7,
+            "indexZ": 1,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00046.cbf",
+            "dozorSpotList": "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",
+            "dozor_score": 589.006,
+            "index": 45,
+            "indexY": 7,
+            "indexZ": 7,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00053.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 52,
+            "indexY": 7,
+            "indexZ": 0,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00054.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 53,
+            "indexY": 6,
+            "indexZ": 0,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00055.cbf",
+            "dozorSpotList": "AAAAAAAAAEDNzMzMzBiSQM3MzMzMtJRAAAAAAAC+kEAAAAAAAABLQAAAAAAAAAhAAAAAAADIkkBmZmZmZiqKQJqZmZmZYshAzczMzMzMXUAAAAAAAAAIQAAAAAAA0JNAAAAAAAC4jECamZmZmcFwQM3MzMzMTEZAAAAAAAAACEDNzMzMzGCHQM3MzMzM0I9AmpmZmZk/tEBmZmZmZsZUQAAAAAAAABBAmpmZmZlflUAzMzMzM3GRQM3MzMzMjGhAMzMzMzPTWUA=",
+            "dozor_score": 7.163,
+            "index": 54,
+            "indexY": 6,
+            "indexZ": 1,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00056.cbf",
+            "dozorSpotList": "AAAAAAAA8D8AAAAAANCPQAAAAAAAMIpAMzMzMzM7eEBmZmZmZuZQQAAAAAAAAPA/AAAAAABskUAAAAAAAGCUQDMzMzMz7blAAAAAAAAAWkAAAAAAAAAAQJqZmZmZGZJAAAAAAAC0lEAzMzMz06fvQJqZmZmZ2XBAAAAAAAAACEAAAAAAAACMQAAAAAAAeIlAzczMzMykekAzMzMzMzNUQAAAAAAAAAhAZmZmZmbEkkAzMzMzMyuKQAAAAABAQepAZmZmZmaWbkAAAAAAAAAIQGZmZmZm0JNAzczMzMy4jEBmZmZmllLgQJqZmZmZ2WhAAAAAAAAACECamZmZmV2HQJqZmZmZ0Y9AmpmZmSl26kAzMzMzM7NuQAAAAAAAABBAAAAAAABshkDNzMzMzMiRQM3MzMzs8dFAMzMzMzOjYkAAAAAAAAAQQAAAAAAAuIxAAAAAAACglUCamZmZmVmAQDMzMzMzk1BAAAAAAAAAGEAAAAAAADCLQAAAAAAAgIdAZmZmZmYufkAAAAAAACBQQAAAAAAAABxAAAAAAACohEAAAAAAALiSQAAAAAAASH9AAAAAAABgUUAAAAAAAAAcQM3MzMzM8IpAAAAAAACUlkAzMzMzMyt/QAAAAAAAYFFAAAAAAAAAIEAAAAAAAOCOQAAAAAAA6IRAAAAAAADQdkAAAAAAAABRQAAAAAAAACBAAAAAAAC0lkAzMzMzMzOQQJqZmZmZGVhAAAAAAACAUEAAAAAAAAAgQDMzMzMzV4NAmpmZmZmrkUCamZmZmXWGQGZmZmZmplFAAAAAAAAAIkAAAAAAAKKRQJqZmZmZPYRAMzMzM0P95kCamZmZmXlsQAAAAAAAACJAZmZmZmZuikAAAAAAAICFQJqZmZmZVYlAZmZmZmbGUkAAAAAAAAAiQM3MzMzM/IRAMzMzMzPviUDNzMzMvF/nQDMzMzMzs2xAAAAAAAAAJEBmZmZmZkqHQJqZmZmZuYZAzczMzEyhx0AzMzMzM3NeQAAAAAAAACRAZmZmZmYWh0AAAAAAAESWQJqZmZmZXqBAAAAAAABgUUAAAAAAAAAmQGZmZmZmCo5AzczMzMzggkDNzMzMPM3lQDMzMzMzw2xAAAAAAAAAJkCamZmZmdGCQGZmZmZmrpNAMzMzMzMk7UAzMzMzM0twQAAAAAAAAChAmpmZmZmNlUBmZmZmZsaGQDMzMzOzlLRAZmZmZmbmVkAAAAAAAAAoQAAAAAAApJZAMzMzMzNniUCamZmZmfl7QJqZmZmZ2U1AAAAAAAAAKEBmZmZmZnyVQJqZmZmZUZZAmpmZmVlp0UBmZmZmZhZiQAAAAAAAAChAAAAAAACIikCamZmZmeGXQAAAAAAAG9pAmpmZmZmZZUAAAAAAAAAoQAAAAAAAFJJAAAAAAAA0mEBmZmZmZq57QJqZmZmZ2U1AAAAAAAAAKkAzMzMzMyOVQAAAAAAAaIVAmpmZmZknmUAzMzMzM9NRQAAAAAAAACpAmpmZmZk/lUBmZmZmZpaFQGZmZmYG0tBAzczMzMz8YUAAAAAAAAAqQDMzMzMzaZVAzczMzMzghUBmZmZm5iiyQGZmZmZmhlZAAAAAAAAAKkBmZmZmZkSWQDMzMzMzZ4dAZmZmZmZ3oUBmZmZmZuZSQAAAAAAAACpAAAAAAADclkAAAAAAADCJQJqZmZmZkYBAZmZmZmamT0AAAAAAAAAqQJqZmZmZ05dAzczMzMwck0AzMzMzMx2fQJqZmZmZeVJAAAAAAAAAKkDNzMzMzMCSQJqZmZmZi5hAmpmZmZkfo0AAAAAAAEBTQAAAAAAAACxAzczMzMw0lUAAAAAAAMyEQJqZmZnp7etAmpmZmZkRcEAAAAAAAAAsQM3MzMzMTJdAAAAAAAD4iUCamZmZmVWpQM3MzMzMjFtAAAAAAAAALEAAAAAAAFiXQJqZmZmZC5VAAAAAAAAQfkAzMzMzMzNYQAAAAAAAACxAmpmZmZkhg0CamZmZmeuVQGZmZmZmIblAMzMzMzPzXkAAAAAAAAAsQAAAAAAAKpZAmpmZmZmllkDNzMzM3OrqQAAAAAAAoG9AAAAAAAAALEAzMzMzMzWRQM3MzMzMKplAmpmZmVmL60AAAAAAAPBvQAAAAAAAAC5AZmZmZmYmikBmZmZmZh6CQM3MzMzMIclAzczMzMzcYEAAAAAAAAAuQAAAAAAACIdAzczMzMxYg0BmZmZmZu6LQJqZmZmZuVNAAAAAAAAALkBmZmZmZuCVQDMzMzMzb4VAAAAAAAD+kUAAAAAAACBUQAAAAAAAAC5AAAAAAAD0lkAAAAAAAAiIQGZmZmZmGpVAzczMzMxsVEAAAAAAAAAuQAAAAAAAOIBAAAAAAACkk0DNzMzMzMSBQDMzMzMzM1NAAAAAAAAALkAAAAAAAACBQAAAAAAAoJRAmpmZmZkpfUBmZmZmZgZTQAAAAAAAADBAMzMzMzPNlEDNzMzMzMiCQGZmZmbmGsBAMzMzMzNzW0AAAAAAAAAwQGZmZmZmAJhAAAAAAACYikDNzMzMzER6QGZmZmZmRlBAAAAAAAAAMECamZmZmSF+QAAAAAAAbJBAAAAAAIDVsEBmZmZmZoZWQAAAAAAAADFAMzMzMzPjg0CamZmZmZWEQDMzMzMTEOxAMzMzMzNDcEAAAAAAAAAxQGZmZmZmjoFAAAAAAADQh0AzMzMzE1LsQDMzMzMzU3BAAAAAAAAAMUAAAAAAABiKQDMzMzMzK5lAzczMzMwgoUCamZmZmdlbQAAAAAAAADJAAAAAAADQjUCamZmZmRF/QGZmZmZmuJtAMzMzMzOzVUAAAAAAAAAyQAAAAAAAeHxAAAAAAADgjkBmZmZmdpbjQGZmZmZmxmpAAAAAAAAAMkAzMzMzM6+CQAAAAAAAPJdAzczMzMwYpEAzMzMzM9NWQAAAAAAAADJAmpmZmZmTkkCamZmZmduZQAAAAAAA/cpAzczMzMx8YUAAAAAAAAAzQAAAAAAAkHpAAAAAAABYkUDNzMzMzFSAQDMzMzMz01lAAAAAAAAAM0AAAAAAAIiAQAAAAAAA8JVAzczMzMwGpUAzMzMzM1NcQAAAAAAAADRAzczMzMwolUBmZmZmZnKBQAAAAADYg/BAZmZmZmbuckAAAAAAAAA0QDMzMzMzx4RAAAAAAACEmEDNzMzMjBLAQJqZmZmZeWZAAAAAAAAANUBmZmZmZmKOQDMzMzMzI3xAMzMzM4Og40CamZmZmUlrQAAAAAAAADVAAAAAAADQeECamZmZmWOQQDMzMzMz24hAzczMzMysVkAAAAAAAAA1QGZmZmZmsJZAmpmZmZlHmECamZmZ+WDWQGZmZmZmxmVAAAAAAAAANkDNzMzMzLyGQGZmZmZm3n9AzczMzMyz70AzMzMzM1tyQAAAAAAAADZAmpmZmZnRfUBmZmZmZq6HQDMzMzMzTfBAZmZmZmaOckAAAAAAAAA2QM3MzMzMoIlAMzMzMzODmkDNzMzMDHHOQGZmZmZmBmhAAAAAAAAANkDNzMzMzLCRQDMzMzMz15pAAAAAAIBgvUDNzMzMzDxlQAAAAAAAADdAmpmZmZlvlUAAAAAAAPB/QGZmZmZmEK5AZmZmZmYmYEAAAAAAAAA3QAAAAAAAwJlAzczMzMx4ikAzMzMzM/qgQGZmZmZmpl5AAAAAAAAAN0DNzMzMzDKaQM3MzMzMaJNAMzMzM/M740AzMzMzM5NsQAAAAAAAADdAmpmZmZlBmkCamZmZmW+TQJqZmZkpBOpAMzMzMzMTcEAAAAAAAAA3QDMzMzMzk5hAMzMzMzP/lkAzMzMzUz3oQAAAAAAAQG9AAAAAAAAAOEDNzMzMzJiDQJqZmZmZQYFAzczMzMyKmEBmZmZmZmZXQAAAAAAAADhAMzMzMzPDmUAAAAAAAGCVQGZmZmZmjqNAAAAAAACgWEAAAAAAAAA5QDMzMzMzb4pAZmZmZmaGekAzMzMz87zYQJqZmZmZGWdAAAAAAAAAOUAzMzMzM22aQAAAAAAAEItAMzMzMzPlwEBmZmZmZoZgQAAAAAAAADlAAAAAAACohUBmZmZmZiyaQAAAAAAAuHtAzczMzMwMWEAAAAAAAAA6QM3MzMzMtJFAMzMzMzPjd0AzMzMzc93BQAAAAAAAAGFAAAAAAAAAO0AAAAAAAAyVQGZmZmZm3ntAmpmZmZlvlEDNzMzMzMxbQAAAAAAAADtAAAAAAACwdUAAAAAAAJSTQM3MzMzMwJNAAAAAAADAW0AAAAAAAAA7QGZmZmZmrnVAZmZmZmagk0BmZmZmZv6WQAAAAAAAAFxAAAAAAAAAPEAAAAAAAGB4QDMzMzMzh4dAMzMzM7MLz0BmZmZmZtZjQAAAAAAAADxAmpmZmZmRfkAAAAAAAHiYQGZmZmZm/6tAmpmZmZlZXEAAAAAAAAA9QAAAAAAAqIFAAAAAAADgmUAzMzMzM33CQDMzMzMz82BAAAAAAAAAPUDNzMzMzDiXQGZmZmZm8JlAmpmZmZm23ECamZmZmXloQAAAAAAAAD5AAAAAAAAEkkCamZmZmfF0QAAAAAAALaZAZmZmZmZGWkAAAAAAAAA+QAAAAAAAwHRAAAAAAABgiUAAAAAAAGiOQDMzMzMz81dAAAAAAAAAPkCamZmZmTl2QDMzMzMz65VAMzMzM5M13kDNzMzMzLxoQAAAAAAAAD5AAAAAAABclkAAAAAAAOiaQAAAAAAAiH5AMzMzMzNTV0AAAAAAAAA+QGZmZmZmgopAzczMzMwynECamZmZOYHVQM3MzMzMvGVAAAAAAAAAP0AAAAAAAFyVQAAAAAAA8HhAmpmZmZllnEBmZmZmZmZdQAAAAAAAAD9AzczMzMyAm0CamZmZmVGKQDMzMzOz0thAAAAAAAAwaEAAAAAAAAA/QJqZmZmZU5pAmpmZmZkHl0DNzMzMzP6lQM3MzMzMbF5AAAAAAAAAP0CamZmZmR+ZQJqZmZmZp5hAZmZmZmZiqEAAAAAAAMBeQAAAAAAAAD9AMzMzMzPvi0AAAAAAAIycQDMzMzMz835AMzMzMzPzW0AAAAAAAABAQGZmZmZmIoVAMzMzMzOJm0AzMzMz85nmQAAAAAAAUG1AAAAAAACAQEAzMzMzM/eGQDMzMzMz83VAZmZmZuYj4ECamZmZmQlpQAAAAAAAgEBAAAAAAADQd0AAAAAAAACEQJqZmZmZsKFAZmZmZmYmWEAAAAAAAIBAQJqZmZmZg5tAZmZmZmZglUAAAAAAAOrhQGZmZmZmJmpAAAAAAAAAQUBmZmZmZsaDQM3MzMzMdHhAAAAAAMBJ1UCamZmZmalnQAAAAAAAAEFAzczMzMwOl0AzMzMzM0mbQGZmZmYWsu1AmpmZmZkZcUAAAAAAAIBBQDMzMzMzT5JAmpmZmZkBckDNzMzMTMXHQDMzMzMz42BAAAAAAACAQUAAAAAAAKiVQAAAAAAAAHZAmpmZmZmpjkAAAAAAAABVQAAAAAAAgEFAAAAAAABklkDNzMzMzER3QDMzMzOzocRAAAAAAAAgYEAAAAAAAIBBQM3MzMzM3GxAMzMzMzOVkkAzMzMzM/mqQGZmZmZmZlhAAAAAAACAQUBmZmZmZviYQGZmZmZm/JlAAAAAAABAg0AzMzMzM3NUQAAAAAAAAEJAmpmZmZmFh0DNzMzMzARzQM3MzMxMecdAmpmZmZl5YEAAAAAAAABCQGZmZmZmioBAZmZmZmbuekAzMzMzM2WsQDMzMzMzs1dAAAAAAAAAQkAAAAAAABiBQAAAAAAANJtAAAAAAAAIfkAzMzMzMxNTQAAAAAAAAEJAAAAAAAAwlkBmZmZmZkicQAAAAAAAZ6JAMzMzMzPzVUAAAAAAAABDQGZmZmZmBmpAmpmZmZkxjUCamZmZKQblQM3MzMzMfGtAAAAAAAAAQ0CamZmZmROdQAAAAAAAFpNAZmZmZoYo0UBmZmZmZuZiQAAAAAAAAENAMzMzMzOXnECamZmZmQ+VQDMzMzOzBbZAZmZmZmYmWkAAAAAAAABDQGZmZmZm5JpAZmZmZmawmEBmZmZmZt62QGZmZmZmZlpAAAAAAACAQ0DNzMzMzCSBQM3MzMzM9HdAzczMzExbzUBmZmZmZkZiQAAAAAAAgENAAAAAAADgZUBmZmZmZpKQQDMzMzMzk5VAMzMzMzPzVUAAAAAAAIBDQAAAAAAAwGdAAAAAAAAwk0BmZmZmZo6KQDMzMzMzM1VAAAAAAACAQ0AAAAAAABycQJqZmZmZC5dAzczMzMzYiECamZmZmRlVQAAAAAAAgENAAAAAAAComUAAAAAAAEyaQJqZmZmZ4XpAMzMzMzOTVEAAAAAAAIBDQJqZmZmZ/YVAMzMzMzM7nUAAAAAAQGPZQJqZmZmZeWZAAAAAAAAAREAAAAAAAJyQQAAAAAAAAGtAMzMzMzPngUDNzMzMzMxTQAAAAAAAAERAMzMzMzMXiEDNzMzMzAxwQDMzMzPTyNRAZmZmZmaGZEAAAAAAAABEQM3MzMzMvpZAAAAAAABQdEDNzMzMTCi2QGZmZmZmplpAAAAAAAAAREBmZmZmZh5yQM3MzMzM4INAzczMzIy2xEDNzMzMzOxfQAAAAAAAAERAzczMzMwcdECamZmZmZeYQJqZmZmZzZ1AzczMzMzMVUAAAAAAAABEQAAAAAAAgHhAZmZmZmbsmUCamZmZmdqjQM3MzMzMrFZAAAAAAAAAREBmZmZmZk6VQGZmZmZmTp1AzczMzGxC1EAzMzMzM1NkQAAAAAAAAERAMzMzMzPHjEDNzMzMzECeQJqZmZmZVrBAmpmZmZnZWEAAAAAAAIBEQGZmZmZm8JxAAAAAAAAoiECamZmZmTWnQDMzMzMzM1hAAAAAAACAREAAAAAAAMB8QM3MzMzMOJtAAAAAAIDvvEAAAAAAAGBdQAAAAAAAgERAMzMzMzMnjkBmZmZmZp6eQAAAAABAoeRAAAAAAACQa0AAAAAAAABFQAAAAAAAoHtAZmZmZmZ+ekDNzMzMzAijQJqZmZmZuVRAAAAAAAAARUAzMzMzM6NsQAAAAAAAyIVAzczMzCxc10DNzMzMzAxlQAAAAAAAgEVAmpmZmZmfk0AAAAAAAKBqQM3MzMzM1pFAMzMzMzMzU0AAAAAAAIBFQDMzMzMz74FAAAAAAADsnEBmZmZmZiKYQJqZmZmZ2VNAAAAAAACARUCamZmZmf+VQJqZmZmZp51AzczMzMzLrECamZmZmflWQAAAAAAAgEVAmpmZmZlrlEAAAAAAAFSeQAAAAAAAsHZAAAAAAADgUUAAAAAAAABGQDMzMzMzp4hAzczMzMwcakCamZmZmQTKQM3MzMzMnGFAAAAAAAAARkDNzMzMzNx8QJqZmZmZcXdAAAAAAADYmEDNzMzMzIxWQAAAAAAAgEZAAAAAAADskEAzMzMzM8NkQJqZmZkZ/7JAZmZmZmZGWUAAAAAAAIBGQGZmZmZmCJdAzczMzMw8cUAzMzMzM7udQM3MzMzMTFVAAAAAAACARkAzMzMzM8OXQAAAAAAAgHJAAAAAAACgwEAzMzMzM3NdQAAAAAAAgEZAZmZmZmYWZUAAAAAAAKCHQGZmZmYG0tFAZmZmZmY2Y0AAAAAAAIBGQAAAAAAAzJJAZmZmZmYAn0AzMzMzM1GYQM3MzMzMzFRAAAAAAAAAR0AzMzMzM8tyQGZmZmZm6JlAzczMzMxr5ECamZmZmTlrQAAAAAAAAEdAAAAAAAComEDNzMzMzLacQDMzMzMT1tBAZmZmZmbmYkAAAAAAAABIQGZmZmZmNolAAAAAAAAAZECamZmZWazEQDMzMzMzQ2BAAAAAAAAASEDNzMzMzPSTQAAAAAAAYGRAzczMzMz+zkAAAAAAAKBiQAAAAAAAAEhAAAAAAAD8nUAAAAAAAEiHQGZmZmZmGpxAzczMzMyMVkAAAAAAAABIQAAAAAAABJ5AMzMzMzNvh0CamZmZmYGBQGZmZmZmxlRAAAAAAAAASEAAAAAAAEBXQGZmZmZm3JJAZmZmZmbOfkDNzMzMzKxUQAAAAAAAAEhAmpmZmZmvnEBmZmZmZsCYQGZmZmZmPKVAzczMzMzMV0AAAAAAAABIQAAAAAAAYH5AZmZmZmb4nECamZmZGTa3QDMzMzMzs1tAAAAAAAAASECamZmZmX+TQAAAAAAAXJ9AzczMzMxkikAzMzMzMzNVQAAAAAAAgEhAMzMzMzMDa0CamZmZmUGCQGZmZmamP8tAMzMzMzMjYUAAAAAAAIBIQDMzMzMzE1pAzczMzMygiUBmZmZmZl61QGZmZmZmZllAAAAAAACASEAAAAAAAECIQJqZmZmZV59AMzMzMzMHgEDNzMzMzExSQA==",
+            "dozor_score": 4511.942,
+            "index": 55,
+            "indexY": 6,
+            "indexZ": 2,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00058.cbf",
+            "dozorSpotList": "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",
+            "dozor_score": 6329.094,
+            "index": 57,
+            "indexY": 6,
+            "indexZ": 4,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00062.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 61,
+            "indexY": 6,
+            "indexZ": 8,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00057.cbf",
+            "dozorSpotList": "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",
+            "dozor_score": 5229.232,
+            "index": 56,
+            "indexY": 6,
+            "indexZ": 3,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00059.cbf",
+            "dozorSpotList": "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",
+            "dozor_score": 3137.03,
+            "index": 58,
+            "indexY": 6,
+            "indexZ": 5,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00061.cbf",
+            "dozorSpotList": "AAAAAAAACEBmZmZmZsiSQGZmZmZmEopAMzMzM7M9ukAAAAAAAIBWQAAAAAAAAAhAAAAAAADUk0AAAAAAAKCMQM3MzMzMpHtAmpmZmZlZRUAAAAAAAAAIQJqZmZmZZYdAmpmZmZm1j0AzMzMzM72qQDMzMzMzU1FA",
+            "dozor_score": 0.13,
+            "index": 60,
+            "indexY": 6,
+            "indexZ": 7,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00060.cbf",
+            "dozorSpotList": "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",
+            "dozor_score": 1256.936,
+            "index": 59,
+            "indexY": 6,
+            "indexZ": 6,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00064.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 63,
+            "indexY": 6,
+            "indexZ": 10,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00065.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 64,
+            "indexY": 6,
+            "indexZ": 11,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00063.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 62,
+            "indexY": 6,
+            "indexZ": 9,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00066.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 65,
+            "indexY": 6,
+            "indexZ": 12,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00067.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 66,
+            "indexY": 5,
+            "indexZ": 12,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00069.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 68,
+            "indexY": 5,
+            "indexZ": 10,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00068.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 67,
+            "indexY": 5,
+            "indexZ": 11,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00071.cbf",
+            "dozorSpotList": "AAAAAAAA8D8zMzMzM2mRQM3MzMzMVJRAmpmZmZkgvEDNzMzMzKxZQAAAAAAAAABAAAAAAAAUkkCamZmZmaeUQM3MzMzMOKNAmpmZmZl5U0AAAAAAAAAIQJqZmZmZw5JAMzMzMzMLikAAAAAA4I7iQGZmZmZmZmpAAAAAAAAACEAzMzMzM8+TQJqZmZmZpYxAAAAAAHBP60AzMzMzM0NvQAAAAAAAAAhAAAAAAABYh0AzMzMzM7ePQDMzMzOjUepAAAAAAADAbkAAAAAAAAAQQJqZmZmZZYZAZmZmZmbAkUAAAAAAAJ+iQDMzMzMzk1JAAAAAAAAAEEDNzMzMzLCMQAAAAAAAlJVAMzMzMzObeUAAAAAAAMBNQA==",
+            "dozor_score": 71.891,
+            "index": 70,
+            "indexY": 5,
+            "indexZ": 8,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00072.cbf",
+            "dozorSpotList": "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",
+            "dozor_score": 3879.031,
+            "index": 71,
+            "indexY": 5,
+            "indexZ": 7,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00070.cbf",
+            "dozorSpotList": "AAAAAAAACEDNzMzMzMSSQJqZmZmZEYpAZmZmZqZUzUAzMzMzMzNgQAAAAAAAAAhAmpmZmZnPk0AAAAAAAKCMQM3MzMzMfppAzczMzMyMTUAAAAAAAAAIQM3MzMzMXIdAZmZmZma2j0AzMzMzs6S/QAAAAAAA4FhA",
+            "dozor_score": 1.719,
+            "index": 69,
+            "indexY": 5,
+            "indexZ": 9,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00074.cbf",
+            "dozorSpotList": "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",
+            "dozor_score": 5468.717,
+            "index": 73,
+            "indexY": 5,
+            "indexZ": 5,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00073.cbf",
+            "dozorSpotList": "AAAAAAAA8D8AAAAAANCPQDMzMzMzJ4pAAAAAAACgiUAzMzMzM1NTQAAAAAAAAPA/ZmZmZmYElEAzMzMzMxOQQDMzMzMzc21AmpmZmZlZUkAAAAAAAADwP83MzMzMaJFAZmZmZmZclEAAAAAAkJ/jQM3MzMzMnGpAAAAAAAAAAEAAAAAAACSTQDMzMzMzF4xAMzMzMzPUokAzMzMzM1NfQAAAAAAAAABAmpmZmZnLk0AAAAAAAKyMQJqZmZkR+PFAzczMzMxsckAAAAAAAAAAQGZmZmZmFJJAAAAAAACslEBmZmZmPuHxQDMzMzMzY3JAAAAAAAAACEAAAAAAAPiLQDMzMzMzb4lAzczMzMybpUBmZmZmZnZiQAAAAAAAAAhAmpmZmZnDkkDNzMzMzDCKQM3MzMyUEvJAmpmZmZkRc0AAAAAAAAAIQAAAAAAA0JNAMzMzMzOrjEDNzMzMzCnyQDMzMzMzG3NAAAAAAAAACEDNzMzMzHCHQAAAAAAA0I9AmpmZmQE38kAAAAAAACBzQAAAAAAAAAhAmpmZmZlZh0CamZmZmdmPQDMzMzMzxs1AZmZmZmYmZ0AAAAAAAAAIQM3MzMzMmIpAAAAAAABYlEBmZmZmZmKCQDMzMzMzg2FAAAAAAAAAEEAzMzMzM5eGQAAAAAAA0I1AMzMzMzPBq0AzMzMzMzNoQAAAAAAAABBAZmZmZmZmhkAAAAAAAMiRQAAAAABAWv1AmpmZmZmJeEAAAAAAAAAQQM3MzMzMsIxAmpmZmZmblUAzMzMzM1axQJqZmZmZeWhAAAAAAAAAFEBmZmZmZmCSQM3MzMzMKIhAmpmZmZkphUAzMzMzM7NWQAAAAAAAABhAAAAAAAAwi0AAAAAAAHCHQGZmZmZmLaBAMzMzMzNzVkAAAAAAAAAYQAAAAAAA0IhAAAAAAABIlUAAAAAAAMyAQJqZmZmZOVRAAAAAAAAAHEAAAAAAABiIQM3MzMzMqIhAZmZmZmZ+j0AAAAAAAGBVQAAAAAAAABxAAAAAAADIhUDNzMzMzNiLQM3MzMzMWJJAAAAAAACgVUAAAAAAAAAcQJqZmZmZmYRAMzMzMzO3kkAzMzMzMyulQJqZmZmZuVdAAAAAAAAAHEAzMzMzM++KQDMzMzMzj5ZAZmZmZmYkp0AzMzMzMxNYQAAAAAAAACBAzczMzMzQjkAAAAAAAOCEQM3MzMzMfpxAAAAAAACAVkAAAAAAAAAgQAAAAAAALJVAAAAAAABAiUDNzMzMzGR6QDMzMzMzc1RAAAAAAAAAIEBmZmZmZk6DQJqZmZmZn5FAzczMzMwQm0CamZmZmVlWQAAAAAAAACJAMzMzMzOjkUDNzMzMzCyEQDMzMzMzg/FAZmZmZmaeckAAAAAAAAAiQJqZmZmZm5FAZmZmZmY6hEAzMzMzq2nyQAAAAAAAAHNAAAAAAAAAIkAzMzMzM/uEQAAAAAAA8IlAZmZmZs698kDNzMzMzCRzQAAAAAAAACRAMzMzMzNDh0AzMzMzM6uGQGZmZmZmT+tAAAAAAACwb0AAAAAAAAAkQAAAAAAAUJdAZmZmZmYikECamZmZmQFxQDMzMzMzM1dAAAAAAAAAJEBmZmZmZjyXQM3MzMzMJpBAmpmZmZnJa0BmZmZmZiZXQAAAAAAAACRAzczMzMwIh0CamZmZmTuWQGZmZmZm3J5AZmZmZmZmWUAAAAAAAAAkQJqZmZmZZ5FAZmZmZmbcl0CamZmZmfGcQAAAAAAAQFlAAAAAAAAAJkBmZmZmZpyXQM3MzMzMGpBAMzMzMzNjdkDNzMzMzIxWQAAAAAAAACZAAAAAAAC4gkAzMzMzM6mTQAAAAADgq+hAAAAAAAAwbkAAAAAAAAAmQGZmZmZm2oJAmpmZmZmrk0AAAAAA4KvoQAAAAAAAMG5AAAAAAAAAJkAAAAAAACiJQAAAAAAAhJdAmpmZmZlvkEAAAAAAAIBXQAAAAAAAACZAmpmZmZl9ikBmZmZmZtiXQM3MzMxMA8tAAAAAAABgYkAAAAAAAAAmQJqZmZmZE5JAAAAAAAAwmEAzMzMzM0GTQJqZmZmZuVdAAAAAAAAAKEBmZmZmZgKOQM3MzMzM0IJAMzMzM3P72kCamZmZmXlmQAAAAAAAAChAAAAAAACQlUDNzMzMzMCGQGZmZmZmLbBAmpmZmZl5V0AAAAAAAAAoQGZmZmZmoJZAMzMzMzNfiUAAAAAAALmiQGZmZmZmBlVAAAAAAAAAKEAzMzMzM3eVQDMzMzMzSZZAAAAAAMC31kBmZmZmZuZkQAAAAAAAACpAAAAAAACwhEAAAAAAAJiGQJqZmZmZDYRAzczMzMxMVUAAAAAAAAAqQGZmZmZmRJZAZmZmZmZeh0DNzMzMzM3SQM3MzMzMHGRAAAAAAAAAKkAzMzMzM2eCQM3MzMzMwIlAzczMzMzQiUAzMzMzM5NVQAAAAAAAACpAZmZmZmbMl0CamZmZmReTQM3MzMzMi6hAMzMzMzOzWEAAAAAAAAAqQJqZmZmZv5JAzczMzMyEmECamZmZGaW9QM3MzMzMzF1AAAAAAAAALEDNzMzMzDCVQM3MzMzMyIRAAAAAAKCw60DNzMzMzKRwQAAAAAAAACxAAAAAAABQl0AzMzMzM/eJQGZmZmZmUrVAmpmZmZmJYUAAAAAAAAAsQAAAAAAAVJdAAAAAAAAElUCamZmZmVGGQDMzMzMzk15AAAAAAAAALEAzMzMzMxeDQGZmZmZm5pVAAAAAAIDo60AzMzMzM7NwQAAAAAAAACxAzczMzMwolkDNzMzMzKSWQDMzMzNzzOtAzczMzMyscEAAAAAAAAAsQAAAAAAAoIZAmpmZmZmPl0DNzMzMzOyCQDMzMzMzc15AAAAAAAAALkBmZmZmZh6KQM3MzMzMEIJAMzMzMyOD7kDNzMzMzHxxQAAAAAAAAC5AZmZmZmbglUAAAAAAAGiFQGZmZmbm0MhAzczMzMwcZUAAAAAAAAAuQDMzMzMz85ZAMzMzMzP/h0CamZmZ2SzKQAAAAAAAYGVAAAAAAAAALkAAAAAAAAiAQAAAAAAAAI1AzczMzMwGkkCamZmZmUlgQAAAAAAAAC5AMzMzMzMvgEBmZmZmZqCTQAAAAACAlLFAMzMzMzPTYUAAAAAAAAAuQAAAAAAACIFAAAAAAACYlECamZmZmbakQM3MzMzM/GBAAAAAAAAALkAAAAAAADiFQAAAAAAAMJdAAAAAAAAIhUAAAAAAABBgQAAAAAAAAC5AZmZmZmY8kUAAAAAAACqZQAAAAAAwY+5AZmZmZmZ2cUAAAAAAAAAwQGZmZmZmzJRAAAAAAADAgkBmZmZm5v66QJqZmZmZGWFAAAAAAAAAMEDNzMzMzACHQDMzMzMzT4NAzczMzEwEsUBmZmZmZsZfQAAAAAAAADBAAAAAAACkl0AAAAAAAJiIQGZmZmZm1qBAzczMzMyMXUAAAAAAAAAwQGZmZmZmAJhAzczMzMyQikBmZmZmZqSYQM3MzMzM7FxAAAAAAAAAMEBmZmZmZh5+QM3MzMzMZJBAMzMzMzNbv0CamZmZmZlhQAAAAAAAADBAAAAAAABwk0AAAAAAANyYQJqZmZmZjY5AZmZmZmZGXEAAAAAAAAAwQAAAAAAACIpAZmZmZmYkmUAAAAAAAKSbQAAAAAAAIF1AAAAAAAAAMUDNzMzMzOiDQGZmZmZmmoRAZmZmZja07kAAAAAAANhxQAAAAAAAADFAzczMzMyQgUDNzMzMzNiHQAAAAABw/O5AAAAAAADocUAAAAAAAAAxQGZmZmZmxnxAAAAAAADQjkAzMzMzMzefQGZmZmZm9mFAAAAAAAAAMUCamZmZmbl8QJqZmZmZ7Y5AMzMzMzNMoEAAAAAAAABiQAAAAAAAADJAAAAAAADUkUBmZmZmZu5+QGZmZmZmYpNAZmZmZmbWZ0AAAAAAAAAyQAAAAAAA0I1AZmZmZmb+fkBmZmZmZnC5QAAAAAAAgGlAAAAAAAAAMkCamZmZmdWDQJqZmZmZiYRAmpmZmaEq80CamZmZmRF1QAAAAAAAADJAAAAAAABYmEAAAAAAADiJQGZmZmZmZ6BAzczMzMwcaEAAAAAAAAAyQAAAAAAAtJhAAAAAAAAwi0DNzMzMzGOnQGZmZmZmZmhAAAAAAAAAMkAAAAAAAHB8QM3MzMzM0I5AAAAAAEAF6UBmZmZmZl5yQAAAAAAAADJAAAAAAACggkBmZmZmZjCXQDMzMzOzF7VAmpmZmZkpaUAAAAAAAAAyQAAAAAAA+JVAAAAAAADsl0AAAAAAACKVQAAAAAAA4GdAAAAAAAAAMkAAAAAAAByUQGZmZmZmKplAzczMzMzClkBmZmZmZuZnQAAAAAAAADJAmpmZmZmRkkCamZmZmdeZQM3MzMyMyPJAMzMzMzPrdEAAAAAAAAAzQAAAAAAA2I1AMzMzMzOjfkAAAAAAABKQQGZmZmZmBmZAAAAAAAAAM0AAAAAAAIB6QAAAAAAAVJFAmpmZmZlEp0AzMzMzM7NmQAAAAAAAADNAzczMzMx4gEAAAAAAAOSVQAAAAAAAZ7pAmpmZmZn5Z0AAAAAAAAA0QJqZmZmZIZVAAAAAAAB0gUDNzMzMzILtQDMzMzMzc3JAAAAAAAAANECamZmZmaF8QJqZmZmZl5RAMzMzM3M8w0AzMzMzM+NnQAAAAAAAADRAZmZmZmasmEAAAAAAAKyVQAAAAAAASpRAmpmZmZnpZEAAAAAAAAA0QM3MzMzMvIRAzczMzMx+mECamZmZeantQDMzMzMze3JAAAAAAAAANUBmZmZmZmaOQAAAAAAAGHxAZmZmZmbe7EDNzMzMzDR1QAAAAAAAADVAZmZmZmZWjkAzMzMzMyN8QDMzMzNTb/VAMzMzMzOzd0AAAAAAAAA1QGZmZmZmQo5AzczMzMxcfEAAAAAAAE6XQJqZmZmZ+W1AAAAAAAAANUAAAAAAANB4QGZmZmZmWJBAZmZmZuYOs0BmZmZmZtZuQAAAAAAAADVAAAAAAAAAe0AAAAAAAJyTQAAAAAAAlpZAZmZmZmb2bUAAAAAAAAA1QM3MzMzMrJZAZmZmZmZAmEAAAAAAgOP1QJqZmZmZ2XdAAAAAAAAANkAAAAAAAOCJQAAAAAAAUH1AMzMzMzMvikBmZmZmZlZmQAAAAAAAADZAAAAAAAC4hkCamZmZmbF/QAAAAABgX+tAMzMzMzNzckAAAAAAAAA2QGZmZmZmroZAZmZmZma2f0AAAAAAYG/uQDMzMzMzG3NAAAAAAAAANkAAAAAAAMiGQAAAAAAA8H9AAAAAAGBv7kAzMzMzMxtzQAAAAAAAADZAAAAAAABAgUAAAAAAAGCEQM3MzMzMnpBAmpmZmZlpZkAAAAAAAAA2QAAAAAAAsH1AMzMzMzOTh0AAAAAAwEzvQAAAAAAASHNAAAAAAAAANkCamZmZmeF9QDMzMzMzr4dAAAAAAMBM70AAAAAAAEhzQAAAAAAAADZAZmZmZmaSiUBmZmZmZnyaQGZmZmbmTe5AMzMzMzMTc0AAAAAAAAA2QAAAAAAArpFAZmZmZmbQmkCamZmZiSHuQJqZmZmZCXNAAAAAAAAAN0DNzMzMzLyZQAAAAAAAcIpAmpmZmdnA2UCamZmZmYluQAAAAAAAADdAzczMzMxCmkAAAAAAAGSTQAAAAADQyeFAmpmZmZmBcEAAAAAAAAA3QM3MzMzMOJpAMzMzMzNvk0BmZmZmdkPuQDMzMzMzS3NAAAAAAAAAN0AAAAAAAI6YQJqZmZmZ95ZAMzMzM4PZ7UDNzMzMzDRzQAAAAAAAADdAAAAAAAAggkAAAAAAAISYQAAAAAAAIIhAZmZmZmYWZ0AAAAAAAAA4QAAAAAAA6I5AAAAAAAAweUAAAAAAABSLQAAAAAAAIF1AAAAAAAAAOEDNzMzMzHqVQM3MzMzMxH9AMzMzMzNjgkAzMzMzM9NcQAAAAAAAADhAzczMzMyYg0DNzMzMzECBQGZmZmZmCKhAzczMzMxsX0AAAAAAAAA4QAAAAAAAIHdAAAAAAAC4jkAAAAAAAGCFQM3MzMzM7FxAAAAAAAAAOECamZmZmb+ZQDMzMzMzWZVAAAAAAOC30kAAAAAAAFBmQAAAAAAAADhAAAAAAABckkAAAAAAACSbQDMzMzMzE4FAZmZmZmbGXEAAAAAAAAA5QJqZmZmZcYpAZmZmZmaeekAAAAAAkETtQGZmZmZmjnJAAAAAAAAAOUAAAAAAAEiHQAAAAAAAAH1AmpmZmZlfnUDNzMzMzKxlQAAAAAAAADlAMzMzMzNzmkDNzMzMzBCLQAAAAACQ7O5AAAAAAADockAAAAAAAAA5QAAAAAAAmIVAAAAAAAAkmkAAAAAAADycQGZmZmZmpmVAAAAAAAAAOkAAAAAAABiEQAAAAAAAcH9AZmZmZmb2nkCamZmZmTlpQAAAAAAAADpAZmZmZmYMk0AAAAAAAICbQM3MzMxMI7BAAAAAAADgaUAAAAAAAAA7QGZmZmZmsJFAAAAAAADQd0DNzMzMzGqjQGZmZmZmxmJAAAAAAAAAO0AAAAAAAAiVQAAAAAAAwHtAZmZmZmbMlECamZmZmUliQAAAAAAAADtAAAAAAAC8lUAAAAAAACB9QGZmZmZmao9AZmZmZmYmYkAAAAAAAAA7QAAAAAAAIH1AAAAAAAA4hEAAAAAAAICiQJqZmZmZuWJAAAAAAAAAO0DNzMzMzCx0QAAAAAAAkJJAzczMzMw0hkBmZmZmZgZiQAAAAAAAADtAmpmZmZmRdUAzMzMzM5eTQAAAAAAAN+NAmpmZmZl5bkAAAAAAAAA7QAAAAAAAQJlAAAAAAABMl0AzMzMzM8uWQJqZmZmZWWJAAAAAAAAAPEAAAAAAAICPQAAAAAAAYHZAmpmZmZmNl0CamZmZmUlsQAAAAAAAADxAMzMzMzP3ikAAAAAAAJB3QJqZmZmZ9qJAzczMzMyMbEAAAAAAAAA8QJqZmZmZUXhAZmZmZmZ+h0DNzMzMtD30QDMzMzMzw3ZAAAAAAAAAPEAAAAAAAOBzQAAAAAAAmJJAmpmZmZk7pkCamZmZmalsQAAAAAAAADxAAAAAAABwmkAAAAAAALSVQAAAAAAA8aVAZmZmZmambEAAAAAAAAA8QAAAAAAA4H5AAAAAAACEmEBmZmZmZoaVQDMzMzMzQ2xAAAAAAAAAPEAAAAAAAHyRQAAAAAAAKJxAAAAAAAAwpkCamZmZmalsQAAAAAAAAD1AAAAAAACYgUAzMzMzM9eZQDMzMzPj6elAzczMzMy8c0AAAAAAAAA9QM3MzMzMNpdAmpmZmZnrmUBmZmZm9gzzQDMzMzMzE3ZAAAAAAAAAPUAAAAAAACCJQAAAAAAA0JtAmpmZmZnFl0AzMzMzM3NrQAAAAAAAAD1AAAAAAAB4kUCamZmZmT+cQM3MzMzMUI9AzczMzMxMa0AAAAAAAAA+QGZmZmZmnnRAmpmZmZlZiUCamZmZ6XbhQM3MzMzMrHRAAAAAAAAAPkAzMzMzMzN2QJqZmZmZ55VAMzMzM3uO+EBmZmZmZhZ6QAAAAAAAAD5AAAAAAABQlkAAAAAAAOSaQGZmZmZm7KVAAAAAAABIcUAAAAAAAAA+QDMzMzMzd4pAzczMzMwunEAzMzMz80D3QGZmZmZmrnlAAAAAAAAAP0CamZmZmf+RQJqZmZmZ0XRAmpmZmdlwwEAzMzMzM1txQAAAAAAAAD9AAAAAAABYlUCamZmZmdF4QJqZmZmZ56hAmpmZmZnBcEAAAAAAAAA/QAAAAAAAEJZAmpmZmZkxekAAAAAAAA6bQGZmZmZmlnBAAAAAAAAAP0AzMzMzM4GbQJqZmZmZTYpAzczMzGRx+UDNzMzMzPx5QAAAAAAAAD9AAAAAAAC0m0BmZmZmZhiUQAAAAAAAuKFAZmZmZmamcEAAAAAAAAA/QAAAAAAATJpAAAAAAAD8lkCamZmZmV+dQDMzMzMzm3BAAAAAAAAAP0AzMzMzMxuZQJqZmZmZn5hAMzMzM9MV1kAzMzMzM+NyQAAAAAAAAD9AMzMzMzO/ikBmZmZmZoCcQGZmZmZmGppAzczMzMyUcEAAAAAAAABAQAAAAAAAQINAAAAAAABAe0BmZmZmZtyWQDMzMzMzU2VAAAAAAAAAQEAzMzMzMyOFQGZmZmZmiJtAzczMzOzJ8EAAAAAAAGhzQAAAAAAAgEBAMzMzMzPvhkBmZmZmZt51QAAAAABAddRAzczMzMx8bkAAAAAAAIBAQDMzMzMz54NAZmZmZma+eEAzMzMzMy+NQGZmZmZm1mhAAAAAAACAQECamZmZmbF3QJqZmZmZ+YNAzczMzMzC1EAzMzMzM5NuQAAAAAAAgEBAMzMzMzODm0BmZmZmZl6VQJqZmZkhBvVAmpmZmZkRdkAAAAAAAABBQDMzMzMzv4NAMzMzMzNjeEDNzMzMvLb4QGZmZmZmjnlAAAAAAAAAQUAAAAAAANSbQDMzMzMz74hAZmZmZmbss0CamZmZmalwQAAAAAAAAEFAmpmZmZnRcEAAAAAAAECLQDMzMzMz1KdAMzMzMzNrcEAAAAAAAABBQAAAAAAAoG1AAAAAAAAwj0AzMzMzM0agQGZmZmZmTnBAAAAAAAAAQUAAAAAAAEBwQGZmZmZmiJNAmpmZmZl8oUAzMzMzM1NwQAAAAAAAAEFAAAAAAACAeUAAAAAAAIiYQAAAAAAAYKhAzczMzMxscEAAAAAAAABBQJqZmZmZDZdAMzMzMzNHm0DNzMzMvLb4QGZmZmZmjnlAAAAAAACAQUCamZmZmUuSQGZmZmZm7nFAAAAAAABgtkBmZmZmZjZjQAAAAAAAgEFAAAAAAABklkBmZmZmZkZ3QM3MzMxs8utAmpmZmZkhcUAAAAAAAIBBQM3MzMzMvGxAzczMzMyMkkBmZmZmJrLBQDMzMzMzg2RAAAAAAACAQUCamZmZmQF1QAAAAAAANJdAAAAAAACQmUBmZmZmZnZhQAAAAAAAgEFAAAAAAAAEm0AAAAAAAFSXQM3MzMzMlpJAMzMzMzNDYUAAAAAAAABCQGZmZmZmgodAMzMzMzMLc0DNzMzMtDz0QM3MzMzMjHVAAAAAAAAAQkAAAAAAAByXQAAAAAAAgHhAZmZmZma2mUAAAAAAAEBoQAAAAAAAAEJAAAAAAACIgEAAAAAAANB6QJqZmZmZp5hAmpmZmZk5aEAAAAAAAABCQJqZmZmZCW9AmpmZmZmliUAAAAAAAHulQJqZmZmZmWhAAAAAAAAAQkAAAAAAABCBQDMzMzMzL5tAZmZmZmYst0BmZmZmZpZpQAAAAAAAAEJAZmZmZmYolkAAAAAAAECcQJqZmZkZ7bNAZmZmZmZWaUAAAAAAAABDQJqZmZmZ6WlAzczMzMwwjUAzMzMzu+f9QM3MzMzMNHtAAAAAAAAAQ0AzMzMzMxGdQGZmZmZmDpNAMzMzM7vn/UDNzMzMzDR7QAAAAAAAAENAMzMzMzPfmkBmZmZmZqiYQDMzMzOTyeRAAAAAAACwdEAAAAAAAABDQGZmZmZmFoZAmpmZmZklnUAAAAAAAD+hQAAAAAAAcHBAAAAAAACAQ0AAAAAAAKCSQAAAAAAAAG5AzczMzMzcokCamZmZmWltQAAAAAAAgENAmpmZmZkZgUBmZmZmZuZ3QJqZmZlRR/hAZmZmZmZmeEAAAAAAAIBDQM3MzMzMvGVAMzMzMzOLkEDNzMzMTJKzQGZmZmZmFm5AAAAAAACAQ0AzMzMzMxecQJqZmZmZA5dAAAAAAMCj0UAAAAAAAKhwQAAAAAAAgENAmpmZmZmrmUCamZmZmU+aQJqZmZmZNbdAZmZmZmZWbkAAAAAAAIBDQDMzMzMz94VAmpmZmZk3nUBmZmZmnuX3QGZmZmZmRnhAAAAAAACAQ0CamZmZmUeVQJqZmZmZQ51AzczMzOwh00DNzMzMzNRwQAAAAAAAAERAZmZmZmackEAzMzMzM6NqQJqZmZmZp5dAmpmZmZnpZEAAAAAAAABEQGZmZmZmEohAZmZmZmYecEBmZmZm3ivxQJqZmZmZcXNAAAAAAAAAREAzMzMzM7uWQDMzMzMzU3RAMzMzM9Nm8UCamZmZmYlzQAAAAAAAAERAzczMzMwMckBmZmZmZs6DQDMzMzPzJcZAzczMzMxMaEAAAAAAAABEQGZmZmZm7nNAZmZmZmaImEDNzMzMzGCuQGZmZmZmxmVAAAAAAAAAREBmZmZmZl54QAAAAAAA4JlAmpmZmZmtqUAAAAAAAJBlQAAAAAAAAERAZmZmZma6jEAzMzMzMzueQJqZmZkpGvFAMzMzMzNrc0AAAAAAAIBEQAAAAAAAcJdAAAAAAACAdUBmZmZmZuKAQJqZmZmZSWJAAAAAAACAREDNzMzMzO6cQAAAAAAAGIhAzczMzCy71EAzMzMzM6NpQAAAAAAAgERAzczMzMykfECamZmZmTWbQM3MzMz8OOhAAAAAAACYcEAAAAAAAABFQAAAAAAAkHtAAAAAAABwekAzMzMzM7uTQGZmZmZmFmlAAAAAAAAARUAAAAAAANB7QJqZmZmZcXpAMzMzMzOnjECamZmZmfloQAAAAAAAAEVAzczMzMyMbECamZmZmcmFQJqZmZkhLPhAAAAAAAA4d0AAAAAAAABFQJqZmZmZIY5AmpmZmZmdnkDNzMzMPOnsQGZmZmZmlnNAAAAAAACARUAzMzMzM5+TQM3MzMzMfGpAzczMzMw/uEBmZmZmZpZlQAAAAAAAgEVAAAAAAAAonkAAAAAAALSSQM3MzMzMppxAAAAAAADwY0AAAAAAAIBFQAAAAAAA4IFAzczMzMzknEDNzMzMLKTXQGZmZmZmVmtAAAAAAACARUAAAAAAADiDQAAAAAAAQJ1AMzMzMzOjkEAzMzMzM6NjQAAAAAAAgEVAmpmZmZn5lUBmZmZmZqCdQAAAAACo9/FAzczMzMx8c0AAAAAAAIBFQM3MzMzMYpRAAAAAAABMnkAAAAAAgMm1QM3MzMzMXGVAAAAAAAAARkBmZmZmZp6IQDMzMzMz82lAMzMzM2Ok6EDNzMzMzAxvQAAAAAAAAEZAzczMzMy8fEDNzMzMzGR3QGZmZmbmQbxAzczMzMz8YEAAAAAAAABGQM3MzMzMQJ1AAAAAAAC4hkCamZmZmd2zQM3MzMzM7F9AAAAAAAAARkAAAAAAAEaeQM3MzMzMYI9AAAAAAJBH60AAAAAAADBwQAAAAAAAAEZAAAAAAACAmUAAAAAAAKibQM3MzMzMEIJAZmZmZmYmW0AAAAAAAIBGQDMzMzMz65BAMzMzMzOjZECamZmZuSbcQAAAAAAAUGtAAAAAAACARkDNzMzMzASXQJqZmZmZIXFAZmZmZmbtq0DNzMzMzLxiQAAAAAAAgEZAAAAAAADEl0AzMzMzM3tyQJqZmZn5Z/BAZmZmZmZWckAAAAAAAIBGQJqZmZmZ2WRAZmZmZmaqh0AAAAAAKIDxQAAAAAAA0HJAAAAAAACARkBmZmZmZsaSQM3MzMzM+J5AMzMzMzOezkDNzMzMzDxnQAAAAAAAAEdAZmZmZma2ckDNzMzMzOaZQJqZmZm5NvlAZmZmZmaGeEAAAAAAAABHQM3MzMzMoJhAMzMzMzOtnEDNzMzMPCvjQGZmZmZmvnJAAAAAAACAR0AzMzMzM4NsQJqZmZmZi5hAMzMzMzPHrEAAAAAAAFBhQAAAAAAAgEdAZmZmZmaunECamZmZmbWYQGZmZmYmTO9AmpmZmZmhcUAAAAAAAIBHQAAAAAAAIHdAAAAAAAA8m0BmZmZmZgCvQAAAAAAAcGFAAAAAAAAASEBmZmZmZi6JQJqZmZmZyWNAzczMzNRI8kAzMzMzMwt0QAAAAAAAAEhAZmZmZmb0k0CamZmZmXlkQM3MzMzUSPJAMzMzMzMLdEAAAAAAAABIQGZmZmZmAJ5AAAAAAABQh0CamZmZGUHGQM3MzMzMzGhAAAAAAAAASECamZmZmflWQGZmZmZm1JJAAAAAAACbqUCamZmZmRlmQAAAAAAAAEhAmpmZmZlJfkDNzMzMzPScQAAAAAAwxfJAzczMzMw8dEAAAAAAAABIQAAAAAAAeJNAZmZmZmZUn0DNzMzMDD3GQM3MzMzMzGhAAAAAAACASEBmZmZmZk5yQAAAAAAAwH1AZmZmZuawsEDNzMzMzMxlQAAAAAAAgEhAzczMzMzsakAAAAAAAESCQM3MzMw0jvRAMzMzMzPDdEAAAAAAAIBIQAAAAAAAwJ5AAAAAAABclEAAAAAAANSKQM3MzMzMjGRAAAAAAACASEAAAAAAACBgQAAAAAAAMJZAAAAAAAC8jkBmZmZmZpZkQAAAAAAAgEhAzczMzMwwiEAAAAAAAFCfQDMzMzMzdrFAAAAAAADgZUA=",
+            "dozor_score": 7618.158,
+            "index": 72,
+            "indexY": 5,
+            "indexZ": 6,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00076.cbf",
+            "dozorSpotList": "AAAAAAAAAEBmZmZmZhSSQJqZmZmZt5RAAAAAAABimECamZmZmVlMQAAAAAAAAAhAZmZmZmbEkkBmZmZmZi6KQAAAAACA3LpAMzMzMzMzV0AAAAAAAAAIQAAAAAAA0JNAzczMzMzAjEAAAAAAAPh0QAAAAAAAwEZAAAAAAAAACECamZmZmVmHQDMzMzMzz49AAAAAAIDmsUAAAAAAAOBTQAAAAAAAABBAzczMzMxghkDNzMzMzMqRQAAAAAAADI1AMzMzMzOzSUA=",
+            "dozor_score": 1.208,
+            "index": 75,
+            "indexY": 5,
+            "indexZ": 3,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00077.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 76,
+            "indexY": 5,
+            "indexZ": 2,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00078.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 77,
+            "indexY": 5,
+            "indexZ": 1,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00075.cbf",
+            "dozorSpotList": "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",
+            "dozor_score": 5238.987,
+            "index": 74,
+            "indexY": 5,
+            "indexZ": 4,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00080.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 79,
+            "indexY": 4,
+            "indexZ": 0,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00081.cbf",
+            "dozorSpotList": "AAAAAAAAAEBmZmZmZsiTQAAAAAAAwIxAMzMzMzOza0AAAAAAAMBEQAAAAAAAAABAAAAAAAAQkkAAAAAAALiUQGZmZmZmJmxAAAAAAADAREAAAAAAAAAIQGZmZmZmwJJAMzMzMzMvikAzMzMzs+6xQJqZmZmZWVNAAAAAAAAACEBmZmZmZlaHQJqZmZmZyY9AMzMzMzM7j0AzMzMzM3NIQAAAAAAAABBAAAAAAABYhkBmZmZmZsiRQDMzMzMzo3JAMzMzMzMzREA=",
+            "dozor_score": 0.526,
+            "index": 80,
+            "indexY": 4,
+            "indexZ": 1,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00079.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 78,
+            "indexY": 5,
+            "indexZ": 0,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00084.cbf",
+            "dozorSpotList": "AAAAAAAA8D/NzMzMzGaRQGZmZmZmXJRAZmZmZmaA0EDNzMzMzPxhQAAAAAAAAABAmpmZmZkfk0DNzMzMzBCMQAAAAAAABIZAzczMzMxsUkAAAAAAAAAAQGZmZmZmEJJAZmZmZmaslEDNzMzMzPO9QDMzMzMz01tAAAAAAAAACEDNzMzMzPCLQAAAAAAAcIlAMzMzMzNLjUAzMzMzM1NZQAAAAAAAAAhAzczMzMy+kkAAAAAAACiKQDMzMzMT3e1AAAAAAACYcEAAAAAAAAAIQJqZmZmZy5NAmpmZmZmtjEAAAAAAcAPuQJqZmZmZoXBAAAAAAAAACEAzMzMzM0eHQDMzMzMzx49AZmZmZqZA20DNzMzMzBxoQAAAAAAAAAhAZmZmZmZih0BmZmZmZs6PQDMzMzNDGe5AZmZmZmamcEAAAAAAAAAQQAAAAAAAkIZAAAAAAADQjUAzMzMzMyOKQJqZmZmZ2VxAAAAAAAAAEEAAAAAAAFyGQGZmZmZmypFAAAAAALgD9EDNzMzMzDRzQAAAAAAAABBAAAAAAACwjECamZmZmZuVQAAAAAAAeJVAzczMzMxsXUAAAAAAAAAYQDMzMzMzJ4tAAAAAAABwh0AzMzMzM8uIQM3MzMzMDFFAAAAAAAAAHEAAAAAAAMCFQAAAAAAA2ItAmpmZmZn5fkAAAAAAAABUQAAAAAAAABxAzczMzMyYhECamZmZmbeSQJqZmZmZaZZAzczMzMxsVUAAAAAAAAAcQM3MzMzM8IpAAAAAAACMlkBmZmZmZp6JQAAAAAAAgFRAAAAAAAAAIEAAAAAAANCOQAAAAAAA4IRAzczMzMzQjkBmZmZmZuZXQAAAAAAAACJAZmZmZmaakUCamZmZmTWEQDMzMzPzP+1AAAAAAAAwcEAAAAAAAAAiQJqZmZmZ7YRAZmZmZmbmiUDNzMzMnMXtQJqZmZmZUXBAAAAAAAAAIkAAAAAAAACXQDMzMzMzK5BAmpmZmZkpZEDNzMzMzGxVQAAAAAAAACRAAAAAAAA8h0CamZmZmamGQGZmZmbmt7xAZmZmZmaGWUAAAAAAAAAkQAAAAAAAVJdAzczMzMwikECamZmZmWliQGZmZmZmZkxAAAAAAAAAJEAAAAAAAAiHQAAAAAAAPJZAAAAAAADYdEAzMzMzMzNNQAAAAAAAACRAAAAAAABkkUCamZmZmd+XQAAAAAAA0INAMzMzMzNzTkAAAAAAAAAmQAAAAAAAqJdAMzMzMzMbkEDNzMzMzJx9QDMzMzMzc2FAAAAAAAAAJkCamZmZmcmCQGZmZmZmqJNAAAAAAFie9kAzMzMzM+N0QAAAAAAAACZAAAAAAAAoiUAAAAAAAISXQJqZmZmZwY5AzczMzMysYUAAAAAAAAAmQDMzMzMzf4pAAAAAAADYl0AzMzMzM1upQGZmZmZmpmJAAAAAAAAAJkAAAAAAABCSQAAAAAAAMJhAZmZmZmaUkkAzMzMzM8NhQAAAAAAAAChAMzMzMzP/jUAAAAAAANiCQJqZmZmZfZJAzczMzMwMVEAAAAAAAAAoQGZmZmZmjJVAAAAAAADIhkAAAAAAAOakQGZmZmZmRlZAAAAAAAAAKEAAAAAAAJyWQDMzMzMzX4lAZmZmZmZ0m0DNzMzMzOxUQAAAAAAAAChAAAAAAAB0lUBmZmZmZkiWQGZmZmZmRaZAAAAAAACAVkAAAAAAAAAqQGZmZmZmQJZAZmZmZmZeh0AzMzMzsx+wQAAAAAAAYFdAAAAAAAAAKkAAAAAAAMiXQGZmZmZmFJNAMzMzMzMDe0AAAAAAAMBRQAAAAAAAACpAZmZmZma8kkAzMzMzM4eYQM3MzMzMIaRAzczMzMwsVUAAAAAAAAAsQM3MzMzMLpVAAAAAAADIhEBmZmZmJlrUQM3MzMzMLGdAAAAAAAAALEDNzMzMzEyXQAAAAAAA+IlAzczMzMxpr0AAAAAAAJBgQAAAAAAAACxAAAAAAAAYg0AAAAAAAOSVQM3MzMxMestAMzMzMzPDZEAAAAAAAAAsQAAAAAAAJpZAMzMzMzOjlkAAAAAA4CfyQAAAAAAAiHJAAAAAAAAALEBmZmZmZjSRQAAAAAAAJplAMzMzM9MF4kAzMzMzMxNsQAAAAAAAAC5AZmZmZmYWikBmZmZmZg6CQJqZmZlZXcRAZmZmZmZGYEAAAAAAAAAuQGZmZmZm3JVAMzMzMzNnhUBmZmZmZiKuQJqZmZmZeVlAAAAAAAAALkBmZmZmZuyWQDMzMzMz/4dAZmZmZmYFskAAAAAAAGBaQAAAAAAAAC5AMzMzMzMvgECamZmZmaOTQAAAAAAAfJVAmpmZmZk5VkAAAAAAAAAuQAAAAAAAAIFAZmZmZmaUlECamZmZmQmQQJqZmZmZuVVAAAAAAAAALkBmZmZmZmiTQAAAAAAA2JhAMzMzMzMDfkDNzMzMzOxUQAAAAAAAADBAAAAAAADMlEAzMzMzM8+CQM3MzMzMWp1AMzMzMzNzV0AAAAAAAAAwQAAAAAAAAIdAMzMzMzNHg0DNzMzMzLugQM3MzMzMzFdAAAAAAAAAMEAAAAAAAKCXQAAAAAAAmIhAMzMzMzMdkEDNzMzMzExWQAAAAAAAADBAmpmZmZn/l0DNzMzMzJCKQM3MzMzMCJJAmpmZmZl5VkAAAAAAAAAwQAAAAAAAEH5AAAAAAABkkEBmZmZmZsOmQM3MzMzMzFhAAAAAAAAAMEAAAAAAAAiKQGZmZmZmJJlAAAAAAACQfUAAAAAAAIBVQAAAAAAAADFAzczMzMzYg0AzMzMzM5eEQM3MzMykavVAmpmZmZmhdEAAAAAAAAAxQGZmZmZmfoFAmpmZmZnNh0DNzMzMBJ31QM3MzMzMtHRAAAAAAAAAMkAAAAAAAMiNQAAAAAAAAH9AmpmZmZltkkAAAAAAAMBUQAAAAAAAADJAAAAAAABQmEAAAAAAADiJQM3MzMzMdH9AMzMzMzOzU0AAAAAAAAAyQAAAAAAAsJhAzczMzMwwi0BmZmZmZmCQQM3MzMzMjFRAAAAAAAAAMkAzMzMzM2N8QAAAAAAA0I5AAAAAAMAhwkCamZmZmZleQAAAAAAAADJAAAAAAACggkAAAAAAADSXQM3MzMzMdJBAzczMzMyMVEAAAAAAAAAyQGZmZmZmjpJAAAAAAADYmUAzMzMzE9/hQGZmZmZmtmlAAAAAAAAAM0AAAAAAAIB6QAAAAAAAVJFAZmZmZmbGkkAAAAAAAABeQAAAAAAAADNAAAAAAAB4gEBmZmZmZuSVQAAAAAAARaBAZmZmZmbmXkAAAAAAAAAzQDMzMzMzv4RAAAAAAAB8mEAAAAAAgJHAQGZmZmZmZmJAAAAAAAAANEAAAAAAAB6VQJqZmZmZcYFAmpmZmbna6kAzMzMzMyNwQAAAAAAAADRAmpmZmZmhfECamZmZmZOUQM3MzMzMVahAAAAAAABgXkAAAAAAAAA0QAAAAAAArJhAAAAAAACslUBmZmZmZkqDQDMzMzMzs1tAAAAAAAAANUBmZmZmZlaOQM3MzMzMHHxAZmZmZnbT80AzMzMzM2N0QAAAAAAAADVAAAAAAADAeEAAAAAAAFiQQGZmZmZmnptAMzMzMzODZEAAAAAAAAA1QJqZmZmZqZZAmpmZmZk/mEAAAAAAYIfcQGZmZmZmJm1AAAAAAAAANkAAAAAAALCGQJqZmZmZ6X9AAAAAALC98ECamZmZmcFyQAAAAAAAADZAzczMzMy8fUAzMzMzM6+HQAAAAABgTvFAZmZmZmb+ckAAAAAAAAA2QDMzMzMzj4lAAAAAAAB8mkCamZmZmZ6zQJqZmZmZWWRAAAAAAAAANkCamZmZmauRQJqZmZmZ0ZpAMzMzM5Oi4kBmZmZmZoZuQAAAAAAAADdAZmZmZma4mUAAAAAAAHCKQGZmZmbmxrBAzczMzMxMYUAAAAAAAAA3QDMzMzMzM5pAMzMzMzNlk0AAAAAAsBvtQGZmZmZmDnFAAAAAAAAAN0CamZmZmTuaQJqZmZmZZZNAAAAAALAb7UBmZmZmZg5xQAAAAAAAADdAzczMzMyKmEAzMzMzM/eWQGZmZmamQs5AZmZmZmbGZUAAAAAAAAA4QAAAAAAAmINAZmZmZmZCgUCamZmZmfmPQAAAAAAAIFRAAAAAAAAAOEAAAAAAALyZQGZmZmZmWJVAZmZmZmYnrkAAAAAAACBYQAAAAAAAADlAZmZmZmZiikDNzMzMzIR6QJqZmZnpyO9AMzMzMzM7ckAAAAAAAAA5QAAAAAAAOIdAAAAAAAAAfUBmZmZmZkqKQM3MzMzMDGJAAAAAAAAAOUAAAAAAAHCaQM3MzMzMDItAAAAAAIC58EAAAAAAAJhyQAAAAAAAADlAAAAAAACYhUAAAAAAACSaQJqZmZmZkYZAAAAAAAAAYkAAAAAAAAA6QAAAAAAAtJFAAAAAAADwd0AAAAAAADSLQJqZmZmZiWFAAAAAAAAAOkAAAAAAAAyTQJqZmZmZf5tAMzMzMzNPl0AAAAAAANBhQAAAAAAAADtAAAAAAAAQfUAAAAAAAECEQDMzMzMzm41AZmZmZmYmXkAAAAAAAAA7QJqZmZmZgXVAZmZmZmaYk0DNzMzMjHbhQGZmZmZmxmtAAAAAAAAAO0AAAAAAADyZQJqZmZmZT5dAzczMzMyEjkDNzMzMzCxeQAAAAAAAADxAzczMzMw8eEAAAAAAAHiHQAAAAAAAO9VAzczMzMwMZkAAAAAAAAA8QAAAAAAA0HNAAAAAAACckkBmZmZmZjKGQJqZmZmZGVlAAAAAAAAAPEAAAAAAAGyaQAAAAAAAsJVAzczMzMywiEAzMzMzMzNZQAAAAAAAADxAAAAAAAB4kUAAAAAAACicQJqZmZmZlYRAZmZmZmYGWUAAAAAAAAA9QAAAAAAAmIFAAAAAAADYmUBmZmZmZlqSQAAAAAAAIF9AAAAAAAAAPUCamZmZmTOXQJqZmZmZ65lAAAAAAMA660AzMzMzM4twQAAAAAAAAD5AMzMzMzODdEAzMzMzM1+JQAAAAABAG8ZAMzMzMzODaEAAAAAAAAA+QM3MzMzMHHZAAAAAAADolUDNzMzMpKfzQJqZmZmZgXRAAAAAAAAAPkAzMzMzM2+KQGZmZmZmLJxAZmZmZlYe50BmZmZmZg5xQAAAAAAAAD9AZmZmZmZ+m0AzMzMzM0eKQM3MzMwMs/FAZmZmZmbOckAAAAAAAAA/QAAAAAAAGJlAmpmZmZmfmEBmZmZmZuimQM3MzMzMHGJAAAAAAAAAQEAzMzMzM3+bQJqZmZmZW5VAMzMzM1Om9UAAAAAAACB1QAAAAAAAAEBAZmZmZmYWhUDNzMzMzIabQJqZmZmhhfRAmpmZmZmxdEAAAAAAAIBAQAAAAAAA8IZAAAAAAAAAdkCamZmZmbeVQM3MzMzMbFdAAAAAAACAQEBmZmZmZp53QAAAAAAAAIRAzczMzMzj0EAzMzMzM6NjQAAAAAAAgEBAZmZmZmaeeUAAAAAAAISYQAAAAAAAyHtAAAAAAAAgVkAAAAAAAABBQAAAAAAATJJAAAAAAAAQckAzMzMzM1+BQJqZmZmZWV5AAAAAAAAAQUDNzMzMzLSDQDMzMzMzW3hAMzMzM9Og1EDNzMzMzHxnQAAAAAAAAEFAAAAAAADUm0DNzMzMzOCIQGZmZmZmAohAMzMzMzOTXkAAAAAAAABBQAAAAAAAwHBAAAAAAABAi0BmZmZmZhKIQDMzMzMzk15AAAAAAAAAQUAAAAAAACBwQAAAAAAAjJNAzczMzMw4gkBmZmZmZmZeQAAAAAAAAEFAZmZmZmYIl0CamZmZmUObQGZmZmY21u9AzczMzMyccUAAAAAAAIBBQM3MzMzMYJZAMzMzMzMzd0DNzMzMzJ3CQAAAAAAAsGBAAAAAAACAQUDNzMzMzJxsQGZmZmZmjJJAmpmZmZm+oUAzMzMzM7NZQAAAAAAAgEFAmpmZmZnxdEAAAAAAADiXQAAAAAAAhIBAmpmZmZl5V0AAAAAAAIBBQAAAAAAAAJtAAAAAAABYl0DNzMzMzKx9QM3MzMzMbFdAAAAAAAAAQkAAAAAAABCBQAAAAAAALJtAZmZmZmb2i0DNzMzMzMxbQAAAAAAAAENAmpmZmZnJaUCamZmZmTWNQAAAAADQ8ehAMzMzMzMTbkAAAAAAAABDQJqZmZmZA51AmpmZmZljk0AzMzMzM0OAQAAAAAAAYFVAAAAAAAAAQ0AAAAAAANyaQAAAAAAAqJhAmpmZmZm8pkAAAAAAAKBYQAAAAAAAgENAAAAAAACYkkAAAAAAAABuQJqZmZmZRYBAZmZmZmZGV0AAAAAAAIBDQGZmZmZmDoFAzczMzMzsd0CamZmZiYXpQJqZmZmZuW5AAAAAAACAQ0CamZmZmROcQJqZmZmZA5dAMzMzMzPpnkDNzMzMzCxZQAAAAAAAgENAmpmZmZmnmUCamZmZmU+aQAAAAAAApppAMzMzMzPTWEAAAAAAAIBDQAAAAAAA8IVAzczMzMw2nUBmZmZm1h7pQDMzMzMzg25AAAAAAACAQ0AAAAAAAESVQAAAAAAARJ1AmpmZmZnRiEBmZmZmZqZXQAAAAAAAAERAAAAAAACYkEAAAAAAAKBqQM3MzMzMvIBAmpmZmZm5WUAAAAAAAABEQGZmZmZmCohAMzMzMzMbcEBmZmZmRhHsQGZmZmZmPnBAAAAAAAAAREAAAAAAALaWQAAAAAAAQHRAAAAAALAT5UBmZmZmZtZsQAAAAAAAAERAmpmZmZkBckAAAAAAANCDQM3MzMzMsIVAzczMzMzsWUAAAAAAAABEQAAAAAAAoGVAAAAAAACIkEAAAAAAANyBQGZmZmZmxllAAAAAAAAAREAAAAAAAOBzQAAAAAAAjJhAmpmZmZkdjkAAAAAAAEBaQAAAAAAAAERAAAAAAABgeEAAAAAAAOCZQJqZmZmZ9YdAAAAAAAAAWkAAAAAAAABEQM3MzMzMuIxAzczMzMw6nkDNzMzMDP/AQAAAAAAAIGFAAAAAAACAREAAAAAAAOicQDMzMzMzF4hAZmZmZgZe0kBmZmZmZm50QAAAAAAAgERAzczMzMysfEAAAAAAADSbQDMzMzOjO+BAzczMzMzEdUAAAAAAAIBEQM3MzMzMGI5AAAAAAACankAzMzMzPyoAQZqZmZmZWX1AAAAAAACARUAAAAAAAJyTQDMzMzMzY2pAZmZmZmZah0BmZmZmZkZUQAAAAAAAgEVAZmZmZmZmbEAzMzMzM8uFQAAAAADABtlAzczMzMwsZkAAAAAAAIBFQAAAAAAAJJ5AZmZmZmawkkCamZmZmSGKQM3MzMzMbFRAAAAAAACARUDNzMzMzOCBQAAAAAAA5JxAzczMzMwdo0AAAAAAAMBWQAAAAAAAgEVAmpmZmZn3lUBmZmZmZqKdQDMzMzNj9OZAzczMzMy8bEAAAAAAAABGQAAAAAAAmIhAAAAAAADgaUDNzMzMbA/dQJqZmZmZKWdAAAAAAAAARkDNzMzMzKR8QAAAAAAAcHdAMzMzMzOVt0AAAAAAAMBZQAAAAAAAAEZAZmZmZmZAnUAzMzMzM6+GQDMzMzMzz4NAZmZmZmYGUkAAAAAAAABGQDMzMzMzQZ5AZmZmZmZej0AAAAAAoH7SQJqZmZmZKWNAAAAAAACARkBmZmZmZuiQQM3MzMzMnGRAZmZmZmZptkAzMzMzM/NaQAAAAAAAgEZAAAAAAADAl0CamZmZmXFyQJqZmZmZsMZAmpmZmZmJYEAAAAAAAIBGQAAAAAAAxJJAAAAAAAD4nkDNzMzMzAiWQAAAAAAAYFVAAAAAAAAAR0DNzMzMzKxkQGZmZmZmtodAZmZmZtbb8UDNzMzMzExyQAAAAAAAAEdAMzMzMzOrckBmZmZmZuSZQJqZmZlx1PBAAAAAAADYcUAAAAAAAABHQAAAAAAAoJhAAAAAAACsnEAAAAAAALChQJqZmZmZeV5AAAAAAACAR0AAAAAAAKBsQJqZmZmZh5hAAAAAAABciUAzMzMzM/NXQAAAAAAAgEdAmpmZmZmrnEAAAAAAALSYQDMzMzMTxO1AzczMzMx0cEAAAAAAAIBHQJqZmZmZIXdAAAAAAAA8m0DNzMzMzLx6QDMzMzMzc1dAAAAAAAAASEBmZmZmZiaJQGZmZmZm1mNAZmZmZqaI00AzMzMzM5NkQAAAAAAAAEhAZmZmZmbuk0AAAAAAAFBkQDMzMzPzQOlAAAAAAABQbkAAAAAAAABIQM3MzMzM/J1AZmZmZmZOh0AzMzMzs4O+QGZmZmZmhl5AAAAAAAAASEAAAAAAAMBWQAAAAAAA1JJAMzMzMzMbgUCamZmZmdlVQAAAAAAAAEhAMzMzMzM7fkAzMzMzM/ecQDMzMzMTUOFAmpmZmZnJaUAAAAAAAABIQGZmZmZmdJNAZmZmZmZUn0AzMzMzM42RQGZmZmZmplZAAAAAAACASEAAAAAAADByQAAAAAAA0H1AAAAAAACulEAAAAAAAABVQAAAAAAAgEhAZmZmZmbGakAzMzMzM0eCQGZmZmZ22OFAMzMzMzOzaUA=",
+            "dozor_score": 3481.133,
+            "index": 83,
+            "indexY": 4,
+            "indexZ": 4,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00083.cbf",
+            "dozorSpotList": "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",
+            "dozor_score": 3665.573,
+            "index": 82,
+            "indexY": 4,
+            "indexZ": 3,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00082.cbf",
+            "dozorSpotList": "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",
+            "dozor_score": 1828.111,
+            "index": 81,
+            "indexY": 4,
+            "indexZ": 2,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00088.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 87,
+            "indexY": 4,
+            "indexZ": 8,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00085.cbf",
+            "dozorSpotList": "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",
+            "dozor_score": 3528.841,
+            "index": 84,
+            "indexY": 4,
+            "indexZ": 5,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00089.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 88,
+            "indexY": 4,
+            "indexZ": 9,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00087.cbf",
+            "dozorSpotList": "AAAAAAAACEAAAAAAAMCSQAAAAAAAEIpAAAAAAADchkDNzMzMzExKQAAAAAAAAAhAAAAAAABYh0AAAAAAALiPQJqZmZmZHYBAAAAAAABASUAAAAAAAAAQQM3MzMzMWIZAAAAAAADAkUCamZmZmbGAQM3MzMzMjExA",
+            "dozor_score": 2.962,
+            "index": 86,
+            "indexY": 4,
+            "indexZ": 7,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00090.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 89,
+            "indexY": 4,
+            "indexZ": 10,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00091.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 90,
+            "indexY": 4,
+            "indexZ": 11,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00086.cbf",
+            "dozorSpotList": "AAAAAAAA8D/NzMzMzGSRQAAAAAAAVJRAMzMzMzO1qkDNzMzMzCxUQAAAAAAAAABAAAAAAAAQkkBmZmZmZqSUQDMzMzMz34lAmpmZmZkZU0AAAAAAAAAIQAAAAAAAwJJAAAAAAAAUikAAAAAAAEjsQDMzMzMzo29AAAAAAAAACECamZmZmcuTQDMzMzMzp4xAzczMzEwnsUDNzMzMzKxZQAAAAAAAAAhAAAAAAABYh0AzMzMzM7uPQDMzMzMTu95AzczMzMw8aEAAAAAAAAAQQJqZmZmZWYZAZmZmZmbCkUDNzMzMjG7WQJqZmZmZ6WNA",
+            "dozor_score": 9.786,
+            "index": 85,
+            "indexY": 4,
+            "indexZ": 6,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00092.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 91,
+            "indexY": 4,
+            "indexZ": 12,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00093.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 92,
+            "indexY": 3,
+            "indexZ": 12,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00094.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 93,
+            "indexY": 3,
+            "indexZ": 11,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00096.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 95,
+            "indexY": 3,
+            "indexZ": 9,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00095.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 94,
+            "indexY": 3,
+            "indexZ": 10,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00098.cbf",
+            "dozorSpotList": "AAAAAAAA8D8AAAAAAGSRQAAAAAAAWJRAMzMzMzNzhkAzMzMzM/NLQAAAAAAAAAhAZmZmZma+kkAzMzMzMxeKQM3MzMxMMNxAAAAAAADgZUAAAAAAAAAIQGZmZmZmyJNAzczMzMyojEAAAAAAAO6iQM3MzMzMLFBAAAAAAAAACEDNzMzMzFCHQAAAAAAAwI9AzczMzKw02UAAAAAAAMBkQAAAAAAAABBAAAAAAABYhkDNzMzMzMSRQAAAAAAAaqRAmpmZmZmZUEA=",
+            "dozor_score": 3.101,
+            "index": 97,
+            "indexY": 3,
+            "indexZ": 7,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00102.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 101,
+            "indexY": 3,
+            "indexZ": 3,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00100.cbf",
+            "dozorSpotList": "AAAAAAAAAEAAAAAAAMiTQDMzMzMzt4xAZmZmZmaKkEBmZmZmZqZJQAAAAAAAAABAAAAAAAAQkkCamZmZma+UQJqZmZmZZ5xAmpmZmZkZTUAAAAAAAAAIQDMzMzMzv5JAzczMzMwgikCamZmZmXrdQJqZmZmZOWZAAAAAAAAACEAzMzMzM0+HQM3MzMzMyI9AAAAAAEA9y0AAAAAAAABfQAAAAAAAABBAMzMzMzNXhkBmZmZmZsiRQAAAAAAA/JhAzczMzMzMTkA=",
+            "dozor_score": 3.918,
+            "index": 99,
+            "indexY": 3,
+            "indexZ": 5,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00097.cbf",
+            "dozorSpotList": "AAAAAAAACEDNzMzMzL6SQJqZmZmZFYpAZmZmZubBtEBmZmZmZiZVQAAAAAAAAAhAAAAAAADIk0AzMzMzM6eMQDMzMzMzm3VAMzMzMzNzR0AAAAAAAAAIQJqZmZmZUYdAmpmZmZm5j0AzMzMzM+S1QDMzMzMzk1VAAAAAAAAAEEAzMzMzM1eGQJqZmZmZw5FAzczMzMxkgEBmZmZmZuZIQA==",
+            "dozor_score": 0.476,
+            "index": 96,
+            "indexY": 3,
+            "indexZ": 8,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00103.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 102,
+            "indexY": 3,
+            "indexZ": 2,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00104.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 103,
+            "indexY": 3,
+            "indexZ": 1,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00099.cbf",
+            "dozorSpotList": "AAAAAAAA8D+amZmZmWORQAAAAAAAXJRAAAAAAABMiEAAAAAAAEBMQAAAAAAAAABAZmZmZmbIk0AAAAAAALCMQM3MzMzMPahAmpmZmZm5UUAAAAAAAAAAQAAAAAAAEJJAAAAAAACslEAAAAAAALSFQJqZmZmZmUlAAAAAAAAACEDNzMzMzL6SQDMzMzMzG4pAmpmZmQlz40CamZmZmYlpQAAAAAAAAAhAAAAAAABQh0AzMzMzM8ePQJqZmZnZDeJAZmZmZmamaEAAAAAAAAAQQAAAAAAAWIZAzczMzMzIkUBmZmZmZkSrQGZmZmZmxlJA",
+            "dozor_score": 5.232,
+            "index": 98,
+            "indexY": 3,
+            "indexZ": 6,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00101.cbf",
+            "dozorSpotList": "AAAAAAAAAEAAAAAAAMiTQAAAAAAAwIxAmpmZmZmpaUAAAAAAAEBDQAAAAAAAAABAAAAAAAAQkkAAAAAAALSUQM3MzMzM1pJAZmZmZmbmSEAAAAAAAAAIQJqZmZmZv5JAAAAAAAAoikAAAAAAgCKzQDMzMzMzs1NAAAAAAAAACEAAAAAAAFCHQM3MzMzMyI9AMzMzMzN2pECamZmZmVlPQAAAAAAAABBAMzMzMzNXhkCamZmZmceRQJqZmZmZwXVAMzMzMzNzREA=",
+            "dozor_score": 0.746,
+            "index": 100,
+            "indexY": 3,
+            "indexZ": 4,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00105.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 104,
+            "indexY": 3,
+            "indexZ": 0,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00106.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 105,
+            "indexY": 2,
+            "indexZ": 0,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00107.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 106,
+            "indexY": 2,
+            "indexZ": 1,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00108.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 107,
+            "indexY": 2,
+            "indexZ": 2,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00110.cbf",
+            "dozorSpotList": "AAAAAAAACECamZmZmbuSQJqZmZmZHYpAmpmZmZkMoUAzMzMzM7NOQAAAAAAAAAhAMzMzMzNPh0CamZmZmcGPQM3MzMzMQpVAZmZmZmYmS0AAAAAAAAAQQDMzMzMzV4ZAZmZmZmbIkUCamZmZmcF4QJqZmZmZWUZA",
+            "dozor_score": 0.679,
+            "index": 109,
+            "indexY": 2,
+            "indexZ": 4,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00109.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 108,
+            "indexY": 2,
+            "indexZ": 3,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00112.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 111,
+            "indexY": 2,
+            "indexZ": 6,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00114.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 113,
+            "indexY": 2,
+            "indexZ": 8,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00111.cbf",
+            "dozorSpotList": "AAAAAAAACEBmZmZmZrySQGZmZmZmFopAzczMzMx7oECamZmZmdlNQAAAAAAAAAhAAAAAAABQh0AzMzMzM7+PQM3MzMzMOIxAzczMzMxMSEAAAAAAAAAQQM3MzMzMUIZAMzMzMzPHkUCamZmZmcl/QDMzMzMz80VA",
+            "dozor_score": 0.928,
+            "index": 110,
+            "indexY": 2,
+            "indexZ": 5,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00113.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 112,
+            "indexY": 2,
+            "indexZ": 7,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00116.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 115,
+            "indexY": 2,
+            "indexZ": 10,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00115.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 114,
+            "indexY": 2,
+            "indexZ": 9,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00117.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 116,
+            "indexY": 2,
+            "indexZ": 11,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00118.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 117,
+            "indexY": 2,
+            "indexZ": 12,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00119.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 118,
+            "indexY": 1,
+            "indexZ": 12,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00120.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 119,
+            "indexY": 1,
+            "indexZ": 11,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00121.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 120,
+            "indexY": 1,
+            "indexZ": 10,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00122.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 121,
+            "indexY": 1,
+            "indexZ": 9,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00124.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 123,
+            "indexY": 1,
+            "indexZ": 7,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00125.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 124,
+            "indexY": 1,
+            "indexZ": 6,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00123.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 122,
+            "indexY": 1,
+            "indexZ": 8,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00126.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 125,
+            "indexY": 1,
+            "indexZ": 5,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00127.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 126,
+            "indexY": 1,
+            "indexZ": 4,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00129.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 128,
+            "indexY": 1,
+            "indexZ": 2,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00130.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 129,
+            "indexY": 1,
+            "indexZ": 1,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00128.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 127,
+            "indexY": 1,
+            "indexZ": 3,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00131.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 130,
+            "indexY": 1,
+            "indexZ": 0,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00132.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 131,
+            "indexY": 0,
+            "indexZ": 0,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00133.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 132,
+            "indexY": 0,
+            "indexZ": 1,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00135.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 134,
+            "indexY": 0,
+            "indexZ": 3,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00134.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 133,
+            "indexY": 0,
+            "indexZ": 2,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00139.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 138,
+            "indexY": 0,
+            "indexZ": 7,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00136.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 135,
+            "indexY": 0,
+            "indexZ": 4,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00141.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 140,
+            "indexY": 0,
+            "indexZ": 9,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00138.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 137,
+            "indexY": 0,
+            "indexZ": 6,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00137.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 136,
+            "indexY": 0,
+            "indexZ": 5,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00140.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 139,
+            "indexY": 0,
+            "indexZ": 8,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00142.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 141,
+            "indexY": 0,
+            "indexZ": 10,
+            "omega": 0.101889
+        },
+        {
+            "Filename": "/tmp/meshbest/RasterScanViwe1_00143.cbf",
+            "dozorSpotList": "",
+            "dozor_score": 0.0,
+            "index": 142,
+            "indexY": 0,
+            "indexZ": 11,
+            "omega": 0.101889
+        }
+    ]
+}

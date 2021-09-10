@@ -1,0 +1,10 @@
+2021-08-11 19:58:33,324 -- serverTCP - INFO - Server Started
+2021-08-11 19:58:33,325 -- serverTCP - INFO - Listening on 10.5.1.107:8111
+2021-08-11 19:58:50,235 -- dhsServer - INFO - Acepted connection from: 127.0.0.1:38134
+2021-08-11 19:58:50,236 -- dhsServer - INFO - Start Thread PID:3095134
+2021-08-11 19:58:50,238 -- handle_client - DEBUG - command= POST / HTTP/1.1
+2021-08-11 19:58:50,239 -- handle_client - WARNING - worng format
+2021-08-11 19:58:50,239 -- handle_client - WARNING - POST / HTTP/1.1
+2021-08-11 19:58:50,239 -- handle_client - WARNING - Error on send data back
+2021-08-11 19:58:50,239 -- handle_client - WARNING - PID:3095134 Result:{}
+2021-08-11 19:58:50,239 -- handle_client - WARNING - Error:'File'

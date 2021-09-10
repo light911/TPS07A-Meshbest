@@ -1,0 +1,56 @@
+!     detector parameter (n.of.pixels horisontal and vertical, pixel size)
+!     ================== 
+nx 2463
+ny 2527
+pixel 0.172
+!
+!min and max acceptable intensity in  pixel
+!==========================================
+pixel_min 0
+pixel_max 36000
+!
+! n.of.sigms used for spots search, defalt 5.0
+!============================================= 
+spot_level 5.5
+!
+!bad detector pixels areas (can be repeat 50 times):Xmin Xmax Ymin Ymax
+!======================================================================
+!bad_zona 1 3078 2045 2050
+!bad_zona 1 3078 1021 1026
+!bad_zona 1021 1026 1 3078
+!bad_zona 2045 2050 1 3078
+!
+! beam position
+!==============
+orgx 1222.96
+orgy 1256.57
+!
+!beam-stop shadow
+!================
+ix_min 1167
+ix_max 1313
+iy_min 1120
+iy_max 2522
+!
+!     data collection parameters
+!     ========================== 
+detector_distance 163.28
+X-ray_wavelength 1.00
+fraction_polarization 0.99
+!
+!    images information
+!======================
+starting_angle 0.0
+oscillation_range 0.1
+exposure 0.04
+!
+! processing parameters ( wedge- step of summation)
+!==================================================
+spot_size 3 
+wedge_number 5
+!   
+first_image_number 1
+number_images 100
+name_template_image /data/id23eh1/inhouse/opid231/20170125/RAW_DATA/RD_TEST/TR2/tr_1_????.cbf 
+!               
+end

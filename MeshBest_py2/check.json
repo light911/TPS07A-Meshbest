@@ -1,0 +1,19 @@
+{
+    "AvailableApertures": [
+        50, 
+        30, 
+        10, 
+        5
+    ], 
+    "BeamCentreX": 1034.0, 
+    "BeamCentreY": 1081.0, 
+    "BeamSizeX": 20, 
+    "BeamSizeY": 20, 
+    "DetectorDistance": 199997.28, 
+    "DetectorPixelSize": 75.0, 
+    "Ncolumns": 8, 
+    "Nrows": 9, 
+    "Total N images": 72, 
+    "Wavelength": 0.9762408310824219, 
+    "meshPositions": "OK"
+}

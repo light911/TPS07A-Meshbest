@@ -1,0 +1,9 @@
+2021-08-11 20:01:27,028 -- serverTCP - INFO - Server Started
+2021-08-11 20:01:27,029 -- serverTCP - INFO - Listening on 10.5.1.107:8111
+2021-08-11 20:01:42,427 -- dhsServer - INFO - Acepted connection from: 127.0.0.1:38174
+2021-08-11 20:01:42,428 -- dhsServer - INFO - Start Thread PID:3095322
+2021-08-11 20:01:43,430 -- handle_client - WARNING - Error: timed out
+2021-08-11 20:01:44,432 -- handle_client - WARNING - Error: timed out
+2021-08-11 20:01:45,433 -- handle_client - WARNING - Error: timed out
+2021-08-11 20:01:45,433 -- handle_client - WARNING - Socket didn't recive 
+ within 3 sec

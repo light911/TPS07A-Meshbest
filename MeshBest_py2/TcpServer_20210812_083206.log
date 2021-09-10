@@ -1,0 +1,17 @@
+2021-08-11 20:02:37,017 -- serverTCP - INFO - Server Started
+2021-08-11 20:02:37,017 -- serverTCP - INFO - Listening on 10.5.1.107:8111
+2021-08-11 20:02:40,684 -- dhsServer - INFO - Acepted connection from: 127.0.0.1:38194
+2021-08-11 20:02:40,685 -- dhsServer - INFO - Start Thread PID:3095454
+2021-08-11 20:02:41,688 -- handle_client - WARNING - Error: timed out
+2021-08-11 20:02:42,690 -- handle_client - WARNING - Error: timed out
+2021-08-11 20:02:43,691 -- handle_client - WARNING - Error: timed out
+2021-08-11 20:02:43,691 -- handle_client - WARNING - Socket didn't recive 
+ within 3 sec
+2021-08-11 20:02:43,691 -- handle_client - WARNING - Get POST / HTTP/1.1
+Host: localhost:8111
+User-Agent: curl/7.61.1
+Accept: */*
+Content-Type: application/json
+Content-Length: 25
+
+{"sessionid":"session-7"}
