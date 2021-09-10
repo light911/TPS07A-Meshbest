@@ -14,6 +14,7 @@ from multiprocessing import Process, Queue, Manager
 from PyQt5.QtCore import QObject,QThread,pyqtSignal,pyqtSlot,QMutex,QMutexLocker
 import copy
 import logsetup
+from pathlib import Path
 
 class BluiceClient(QThread):
     Done = pyqtSignal(str)
@@ -45,8 +46,13 @@ class BluiceClient(QThread):
         par = {}
         par['Debuglevel'] = "DEBUG"
         # self.Par.update(par)
+        self.pid=os.getpid()
+        home = str(Path.home())
+        LOG_FILENAME = f'{home}/log/BluiceLog_pid{self.pid}.txt'
+        logfolder = Path.home().joinpath("log")
+        logfolder.mkdir(parents=True, exist_ok=True)
         self.logger = logsetup.getloger2('Bluice',
-                                         LOG_FILENAME='./log/BluiceLog.txt',
+                                         LOG_FILENAME=LOG_FILENAME,
                                          level = self.Par['Debuglevel'])
         
 #        manager = Manager()

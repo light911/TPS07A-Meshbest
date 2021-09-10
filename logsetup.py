@@ -10,6 +10,7 @@ https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output
 import logging
 from logging import handlers #this is need for tun in term
 import coloredlogs
+from pathlib import Path
 
 def getloger(logname='Main',LOG_FILENAME='log.txt',level = 'INFO'):
     logger=logging.getLogger(logname)
@@ -46,7 +47,12 @@ def getloger(logname='Main',LOG_FILENAME='log.txt',level = 'INFO'):
 
 
 
-def getloger2(logname='Main',LOG_FILENAME='./log/log.txt',level = 'INFO'):
+def getloger2(logname='Main',LOG_FILENAME=None,level = 'INFO'):
+    if LOG_FILENAME == None:
+        home = str(Path.home())
+        LOG_FILENAME = f'{home}/log/log.txt'
+
+    
     logger=logging.getLogger(logname)
     fotmatterstr = '%(asctime)s - %(name)s - %(levelname)s -%(funcName)s - %(message)s'
     formatter = logging.Formatter(fotmatterstr)

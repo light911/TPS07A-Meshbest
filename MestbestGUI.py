@@ -17,6 +17,7 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow,QGraphicsScene,QGraphicsItem,QGraphicsRectItem,QGraphicsTextItem
 from PyQt5.QtCore import QObject,QThread,pyqtSignal,pyqtSlot,QMutex,QMutexLocker,QEvent,QTimer
 from PyQt5.QtGui import QPainter,QBrush,QPen,QColor,QFont,QCursor
+from pathlib import Path
 
 import colorcet as cc
 import copy,base64
@@ -108,7 +109,11 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.Par['View1'] = init_meshbest_data
         self.Par['View2'] = init_meshbest_data
         self.Par['UI_par'] = variables.init_uipar_data()
-        LOG_FILENAME = f'./log/MebestGUI_pid{self.pid}.txt'
+        home = str(Path.home())
+        LOG_FILENAME = f'{home}/log/MebestGUI_pid{self.pid}.txt'
+        logfolder = Path.home().joinpath("log")
+        logfolder.mkdir(parents=True, exist_ok=True)
+
         self.logger = logsetup.getloger2('MestbestGUI',LOG_FILENAME,level = self.Par['Debuglevel'])
         
         
@@ -2892,7 +2897,8 @@ if __name__ == "__main__":
         if args.base64passwd :
             base64passwd = args.base64passwd    
         else:
-            with open("pass.txt",'r') as f:
+            pwdpath = Path(__file__).parent.joinpath("pass.txt")
+            with open(pwdpath,'r') as f:
                 context= f.readline()#line one only
                 base64passwd = context.rstrip() 
                 print(context)
