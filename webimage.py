@@ -9,7 +9,7 @@ from PyQt5.QtCore import QThread,pyqtSignal,pyqtSlot
 from PyQt5.QtGui import QImage, QPixmap
 import logsetup
 import http.client
-import time
+import time,os
 
 # import io
 
@@ -30,6 +30,7 @@ class image(QThread):
         self.updateinterval = 0.1 #sec
         
     def run(self):
+        self.logger.info(f'webimaage PID = {os.getpid()}')
         while not self._stop:
             jpg = self.getimg()
             # f = io.BytesIO(jpg)

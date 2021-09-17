@@ -31,6 +31,9 @@ import Config
 import webimage
 import variables
 from MestbestAPITools import genZTableMap
+import multiprocessing as mp
+# import faulthandler
+# faulthandler.enable()
 
 class MainUI(QMainWindow,Ui_MainWindow):
     def __init__(self,folder,key,user,stra,beamline,info,passwd,base64passwd):
@@ -87,7 +90,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.RasterRuning = False
         
         self.View1flag = False
-        self.can_move_in_rastrview_flag = True
+        # self.can_move_in_rastrview_flag = True
 
         self.DrawinRasterView1=False
         self.DrawinRasterView2=False
@@ -97,10 +100,10 @@ class MainUI(QMainWindow,Ui_MainWindow):
         # self.FluxClient = FluxClient()
         # self.FluxClient.updateFlux() 
         # self.beamlineinfo['Fulx'] = self.FluxClient.Flux
-        m = Manager()
+        self.m1 = Manager()
         # self.Par = m.dict()
         self.Par = {}
-        self.state = m.dict() 
+        self.state = self.m1.dict() 
         self.Par.update(Config.Par)
         
         init_meshbest_data = variables.init_meshbest_data()
@@ -108,6 +111,11 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.Par['View1'] = init_meshbest_data
         self.Par['View2'] = init_meshbest_data
         self.Par['UI_par'] = variables.init_uipar_data()
+        statectrl ={}
+        statectrl['RasterDone'] = False
+        statectrl['AbletoStartRaster'] = False
+        self.Par['StateCtl']=statectrl
+
         home = str(Path.home())
         LOG_FILENAME = f'{home}/log/MebestGUI_pid{self.pid}.txt'
         logfolder = Path.home().joinpath("log")
@@ -115,7 +123,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
 
         self.logger = logsetup.getloger2('MestbestGUI',LOG_FILENAME,level = self.Par['Debuglevel'])
         
-        
+        self.logger.info(f'GUI PID = {self.pid}')
         self.initGUI()
         self.initGuiEvent()
         self.setBluice()
@@ -274,7 +282,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         elif self.RasterRuning :
             self.logger.debug(f'Raster Runing ,bypass')
             pass
-        elif self.can_move_in_rastrview_flag :
+        elif self.Par['StateCtl']['RasterDone'] :
             if event.button() == 1:
                 self.logger.info(f'Click on view1 and want to move sample')
                 try:
@@ -346,7 +354,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             pass
         elif self.RasterRuning:
             pass
-        elif self.can_move_in_rastrview_flag:
+        elif self.Par['StateCtl']['RasterDone']:
             pass
         elif self.DrawinRasterView1:
             self.view1box.setPen(QPen(QColor('yellow')))
@@ -387,7 +395,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             pass
         elif self.RasterRuning:
             pass
-        elif self.can_move_in_rastrview_flag :
+        elif self.Par['StateCtl']['RasterDone'] :
             if event.button() == 1:
                 self.logger.info(f'Click on view1 and want to move sample')
                 try:
@@ -487,7 +495,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
     def Rasterclicked(self):
         # self.clear_Raster_scence_item()
         self.logger.info(f'Rasterclicked,Current phi={self.bluiceData["motor"]["gonio_phi"]["pos"]}')
-        self.can_move_in_rastrview_flag = False
+        # self.can_move_in_rastrview_flag = False
+        self.Par['StateCtl']['RasterDone'] = False
         #clear old box
         self.view1box.setRect(0, 0, 0, 0)
         self.view2box.setRect(0, 0, 0, 0)
@@ -578,6 +587,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.logger.info('move back')
         self.logger.debug(f'command:{command}')
         self.StartRaster.setEnabled(True)
+        self.Par['StateCtl']['AbletoStartRaster'] = True
+        self.update_ui_par_to_meshbest()
         
     def waitMotorStopUpdate(self):
         #old code not use anymore
@@ -1311,11 +1322,11 @@ class MainUI(QMainWindow,Ui_MainWindow):
             
 
     def setBluice(self):
-        manager = Manager()
-        self.bluiceinfo=manager.dict()
-        self.Qinfo=manager.dict()
-        self.MotorMoving=manager.dict()
-        self.opCompleted=manager.dict()
+        # manager = Manager()
+        self.bluiceinfo=self.m1.dict()
+        self.Qinfo=self.m1.dict()
+        self.MotorMoving=self.m1.dict()
+        self.opCompleted=self.m1.dict()
         
         self.bluice = bluice.BluiceClient(self.Par)
         self.bluice.info = self.bluiceinfo
@@ -1348,27 +1359,31 @@ class MainUI(QMainWindow,Ui_MainWindow):
         pass
     def StartRasterclicked(self):
         self.logger.info(f'Button Start Raster clicked')
-        
+        self.Par['StateCtl']['AbletoStartRaster'] = False
         self.Overlap_Select_1.setCurrentIndex(2)
         self.Overlap_Select_2.setCurrentIndex(2)
         # self.initScoreArray('View1')
         # self.initScoreArray('View2')
         self.plotView12(True)
-
+        
         self.StartRaster.setEnabled(False)
         self.Raster.setEnabled(False)
         self.clear_dozor_plot()
         self.RasterRuning = True
         self.RasterRunstep=0
+        self.Par['StateCtl']['RasterDone'] = False
+        self.update_ui_par_to_meshbest()
         self.ArmDetectorandMeshbest()
       
         # self.meshbest.sendCommandToMeshbest(('Hi',self.RasterPar))
     def StartRasterclicked_done(self):
         self.logger.info(f'Job done for two raster')
         self.RasterRuning = False
-        self.StartRaster.setEnabled(True)
+        # self.StartRaster.setEnabled(True)
         self.Raster.setEnabled(True)
-        self.can_move_in_rastrview_flag = True
+        # self.can_move_in_rastrview_flag = True
+        self.Par['StateCtl']['RasterDone'] = True
+        self.update_ui_par_to_meshbest()
         pass
     
     def ArmDetectorandMeshbest(self):
@@ -1770,21 +1785,31 @@ class MainUI(QMainWindow,Ui_MainWindow):
                         centerx = self.RasterView1QPixmap.boundingRect().center().x()
                         centery = self.RasterView1QPixmap.boundingRect().center().y()
                         scence = self.RasterView1
+                        lx = self.RasterView1QPixmap.boundingRect().right()
+                        ly = self.RasterView1QPixmap.boundingRect().bottom()
                     else:
                         ratio = self.getViewRatio(2)
                         centerx = self.RasterView2QPixmap.boundingRect().center().x()
                         centery = self.RasterView2QPixmap.boundingRect().center().y()
-                        scence = self.RasterView1
+                        scence = self.RasterView2
+                        lx = self.RasterView2QPixmap.boundingRect().right()
+                        ly = self.RasterView2QPixmap.boundingRect().bottom()
                     x = centerx + (x / ratio)
                     y = centery + (y / ratio)
                     # self.logger.warning(f'{centerx=},{centery=},{x=},{y=},{ratio=}')
                     # newpos = scence.mapFromScene(x,y)
                     # self.logger.warning(f'after map {newpos=}')
+                    # do not make cross over the screen
+                    
+                    correctX = self.correctNumber(x,0,lx)
+                    correctY = self.correctNumber(y,0,ly)
+
                     offx,offy = cross.getoffset()
-                    target = QPointF(x-offx,y-offy)
+                    target = QPointF(correctX-offx,correctY-offy)
                     cross.setPos(target)
 
     def messageFromMeshbest(self,command):
+        self.logger.debug(f'Meshbest Emit : {command}')
         if command[0] == "imagewrited":
             self.logger.info(f'Frame {command[1]} is done!')
             pass
@@ -1835,18 +1860,20 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 view2_data['Ztable'] = command[1]['View2']['Ztable']
                 view2_data['BestPositions'] = command[1]['View2']['BestPositions']
                 ui_par_data = self.Par['UI_par']
-                
+                StateCtl_data = self.Par['StateCtl']
                 # self.logger.info(f'Test: view1_data Ztable {view1_data["Ztable"]}')
             else:
                 self.logger.info(f'I am inactive client,update all')
                 view1_data = command[1]['View1']
                 view2_data = command[1]['View2']
                 ui_par_data = command[1]['UI_par']
+                StateCtl_data = command[1]['StateCtl']
                 
             
             self.Par['View1'] = view1_data
             self.Par['View2'] = view2_data
             self.Par['UI_par'] = ui_par_data
+            self.Par['StateCtl'] = StateCtl_data
             # self.logger.info(f'got view1 dtable = {command[1]["View1"]["Dtable"]}')
             # self.logger.info(f'got view2 dtable = {command[1]["View2"]["Dtable"]}')
             #update and decode Dtable to Raster
@@ -1894,7 +1921,9 @@ class MainUI(QMainWindow,Ui_MainWindow):
             else:
                 pass
         else:
-           self.logger.debug(f'Meshbest Emit : {command}')
+            pass
+        #    self.logger.debug(f'Meshbest Emit : {command}')
+        
     def decodeTable(self,par):
         try:
             # self.logger.warning(f'Decode ori  Datble:{par["Dtable"]}')
@@ -2534,6 +2563,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.SampleViedo.setToolTip('Click will move the pos. to center')
         # self.StartRaster.setEnabled(True)
         self.Raster.setEnabled(True)
+        if self.Par['StateCtl']['AbletoStartRaster']:
+            self.StartRaster.setEnabled(True)
     def setToPassive(self):
         self.Active.setText("Passive")
         self.bluiceData['active'] = False
@@ -2734,6 +2765,14 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.RasterPar[view]['resArray'][:]=50#set all value to 50
         self.RasterPar[view]['spotsArray']=np.zeros((numofXbox, numofYbox))
         self.RasterPar[view]['spotsArray'][:] = np.nan
+        
+        self.Par[view]['scoreArray'] = np.zeros((numofXbox, numofYbox))
+        self.Par[view]['scoreArray'][:] = np.nan
+        self.Par[view]['resArray']=np.zeros((numofXbox, numofYbox))
+        self.Par[view]['resArray'][:]=50#set all value to 50
+        self.Par[view]['spotsArray']=np.zeros((numofXbox, numofYbox))
+        self.Par[view]['spotsArray'][:] = np.nan
+        self.meshbest.sendCommandToMeshbest(('Clear_scoreArray'))
 
     def movefactor(self):
         return 1
@@ -2828,13 +2867,40 @@ class MainUI(QMainWindow,Ui_MainWindow):
         # par = copy.deepcopy(self.Par)
         par = variables.Raster_to_Meshbest_par(self.RasterPar, self.Par)
         self.meshbest.sendCommandToMeshbest(('Update_par',par))
+    def update_All_par_to_meshbest(self):
+        # TODO
+        uiparlists,uiindexlists= variables.ui_par_lists()
+        
+        for item in uiparlists:
+            newitem = getattr(self,item)
+            # print(f'Name:{item}, value={newitem.value()}')
+            self.Par['UI_par'][item] = newitem.value()
+            
+        for item in uiindexlists:
+            newitem = getattr(self,item)
+            # print(f'Name:{item}, value={newitem.currentIndex()}')
+            self.Par['UI_par'][item] = newitem.currentIndex()
+
+        # par = copy.deepcopy(self.Par)
+        par = variables.Raster_to_Meshbest_par(self.RasterPar, self.Par)
+        self.meshbest.sendCommandToMeshbest(('Update_par',par))
     def quit(self,signum,frame):
         self.logger.critical(f'Main GUi exit')
         self.logger.critical(f'Call bluice closed')
         try:
             self.bluice.quit(signal.SIGINT, "exit_gracefully")
-        except:
-            pass
+        except Exception as e:
+            traceback.print_exc()
+            self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
+            self.logger.warning(f'Error:{e}')
+
+        self.logger.critical(f'Call MeshbestClinet closed')
+        try:
+            self.meshbest.quit(signal.SIGINT, "exit_gracefully")
+        except Exception as e:
+            traceback.print_exc()
+            self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
+            self.logger.warning(f'Error:{e}')
         self.logger.critical(f'Call SampleImageServer closed')
         self.SampleImageServer.stop()
         for handler in self.logger.handlers:
@@ -2843,6 +2909,15 @@ class MainUI(QMainWindow,Ui_MainWindow):
         # sys.exit()
         self.close()
         # sys.exit(1)
+        self.logger.critical(f'm1 pid={self.m1._process.ident}')
+        self.m1.shutdown()
+        active_children = mp.active_children()
+        self.logger.critical(f'active_children={active_children}')
+        if len(active_children)>0:
+            for item in active_children:
+                self.logger.warning(f'Last try to kill {item.pid}')
+                os.kill(item.pid,signal.SIGKILL)
+        self.logger.critical(f'All closed')
 class graphicsScene(QGraphicsScene):
     def __init__ (self, parent=None):
         super(graphicsScene, self).__init__ (parent)

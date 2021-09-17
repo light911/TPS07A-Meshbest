@@ -82,6 +82,7 @@ class BluiceClient(QThread):
         print("dcsdhs init")  
         self.test=False
     def run(self):
+        self.logger.info(f'Bluice PID = {os.getpid()}')
         #for QThread
 #        print "Bluice job=", self.job
         if self.job == 'initconnection':
@@ -161,10 +162,10 @@ class BluiceClient(QThread):
     def run2(self) :
 #        print("RUN")
         #creat reciver, sender ,PV process
-        m = Manager()
-        reciveQ = m.Queue() 
-        sendQ = m.Queue()
-        MainQ = m.Queue()
+        self.m = Manager()
+        reciveQ = self.m.Queue() 
+        sendQ = self.m.Queue()
+        MainQ = self.m.Queue()
         self.Qinfo["sendQ"]=sendQ
         self.Qinfo["reciveQ"]=reciveQ
         self.Qinfo["MainQ"] = MainQ
@@ -179,7 +180,8 @@ class BluiceClient(QThread):
         sender_.start()
 #        test_.start()
 #        epcisPV_.start()
-        
+        self.logger.info(f'Bluice reciver PID = {reciver_.pid}')
+        self.logger.info(f'Bluice  sender PID = {sender_.pid}')
         while True:
             try:
                 command = MainQ.get(block=True)
@@ -871,6 +873,8 @@ class BluiceClient(QThread):
         self.Qinfo["sendQ"].put("exit")
         self.Qinfo["reciveQ"].put("exit")
         self.client.close()
+        self.logger.critical(f'bluice m pid={self.m._process.ident}')
+        self.m.shutdown()
         pass
     
 def quit(signum,frame):

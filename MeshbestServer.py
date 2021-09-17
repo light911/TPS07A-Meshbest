@@ -5,6 +5,7 @@ import time,signal,sys,os,copy
 from multiprocessing.managers import BaseManager
 from multiprocessing import Process, Queue , Manager
 from multiprocessing.managers import BaseProxy
+import multiprocessing as mp
 from MestbestAPITools import convert_data
 import requests,json
 
@@ -24,11 +25,11 @@ class MestbestSever():
     def __init__(self):
         signal.signal(signal.SIGINT, self.quit)
         signal.signal(signal.SIGTERM, self.quit)
-        m = Manager()
+        self.m = Manager()
         # par={}
         # par['Debuglevel'] = "DEBUG"
-        self.Par = m.dict()
-        self.state = m.dict() 
+        self.Par = self.m.dict()
+        self.state = self.m.dict() 
         self.Par.update(Config.Par)
         self.state.update(Config.Par)
         init_meshbest_data = variables.init_meshbest_data()
@@ -36,14 +37,18 @@ class MestbestSever():
         self.Par['View1'] = init_meshbest_data
         self.Par['View2'] = init_meshbest_data
         self.Par['UI_par'] = variables.init_uipar_data()
+        statectrl ={}
+        statectrl['RasterDone'] = False
+        statectrl['AbletoStartRaster'] = False
+        self.Par['StateCtl']=statectrl
         
         self.MangerPort = 6534
         self.logger = logsetup.getloger2('MestbestServer',LOG_FILENAME='./log/MesrbestServerLog.txt',level = self.Par['Debuglevel'])
-        self.ServerQ = m.Queue()
-        # self.processQ = m.Queue()
-        self.ZMQQ = m.Queue()
-        self.meshbestjobQ = m.Queue()
-        self.clientsinfo = m.list()
+        self.ServerQ = self.m.Queue()
+        # self.processQ = self.m.Queue()
+        self.ZMQQ = self.m.Queue()
+        self.meshbestjobQ = self.m.Queue()
+        self.clientsinfo = self.m.list()
         self.clientsQ = []
         self.clientidlist = []
         # self.clientsQ = []
@@ -66,7 +71,8 @@ class MestbestSever():
         self.logger.debug(f'Init Par {self.Par}')
 
         self.processnum=100
-        self.job_queue = m.Queue()
+        self.job_queue = self.m.Queue()
+        self.pid=os.getpid()
         # for i in range(self.processnum):#number of cpu
         #     Process(target=self.worker, args=(self.job_queue,)).start()
 
@@ -88,23 +94,28 @@ class MestbestSever():
     
     def start(self):
         #start ManagerServer
-        p1 = Process(target=self.ManagerServer,args=(self.MangerPort,))
+        p1 = Process(name='ManagerServer',target=self.ManagerServer,args=(self.MangerPort,))
         p1.start()
         #start monitor
-        p2 = Process(target=self.Monitor,args=(self.ServerQ,self.ZMQQ,))
+        p2 = Process(name='Monitor',target=self.Monitor,args=(self.ServerQ,self.ZMQQ,))
         p2.start()
         
         
-        p3 = Process(target=self.ZMQ_monitor,args=(self.ZMQQ,self.ServerQ,self.meshbestjobQ,self.job_queue,))
+        p3 = Process(name='ZMQ_monitor',target=self.ZMQ_monitor,args=(self.ZMQQ,self.ServerQ,self.meshbestjobQ,self.job_queue,))
         p3.start()
         
-        p4 = Process(target=self.meshbetjob,args=(self.ServerQ,self.meshbestjobQ,))
+        p4 = Process(name='meshbetjob',target=self.meshbetjob,args=(self.ServerQ,self.meshbestjobQ,))
         p4.start()        
         # p4 = Process(target=self.writetoCBF,args=(self.ServerQ,self.processQ,self.ZMQQ,))
         # p4.start()
         # p3 = Process(target=self.test,args=())
         # p3.start()
+        self.MonitorPID=p1.pid
+        self.p2PID=p2.pid
+        self.p3PID=p3.pid
+        self.p4PID=p4.pid
         self.logger.info(f'All process started')
+        self.logger.info(f'Main          PID ={os.getpid()}')
         self.logger.info(f'ManagerServer PID ={p1.pid}')
         self.logger.info(f'Monitor       PID ={p2.pid}')
         self.logger.info(f'ZMQ_monitor   PID ={p3.pid}')
@@ -294,6 +305,7 @@ class MestbestSever():
          self.Par['View1'] = View1_data
          self.Par['View2'] = View2_data
          self.Par['UI_par'] = rasterpar['UI_par']
+         self.Par['StateCtl'] = rasterpar['StateCtl']
          self.logger.debug(f'after update par from Client: {self.Par}')
          return 
     
@@ -313,72 +325,83 @@ class MestbestSever():
                 elif isinstance(command,tuple) :
                      # self.logger.info(f'command is tuple')
                      if command[0] == "regID" :
-                         self.logger.info(f'New client ask for register: {command[1]}')
-                         self.addManagerClient(command[1])
-                         pass
+                        self.logger.info(f'New client ask for register: {command[1]}')
+                        self.addManagerClient(command[1])
+                        pass
                      elif command[0] == "armview":
-                         # 'armview',[runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY]]
-                         self.logger.info(f'Got Arm Veiw 1: {command[1]}')
-                         #sholud clear old data and has new array for resArray/spotsArray/scoreArray
-                         if command[1][1] == "RasterScanview1":
-                             view='View1'
-                         else:
-                             view='View2'
-                         numofXbox = int(command[1][19])
-                         numofYbox = int(command[1][20])
-                         self.logger.info(f'got armview numofXbox={numofXbox},numofYbox={numofYbox}')
-                         self.initScoreArray(numofXbox,numofYbox,view)
-                         ZMQQ.put(command)
+                        # 'armview',[runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY]]
+                        self.logger.info(f'Got Arm Veiw 1: {command[1]}')
+                        #sholud clear old data and has new array for resArray/spotsArray/scoreArray
+                        if command[1][1] == "RasterScanview1":
+                            view='View1'
+                        else:
+                            view='View2'
+                        numofXbox = int(command[1][19])
+                        numofYbox = int(command[1][20])
+                        self.logger.info(f'got armview numofXbox={numofXbox},numofYbox={numofYbox}')
+                        self.initScoreArray(numofXbox,numofYbox,view)
+                        ZMQQ.put(command)
                      elif command[0] == "Update_par":
-                         temp = copy.deepcopy(command[1])
-                         del temp['View1']['jpg']
-                         del temp['View2']['jpg']
-                         self.logger.info(f'Update_par form client:{temp}')
-                         self.RasterInfo_to_meshbest(command[1])
-                         par = copy.deepcopy(self.Par)
-                         self.sendtoAllClient(('updatePar',par))
+                        temp = copy.deepcopy(command[1])
+                        del temp['View1']['jpg']
+                        del temp['View2']['jpg']
+                        self.logger.info(f'Update_par form client:{temp}')
+                        self.RasterInfo_to_meshbest(command[1])
+                        par = copy.deepcopy(self.Par)
+                        self.sendtoAllClient(('updatePar',par))
+                     elif command[0] == "Clear_scoreArray":
+                        self.Par[view]['scoreArray'] = numpy.zeros((numofXbox, numofYbox))
+                        self.Par[view]['scoreArray'][:] = numpy.nan
+                        self.Par[view]['resArray']=numpy.zeros((numofXbox, numofYbox))
+                        self.Par[view]['resArray'][:]=50#set all value to 50
+                        self.Par[view]['spotsArray']=numpy.zeros((numofXbox, numofYbox))
+                        self.Par[view]['spotsArray'][:] = numpy.nan
+                        par = copy.deepcopy(self.Par)
+                        self.sendtoAllClient(('updatePar',par))
                      elif command[0] == "Direct_Update_par":
                          
-                         self.logger.info(f'Direct_Update_par')
-                         par = copy.deepcopy(self.Par)
-                         self.sendtoAllClient(('updatePar',par))
+                        self.logger.info(f'Direct_Update_par')
+                        par = copy.deepcopy(self.Par)
+                        self.sendtoAllClient(('updatePar',par))
                              
                      
                      elif command[0] == "notify_ui_update":
-                         self.logger.info(f'notify_ui_update')
-                         self.sendtoAllClient(command)
+                        self.logger.info(f'notify_ui_update')
+                        self.sendtoAllClient(command)
                          
                      elif command[0] == "sendtoClient":
-                         self.logger.info(f'sendtoClient')
-                         temp = list(command)
-                         temp.pop(0)
-                         self.sendtoAllClient(tuple(temp))
+                        self.logger.info(f'sendtoClient')
+                        temp = list(command)
+                        temp.pop(0)
+                        self.sendtoAllClient(tuple(temp))
                      elif command[0] == "dozor":
-                         self.logger.info(f'dozor,{command[1]}')
-                         # ('dozor',dozorresult)
-                         self.sendtoAllClient(command)
-                         #update myself info?
-                         if command[1]['view'] == 1:
-                             view = 'View1'
-                         else:
-                             view = 'View2'
-                         frame = int(command[1]['frame']) + 1
-                         numofX = self.Par[view]['numofX']
-                         numofY = self.Par[view]['numofY']
-                         temp = copy.deepcopy(self.Par[view])
-                         x,y=self.convertFrametoXY(frame,numofX,numofY)#frame start from 0 
-                         temp['scoreArray'][x][y] = float(command[1]['score'])
-                         temp['resArray'][x][y] = float(command[1]['res'])
-                         temp['spotsArray'][x][y] = float(command[1]['spots'])
-                         self.Par[view] = temp
-                         self.logger.debug(f'after update index ={frame} x={x} y ={y}, pararray = {self.Par[view]["scoreArray"]}')
+                        self.logger.info(f'dozor,{command[1]}')
+                        # ('dozor',dozorresult)
+                        self.sendtoAllClient(command)
+                        #update myself info?
+                        if command[1]['view'] == 1:
+                            view = 'View1'
+                        else:
+                            view = 'View2'
+                        frame = int(command[1]['frame']) + 1
+                        numofX = self.Par[view]['numofX']
+                        numofY = self.Par[view]['numofY']
+                        temp = copy.deepcopy(self.Par[view])
+                        x,y=self.convertFrametoXY(frame,numofX,numofY)#frame start from 0 
+                        temp['scoreArray'][x][y] = float(command[1]['score'])
+                        temp['resArray'][x][y] = float(command[1]['res'])
+                        temp['spotsArray'][x][y] = float(command[1]['spots'])
+                        self.Par[view] = temp
+                        self.logger.debug(f'after update index ={frame} x={x} y ={y}, pararray = {self.Par[view]["scoreArray"]}')
                      elif command[0] == "EndOfSeries":
-                         self.logger.info(f'EndOfSeries')
-                         # All job done
-                         # self.sendtoAllClient(tuple(temp))
-                         pass
+                        self.logger.info(f'EndOfSeries')
+                        # All job done
+                        # self.sendtoAllClient(tuple(temp))
+                        pass
                 else:
                     pass
+            except IOError:
+                break
             except Exception as e:
                 self.logger.warning(f'Error : {e}')
     def ZMQ_monitor(self,ZMQQ,ServerQ,meshbestjobQ,job_queue):
@@ -844,23 +867,54 @@ class MestbestSever():
         self.logger.debug(f' init array {numofXbox},{numofYbox}')
         self.logger.debug(f'After init should :{view}={temp}')
     def quit(self,signum,frame):
-        self.logger.critical(f'Start Quit Meshbest Server PID:{os.getpid()}')
+        self.logger.critical(f'Start Quit Meshbest Server PID:{os.getpid()},active_children={mp.active_children()}')
         try:
             self.ServerQ.put("exit")
-            # self.clientsQ.put("exit")
-            self.ZMQQ.put("exit")
-            self.meshbestjobQ.put('exit')
-            self.processQ.close()
         except:
             pass
-        self.logger.critical(f'Quit Meshbest Server PID:{os.getpid()}')
+        try:
+            self.ZMQQ.put("exit")
+        except:
+            pass
+        try:
+            self.meshbestjobQ.put('exit')
+        except:
+            pass
+        
+        try:
+            os.kill(self.MonitorPID,signal.SIGKILL)
+        except:
+            pass
+        try:
+            os.kill(self.p2PID,signal.SIGKILL)
+        except:
+            pass
+        try:
+            os.kill(self.p3PID,signal.SIGKILL)
+        except:
+            pass
+        try:
+            os.kill(self.p4PID,signal.SIGKILL)
+        except:
+            pass
+        
+        self.m.shutdown()
+        if os.getpid() == self.pid:
+            time.sleep(0.5)
+        
+        active_children = mp.active_children()
+        self.logger.critical(f'End Quit Meshbest Server PID:{os.getpid()},End active_children={active_children}')
+        if len(active_children)>0:
+            for item in active_children:
+                self.logger.warning(f'Last try to kill {item.pid}')
+                os.kill(item.pid,signal.SIGKILL)
         sys.exit()
    
                          
-def quit(signum,frame):
-    print("Main cloesd")
-    # sys.exit()
-    pass       
+# def quit(signum,frame):
+#     print("Main cloesd")
+#     # sys.exit()
+#     pass       
         
 if __name__ == "__main__":
     # signal.signal(signal.SIGINT, quit)

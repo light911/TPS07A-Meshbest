@@ -23,11 +23,11 @@ class MestbestClient(QThread):
         super(MestbestClient,self).__init__()
         signal.signal(signal.SIGINT, self.quit)
         signal.signal(signal.SIGTERM, self.quit)
-        m = Manager()
+        self.m = Manager()
         
         self.localIP='10.7.1.2'
         self.localPort = self.get_free_port(self.localIP)
-        self.Par = m.dict()
+        self.Par = self.m.dict()
         par = {}
         par['Debuglevel'] = "INFO"
         self.Par.update(par)
@@ -43,16 +43,18 @@ class MestbestClient(QThread):
         self.start2()
     def start2(self):
         #This start a process to send command to server
-        p1 = Process(target=self.ManagerServer,args=(self.localPort,))
+        p1 = Process(name='meshbestclient_ManagerServer',target=self.ManagerServer,args=(self.localPort,))
         p1.start()
         
         #start monitor
         #this recvice the data from Server
-        p2 = Process(target=self.Monitor,args=(self.ClientQ,self.MainQ,))
+        p2 = Process(name='meshbestclient_Monitor',target=self.Monitor,args=(self.ClientQ,self.MainQ,))
         p2.start()
         
         self.ManagerClient(self.ServerQIP,port=self.ServerQPort)
-        
+        self.MonitorPID = p1.pid
+        self.logger.info(f'ManagerServer PID ={p1.pid}')
+        self.logger.info(f'Monitor       PID ={p2.pid}')
         while True:
             try:
                 command = self.MainQ.get(block=True)
@@ -73,6 +75,7 @@ class MestbestClient(QThread):
         
         # p1.join()
         p2.join()
+        self.logger.critical(f'Exit ManagerClient Main Thread')
 
     def sendCommandToMeshbest(self,command):
         self.ServerQ.put(command)
@@ -123,7 +126,7 @@ class MestbestClient(QThread):
             self.ServerQ = m.ServerQ()
 
         except ConnectionRefusedError:
-            self.logger.warning(f'Mesgbest Server ConnectionRefused,try 1sec later')
+            self.logger.warning(f'Meshbest Server ConnectionRefused,try 1sec later')
             time.sleep(1)
             self.ManagerClient(self.ServerQIP,port=self.ServerQPort)
         else:
@@ -148,7 +151,7 @@ class MestbestClient(QThread):
         s = m.get_server()
         
         self.logger.info(f'Start Queue Manager server at port :{port}')
-        # self.logger.info(f'Start Queue Manager server at {s.address}')
+        # self.logger.info(f'Start Queue Manager server PID at {m._process.ident}')
         s.serve_forever()
     
     def get_free_port(self,host='127.0.0.1'):
@@ -162,7 +165,17 @@ class MestbestClient(QThread):
         self.closedmeshbest = True
         self.MainQ.put("exit")
         self.ClientQ.put("exit")
-        sys.exit()
+        self.logger.critical(f'meshbest client m pid={self.m._process.ident}')
+        
+        
+        try:
+            self.logger.info(f'try to kill MonitorPID = {self.MonitorPID}')
+            os.kill(self.MonitorPID,signal.SIGKILL)
+        except:
+            pass
+        # time.sleep(1)
+        self.m.shutdown()
+        # sys.exit()
 def quit(signum,frame):
     print("Client cloesd")
     sys.exit()
