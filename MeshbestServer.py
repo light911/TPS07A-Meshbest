@@ -371,7 +371,7 @@ class MestbestSever():
             except Exception as e:
                 self.logger.warning(f'Error : {e}')
     def ZMQ_monitor(self,ZMQQ,ServerQ,meshbestjobQ,job_queue):
-         os.nice(-19)
+         os.nice(-19)#high priority
          fw = stream2cbf.Stream2Cbf("temp", "/home/meshbesttemp")
          fw.register_observer(self)
          # folder = fw.path
@@ -394,12 +394,15 @@ class MestbestSever():
                         break
                 elif isinstance(command,tuple) :
                      self.logger.info(f'command is tuple')
-                     if command[0] == "armviwe" :
+                     if command[0] == "armview" :
                          # [17, 'RasterScanViwe1', '/data/blctl/20210727_07A/', 'blctl', 'gonio_phi', 0.1, 119.999802, 0.0, 15, 625.99884, 7.874044121870488e-05, 0.0, -0.997409, 'no', 0, 1, 50.0, 0.0, 1, 3, 5]
                          # [runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY]
                          self.logger.info(f'update filename to {command[1][1]}')
                          fw.basename = command[1][1]
                          self.logger.info(f'CBF file will write to  {fw.path} with filename {fw.basename}')
+                         #reload dozor par
+                         import DozorPar
+                         fw.dozor_par=DozorPar.DozorPar
                          pass
                 else:
                     pass

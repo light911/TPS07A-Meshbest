@@ -45,6 +45,7 @@ class Stream2Cbf(FileWriter):
         self.logger = logsetup.getloger2('FileWriter',LOG_FILENAME='./log/FileWriter.txt',level = self.Par['Debuglevel'])
         self._observers=[]
         self.timer=0
+        self.dozor_par={"spot_level":8,"spot_size":3}
         # self.process = Pool(100)
         # self.header = {}
         # self.temp=True
@@ -205,7 +206,8 @@ class Stream2Cbf(FileWriter):
             #to using 
             # r.get()
             # job_queue.put((frames,ServerQ,self.metadata,meshbestjobQ))
-            p1 = Process(target=self.__decodeImage2__,args=(frames,ServerQ,self.metadata,meshbestjobQ,info,header,job_queue,))
+            dozor_par = self.dozor_par
+            p1 = Process(target=self.__decodeImage2__,args=(frames,ServerQ,self.metadata,meshbestjobQ,info,header,job_queue,dozor_par,))
             p1.start()
         else:
             self.logger.debug(f'Run index {self.metadata["appendix"]["runIndex"]} not a raster scan,frame= {header["frame"]}')
@@ -224,7 +226,7 @@ class Stream2Cbf(FileWriter):
     #     self.__dict__.update(state)
 
     
-    def __decodeImage2__(self,frames,ServerQ,metadata,meshbestjobQ,info,header,job_queue):
+    def __decodeImage2__(self,frames,ServerQ,metadata,meshbestjobQ,info,header,job_queue,dozor_par):
         t0 =time.time()
         os.nice(34)
         # data = FileWriter().__decodeImage__(frames,ServerQ,meshbestjobQ,job_queue) # read back image data
@@ -250,7 +252,7 @@ class Stream2Cbf(FileWriter):
         # self.logger.debug(f'decode time for frame {header["frame"]},time:{time.time()-t0} sec')
         path = self.saveImage(data, series, frame,metadata)
         
-        dozorresult,datastr = self.dozor(path,metadata)
+        dozorresult,datastr = self.dozor(path,metadata,dozor_par)
         dozorresult['frame'] = frame
         dozorresult['omega'] = metadata['omega_start']
         dozorresult['numofX'] = metadata['appendix']['raster_X']
@@ -285,7 +287,9 @@ class Stream2Cbf(FileWriter):
     
     # in upper dhs need has a 
     # def notify
-    def dozor(self,path,metadata):
+    def dozor(self,path,metadata,dozor_par):
+        spot_level=f'spot_level {dozor_par["spot_level"]}'
+        spot_size=f'spot_size {dozor_par["spot_size"]}'
         dozorresult={}
         #path = /tmp/meshbest/temp_00279.cbf
         pid=os.getpid()
@@ -318,9 +322,9 @@ class Stream2Cbf(FileWriter):
         txt = txt + "pixel " + str(metadata['x_pixel_size']*1000) + "\n"
         txt = txt + "pixel_min 0\n"
         txt = txt + "pixel_max " + str(metadata['countrate_correction_count_cutoff']) +"\n"
-        txt = txt + "spot_level 8\n"#higher less spot default 5.5
+        txt = txt + f"{spot_level}\n"#higher less spot default 5.5
         txt = txt + "fraction_polarization 0.99\n"
-        txt = txt + "spot_size 3\n"
+        txt = txt + f"{spot_size}\n"
         txt = txt + "wedge_number 1\n"
         txt = txt + "end\n"
         newfilename = filename.replace(extwithpt, "_dozor.txt")
