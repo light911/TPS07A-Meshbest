@@ -13,6 +13,8 @@ import Config
 from Eiger.DEigerStream import ZMQStream
 from Eiger.fileWriter import stream2cbf
 import variables
+import importlib
+import DozorPar
 #https://stackoverflow.com/questions/29788809/python-how-to-pass-an-autoproxy-object
 
 
@@ -211,7 +213,10 @@ class MestbestSever():
                 # message = message + ()
                 Q.put(message)
                 if message[0] == 'updatePar':
-                    self.logger.debug(f'send message {message }to ID {cid} client')
+                    tempdict = message[1]
+                    del tempdict['View1']['jpg']
+                    del tempdict['View2']['jpg']
+                    self.logger.debug(f'send message {tempdict}to ID {cid} client')
                 else:
                     self.logger.warning(f'send message {message }to ID {cid} client')
             except EOFError:
@@ -298,7 +303,7 @@ class MestbestSever():
             #check command
             try:
                 command = ServerQ.get(block=True)
-                self.logger.info(f'Get Q: {command}')
+                # self.logger.info(f'Get Q: {command}')
                 if isinstance(command,str):
                     # self.logger.info(f'command is srt')
                     if command == "exit" :
@@ -321,12 +326,14 @@ class MestbestSever():
                              view='View2'
                          numofXbox = int(command[1][19])
                          numofYbox = int(command[1][20])
-                         self.logger.debug(f'got armview numofXbox={numofXbox},numofYbox={numofYbox}')
+                         self.logger.info(f'got armview numofXbox={numofXbox},numofYbox={numofYbox}')
                          self.initScoreArray(numofXbox,numofYbox,view)
                          ZMQQ.put(command)
                      elif command[0] == "Update_par":
-                         
-                         self.logger.debug(f'Update_par form client:{command[1]}')
+                         temp = copy.deepcopy(command[1])
+                         del temp['View1']['jpg']
+                         del temp['View2']['jpg']
+                         self.logger.info(f'Update_par form client:{temp}')
                          self.RasterInfo_to_meshbest(command[1])
                          par = copy.deepcopy(self.Par)
                          self.sendtoAllClient(('updatePar',par))
@@ -338,13 +345,16 @@ class MestbestSever():
                              
                      
                      elif command[0] == "notify_ui_update":
+                         self.logger.info(f'notify_ui_update')
                          self.sendtoAllClient(command)
                          
                      elif command[0] == "sendtoClient":
+                         self.logger.info(f'sendtoClient')
                          temp = list(command)
                          temp.pop(0)
                          self.sendtoAllClient(tuple(temp))
                      elif command[0] == "dozor":
+                         self.logger.info(f'dozor,{command[1]}')
                          # ('dozor',dozorresult)
                          self.sendtoAllClient(command)
                          #update myself info?
@@ -363,6 +373,7 @@ class MestbestSever():
                          self.Par[view] = temp
                          self.logger.debug(f'after update index ={frame} x={x} y ={y}, pararray = {self.Par[view]["scoreArray"]}')
                      elif command[0] == "EndOfSeries":
+                         self.logger.info(f'EndOfSeries')
                          # All job done
                          # self.sendtoAllClient(tuple(temp))
                          pass
@@ -401,8 +412,9 @@ class MestbestSever():
                          fw.basename = command[1][1]
                          self.logger.info(f'CBF file will write to  {fw.path} with filename {fw.basename}')
                          #reload dozor par
-                         import DozorPar
+                         importlib.reload(DozorPar)
                          fw.dozor_par=DozorPar.DozorPar
+                         self.logger.info(f'update dozor par = {DozorPar.DozorPar}')
                          pass
                 else:
                     pass

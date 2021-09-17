@@ -1148,6 +1148,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             # print(self.Beamsize.currentText())
             beamsizeX = float(self.Beamsize.currentText())
             beamsizeY = float(self.Beamsize.currentText())
+            
             try:
                 # camscaleX = self.bluiceData['motor']['zoom_scale_x']['pos']#um/pix
                 # camscaleY = self.bluiceData['motor']['zoom_scale_y']['pos']
@@ -1164,9 +1165,11 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 # numofYbox1 = math.ceil(self.RasterPar['View1']['box'].height()*camscaleY/beamsizeY)
                 numofXbox1 = round(self.RasterPar['View1']['box'].width()*camscaleX/beamsizeX)
                 numofYbox1 = round(self.RasterPar['View1']['box'].height()*camscaleY/beamsizeY)
+                if numofXbox1 == 1:
+                    numofXbox1 = 2#unable to raster wiht x num =1
             except Exception as e:
-                numofXbox1 = 0 
-                numofYbox1 = 0 
+                numofXbox1 = 2 
+                numofYbox1 = 2 
 
             if camscaleX:
                 pass
@@ -1210,7 +1213,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             if Newone:
                 self.clear_dozor_plot()
                 self.initScoreArray('View1')
-            print(f'{beamsizeX=},{camscaleX=},{ratio=}')
+            # print(f'{beamsizeX=},{camscaleX=},{ratio=}')
             w = beamsizeX / camscaleX / ratio
             h = beamsizeY / camscaleY / ratio
             
@@ -1238,11 +1241,16 @@ class MainUI(QMainWindow,Ui_MainWindow):
             # print("new:",self.RasterPar['View1']['box'])
             
             
-            # numofXbox2 = math.ceil(self.RasterPar['View2']['box'].width()*camscaleX/beamsizeX)
-            # numofYbox2 = math.ceil(self.RasterPar['View2']['box'].height()*camscaleY/beamsizeY)
-            numofXbox2 = round(self.RasterPar['View2']['box'].width()*camscaleX/beamsizeX)
-            numofYbox2 = round(self.RasterPar['View2']['box'].height()*camscaleY/beamsizeY)
-            
+            try:    
+                
+                numofXbox2 = round(self.RasterPar['View2']['box'].width()*camscaleX/beamsizeX)
+                numofYbox2 = round(self.RasterPar['View2']['box'].height()*camscaleY/beamsizeY)
+                if numofXbox2 == 1:
+                    numofXbox2 = 2#unable to raster wiht x num =1
+            except Exception as e:
+                numofXbox2 = 2 
+                numofYbox2 = 1 
+
             self.RasterPar['View2']['numofX']=numofXbox2
             self.RasterPar['View2']['numofY']=numofYbox2
             self.RasterPar['View2']['beamsizeX']=beamsizeX
@@ -2182,6 +2190,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 pass
             # numofXbox = par['numofX']
             # numofYbox = par['numofY']
+            self.logger.warning(f'{numofXbox=},{numofYbox=}')
             myfont = QFont()
             myfont.setBold(False)
             myfont.setPointSize(10)
@@ -2219,6 +2228,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             traceback.print_exc()
             self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
             self.logger.warning(f'Error:{e}')
+            
         
     def plottool_getpixel(self,indexX,indexY,ratio,view1=True):
         if view1:
@@ -2714,6 +2724,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 except:
                     pass
     def initScoreArray(self,view='View1'):
+        self.logger.warning(f'initScoreArray for {view=}')
         numofXbox = self.RasterPar[view]['numofX']
         numofYbox = self.RasterPar[view]['numofY']
         self.RasterPar[view]['Textplotarray']=[[0]*numofYbox for i in range(numofXbox)]
@@ -2813,7 +2824,9 @@ class MainUI(QMainWindow,Ui_MainWindow):
             newitem = getattr(self,item)
             # print(f'Name:{item}, value={newitem.currentIndex()}')
             self.Par['UI_par'][item] = newitem.currentIndex()
-        par = copy.deepcopy(self.Par)
+        
+        # par = copy.deepcopy(self.Par)
+        par = variables.Raster_to_Meshbest_par(self.RasterPar, self.Par)
         self.meshbest.sendCommandToMeshbest(('Update_par',par))
     def quit(self,signum,frame):
         self.logger.critical(f'Main GUi exit')
