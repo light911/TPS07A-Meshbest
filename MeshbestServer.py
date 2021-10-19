@@ -668,6 +668,8 @@ class MestbestSever():
                             ServerQ.put(('Direct_Update_par','meshbetjob',sid))
                             ServerQ.put(('notify_ui_update','meshbetjob',sid))
                         elif my_sid_ans['State'] == 'Fail':
+                            self.logger.info(f'sid {sid} meshbest job fail!')
+                            #todo add some messge to GUI?
                             pass
                         else:
                             time.sleep(0.05)
