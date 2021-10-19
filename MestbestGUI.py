@@ -53,7 +53,10 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.numofclient = 0
         self.bluiceID = -1
         self.bluiceCounter = 0
+        self.m1 = Manager()
+        
         self.bluiceData={}
+        # self.bluiceData = self.m1.dict()
         self.bluiceData['active'] = False
         self.bluiceData['motor'] = {}
         self.bluiceData['operation'] = {}
@@ -100,7 +103,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         # self.FluxClient = FluxClient()
         # self.FluxClient.updateFlux() 
         # self.beamlineinfo['Fulx'] = self.FluxClient.Flux
-        self.m1 = Manager()
+        
         # self.Par = m.dict()
         self.Par = {}
         self.state = self.m1.dict() 
@@ -1413,8 +1416,11 @@ class MainUI(QMainWindow,Ui_MainWindow):
             # self.TriMD3RasterEx()
             self.Raster_move_xyzphi()
         else:
+            #move pos phi
+            # self.Raster_move_xyzphi()
             #arm detector and meshbesst
             
+            self.logger.debug(f'patlist = {parlist}')
             command = f"gtos_start_operation detector_ratser_setup {self.bluiceID}.{self.bluiceCounter} "
             self.bluiceCounter += self.bluiceCounter
             
@@ -1423,15 +1429,31 @@ class MainUI(QMainWindow,Ui_MainWindow):
             
             #arm meshbetserver and detector
             self.meshbest.sendCommandToMeshbest((arm,parlist))
+            self.opCompleted['detector_ratser_setup'] = False
             self.Qinfo["sendQ"].put(command)
             
             #wait detectorop
+            self.logger.warning(f'op state list = {self.opCompleted}')
             self.logger.info(f'Wait for setup detctor done')
             oplist=['detector_ratser_setup']
-            # callback = self.TriMD3RasterEx
+
+
+            
+            # # callback = self.TriMD3RasterEx
             callback = self.Raster_move_xyzphi
-            self.timer.singleShot(100, partial(self.waitOperationDone
-                                               ,oplist,callback))
+            while True:
+                checkarray = []
+                self.logger.debug(f'check op:{oplist} job')
+                for op in oplist:
+                    checkarray.append(self.opCompleted[op])
+                if all(checkarray):
+                    self.logger.debug(f'op:{oplist} move done')
+                    break
+                time.sleep(0.1)
+            callback()
+            # self.bluiceData['operation']['detector_ratser_setup']['moving'] = True
+            # self.timer.singleShot(100, partial(self.waitOperationDone
+            #                                    ,oplist,callback))
             
     def Raster_move_xyzphi(self):
         if self.RasterRunstep == 0:
@@ -1445,8 +1467,22 @@ class MainUI(QMainWindow,Ui_MainWindow):
             callback = self.TriMD3Raster
             par = self.RasterPar['View2']
         
+        #make sure motor stop before we move
+        motorchecklist=['gonio_phi','sample_x','sample_y','sample_z','attenuation']
+        self.logger.warning(f'Moving list = {self.MotorMoving}')
+        while True:
+            self.logger.debug(f'Checking online {motorchecklist} moving state')
+            checkarray = []
+            posarray = []
+            for motor in motorchecklist:
+                checkarray.append(not (self.MotorMoving[motor]))
+            if all(checkarray):
+                self.logger.debug(f'motor:{motorchecklist} move done')
+                break
+            time.sleep(0.2)
+            
         
-        
+        attenuation = self.Attenuation.value()
         samplex = par['sample_x']
         sampley = par['sample_y']
         samplez = par['sample_z']
@@ -1458,7 +1494,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         samplez,sampley,samplex = self.calXYZbaseonCAMCenter(centerX,CenterY,angle,zoomx,zoomy,samplex,sampley,samplez)    
         
         command = f'gtos_start_motor_move gonio_phi {angle}'
-        print(command)
+        # print(command)
         self.Qinfo["sendQ"].put(command)
         command = f'gtos_start_motor_move sample_x {samplex}'
         # print(command)
@@ -1469,8 +1505,12 @@ class MainUI(QMainWindow,Ui_MainWindow):
         command = f'gtos_start_motor_move sample_z {samplez}'
         # print(command)
         self.Qinfo["sendQ"].put(command)
-        motorchecklist=['gonio_phi','sample_x','sample_y','sample_z']
-        motorposchecklist=[angle,samplex,sampley,samplez]
+        command = f'gtos_start_motor_move attenuation {attenuation}'
+        # print(command)
+        self.Qinfo["sendQ"].put(command)
+
+        motorchecklist=['gonio_phi','sample_x','sample_y','sample_z','attenuation']
+        motorposchecklist=[angle,samplex,sampley,samplez,attenuation]
         # motorchecklist=['sample_x','sample_y','sample_z']
         # motorposchecklist=[samplex,sampley,samplez]
         self.logger.info(f'wait {motorchecklist} goto {motorposchecklist}')
@@ -1508,6 +1548,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             #wait operation done
             self.logger.info(f'Wait for MD3 operation')
             oplist=['startRasterScan']
+            self.bluiceData['operation']['startRasterScan']['moving'] = True
             self.timer.singleShot(100, partial(self.waitOperationDone
                                                ,oplist,callback))
         
@@ -1539,6 +1580,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             #wait operation done
             self.logger.info(f'Wait for MD3 operation')
             oplist=['startRasterScanEx']
+            self.bluiceData['operation']['startRasterScanEx']['moving'] = True
             self.timer.singleShot(100, partial(self.waitOperationDone
                                                ,oplist,callback))
             
@@ -1586,8 +1628,9 @@ class MainUI(QMainWindow,Ui_MainWindow):
         
         detosc =  float(0)
         TotalFrames = int(par['numofX']*par['numofY'] ) #1
-        distance = self.bluiceData['motor']['detector_z']['pos']
-        wavelength = 1/self.bluiceData['motor']['energy']['pos']
+        # distance = self.bluiceData['motor']['detector_z']['pos']
+        distance = self.Distance.value()
+        wavelength = 1/self.bluiceData['motor']['energy']['pos']*12.4
         detectoroffX = self.bluiceData['motor']['detector_vert']['pos']
         detectoroffY = self.bluiceData['motor']['detector_horz']['pos']
         
@@ -1601,7 +1644,9 @@ class MainUI(QMainWindow,Ui_MainWindow):
         numofY = par['numofY'] 
         #  sscanf(commandBuffer.textInBuffe
         # self.logger.info(f'Default action for {command[0]}:{command[1:]}')
-        return [runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY]
+        ans =  [runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY]
+        self.logger.info(f'{ans}')
+        return ans
     def calRasterPar(self,view1=True):
         # startRasterScanEx
         # double omega_range,
@@ -2463,8 +2508,16 @@ class MainUI(QMainWindow,Ui_MainWindow):
             #[u'stog_motor_move_completed', u'change_mode', u'4.000000', u'normal']
             motorname=command[1]
             pos=command[2]
-            self.bluiceData['motor'][motorname]['pos']=float(pos)
-            self.bluiceData['motor'][motorname]['moving'] = False
+            if motorname == 'centerLoop':
+                #todo maybe need change epics dhs
+                #Traceback (most recent call last):
+                # File "/NAS/Eddie/TPS07A/MeshbestServer/MestbestGUI.py", line 2473, in messageFromBluice
+                #     self.bluiceData['motor'][motorname]['pos']=float(pos)
+                # KeyError: 'centerLoop'
+                pass
+            else:
+                self.bluiceData['motor'][motorname]['pos']=float(pos)
+                self.bluiceData['motor'][motorname]['moving'] = False
             # print(command,self.bluiceData['motor'][motorname]['moving'])
         elif command[0] == "stog_configure_operation":
             # ['stog_configure_operation', 'collectShutterless', 'self']

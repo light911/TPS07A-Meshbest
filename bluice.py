@@ -318,6 +318,8 @@ class BluiceClient(QThread):
                             pass     
                         elif command[0] == "stog_configure_operation":
                             self.logger.debug(command)
+                            op=command[1]
+                            self.opCompleted[op]=True
                             pass     
                         elif command[0] == "stog_note":
                             self.logger.debug(command)
@@ -377,6 +379,7 @@ class BluiceClient(QThread):
                             motor=command[1]
                             pos=command[4]
                             self.info[motor]=float(pos)
+                            self.MotorMoving[motor]=False
 #                            print command
 #                            print command
                             self.logger.debug(command)
@@ -386,6 +389,7 @@ class BluiceClient(QThread):
                             motor=command[1]
                             pos=command[4]
                             self.info[motor]=float(pos)
+                            self.MotorMoving[motor]=False
 #                            print command
                             self.logger.debug(command)
                         elif command[0] == "stog_motor_move_completed":
