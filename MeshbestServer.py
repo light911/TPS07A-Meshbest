@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import logsetup
-import time,signal,sys,os,copy
+import time,signal,sys,os,copy,traceback
 from multiprocessing.managers import BaseManager
 from multiprocessing import Process, Queue , Manager
 from multiprocessing.managers import BaseProxy
@@ -75,6 +75,12 @@ class MestbestSever():
         self.pid=os.getpid()
         # for i in range(self.processnum):#number of cpu
         #     Process(target=self.worker, args=(self.job_queue,)).start()
+        #creat temp foder
+        tempfolder = "/tmp/meshbest"
+        if os.path.isdir(tempfolder):
+            pass
+        else:
+            os.makedirs(tempfolder)
 
     def worker(self,job_queue):
         os.nice(19)
@@ -306,7 +312,10 @@ class MestbestSever():
          self.Par['View2'] = View2_data
          self.Par['UI_par'] = rasterpar['UI_par']
          self.Par['StateCtl'] = rasterpar['StateCtl']
-         self.logger.debug(f'after update par from Client: {self.Par}')
+         temp = copy.deepcopy(self.Par)
+         del temp['View1']['jpg']
+         del temp['View2']['jpg']
+         self.logger.debug(f'after update par from Client: {temp}')
          return 
     
     def Monitor(self,ServerQ,ZMQQ):       
@@ -672,8 +681,10 @@ class MestbestSever():
                              # meshbestjobQ.put(('check_state',alldata['sessionid']))
                 else:
                     pass
-            except:
-                pass
+            except Exception as e: 
+                traceback.print_exc()
+                self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
+                self.logger.warning(f'Error:{e}')
         
     def wait_job_state(self,sid,url,TargetState="Start",timeout=60):
         t0=time.time()
@@ -865,6 +876,8 @@ class MestbestSever():
         temp['spotsArray'][:] = numpy.nan
         self.Par[view] = temp
         self.logger.debug(f' init array {numofXbox},{numofYbox}')
+        del temp['View1']['jpg']
+        del temp['View2']['jpg']
         self.logger.debug(f'After init should :{view}={temp}')
     def quit(self,signum,frame):
         self.logger.critical(f'Start Quit Meshbest Server PID:{os.getpid()},active_children={mp.active_children()}')
