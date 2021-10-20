@@ -624,11 +624,12 @@ class MestbestSever():
                          #Check for job become start
                          time.sleep(0.5)
                          # self.wait_job_state(sid,self.meshbesturl,"Start")
-                         meshbestjobQ.put(('check_jsondata',sid))
+                         meshbestjobQ.put(('check_jsondata',sid,time.time()))
                          
                      elif command[0] == "check_jsondata":
                         # self.logger.info(f'check_jsondata sid = {command[1]}')
                         sid = command[1]
+                        starttime = command[2]
                         response = requests.get(self.meshbesturl)
                         ans = response.json()
                         # print(len(ans))
@@ -640,8 +641,9 @@ class MestbestSever():
                             if ans[item]['sessionid'] == sid:
                                 my_sid_ans = ans[item]
                         # self.logger.info(f'my sid and = {my_sid_ans}')
+                        timepass = time.time() - starttime
                         if my_sid_ans['State'] == 'End':
-                            self.logger.info(f'Get data for sid {sid} ')
+                            self.logger.info(f'Get data for sid {sid} ,time pass= {timepass}')
                             # Dtable,Ztable,BestPositions = convert_data(my_sid_ans['data'],self.logger)
                             
                             if sid == 101:
@@ -668,12 +670,18 @@ class MestbestSever():
                             ServerQ.put(('Direct_Update_par','meshbetjob',sid))
                             ServerQ.put(('notify_ui_update','meshbetjob',sid))
                         elif my_sid_ans['State'] == 'Fail':
-                            self.logger.info(f'sid {sid} meshbest job fail!')
+                            self.logger.info(f'sid {sid} meshbest job fail!,time pass= {timepass}')
                             #todo add some messge to GUI?
                             pass
                         else:
-                            time.sleep(0.05)
-                            meshbestjobQ.put(('check_jsondata',sid))
+                            
+                            self.logger.debug(f'sid {sid} state =  {my_sid_ans["State"]},check again,time pass= {timepass}')
+                            time.sleep(0.1)
+                            if timepass > 120:
+                                self.logger.warning(f'sid {sid} state =  {my_sid_ans["State"]},Timeout!,time pass= {timepass}')
+                                pass
+                            else:
+                                meshbestjobQ.put(('check_jsondata',sid,starttime))
                      elif command[0] == "check_state":
                          response = requests.get(self.meshbesturl) 
                          ans = response.json()
@@ -726,8 +734,10 @@ class MestbestSever():
         jsondata['inputDozor']['orgx'] = float(header['beam_center_x'])
         jsondata['inputDozor']['orgy'] = float(header['beam_center_y'])
         
-        jsondata['grid_info']['beam_width'] = float(header['appendix']['beamsize'])/1000
-        jsondata['grid_info']['beam_height']= float(header['appendix']['beamsize'])/1000
+        # jsondata['grid_info']['beam_width'] = float(header['appendix']['beamsize'])/1000
+        # jsondata['grid_info']['beam_height']= float(header['appendix']['beamsize'])/1000
+        jsondata['grid_info']['beam_width'] = float(header['appendix']['grid_width'])/1000
+        jsondata['grid_info']['beam_height']= float(header['appendix']['grid_height'])/1000
         self.logger.info(f'json data before meshPositions = {jsondata}')
         jsondata['meshPositions'] = meshPositionsdata
         self.logger.info(f'done for PreparejasonData ')
@@ -844,10 +854,17 @@ class MestbestSever():
             		{
             			"detectorPixelSize":0.0783,
             			        "beamlineApertures": [
-                        			   50,
-                        			   30,
-              		                   10,
-                                        5
+                                    100,
+                                    90,
+                                    80,
+                                    70,
+                                    60,
+                        			50,
+                                    40,
+                        			30,
+                                    20,
+              		                10,
+                                    5
             			         ]
             		},
             
