@@ -20,6 +20,7 @@ try:
     logger = workflow_logging.getLogger()
 except:
     import logging
+    from logging import handlers
     logger = logging.getLogger("MeshBest")
     logger.setLevel(logging.DEBUG)
     ch = logging.StreamHandler()
@@ -28,8 +29,11 @@ except:
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     # add formatter to ch
     ch.setFormatter(formatter)
+    filehandler = logging.handlers.RotatingFileHandler('./meshandcollectlog.txt', maxBytes=50000000, backupCount=10)
+    filehandler.setFormatter(formatter)
     # add ch to logger
     logger.addHandler(ch)
+    logger.addHandler(filehandler)
 
 # numpy.set_printoptions(threshold='nan')
 
