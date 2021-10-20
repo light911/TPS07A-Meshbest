@@ -139,8 +139,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         # self.scene = graphicsScene(self)
         self.scene = QGraphicsScene()
         self.sampleQPixmap = self.scene.addPixmap(QtGui.QPixmap())
-        corsssize = self.SampleViedo.viewport().size().width() /2
-        self.corss = CrossItem(corsssize)
+        self.corsssize = self.SampleViedo.viewport().size().width() /2
+        self.corss = CrossItem(self.corsssize)
         self.scene.addItem(self.corss)
         
         # self.corss.setPen(QPen(QColor('green'),1))
@@ -159,45 +159,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         
         self.Rasterscene1 = QGraphicsScene()
         self.Rasterscene2 = QGraphicsScene()
-        
-        self.RasterView1QPixmap_ori = QtGui.QPixmap()
-        self.RasterView2QPixmap_ori = QtGui.QPixmap()
-        
-        self.RasterView1QPixmap = self.Rasterscene1.addPixmap(QtGui.QPixmap())
-        self.RasterView2QPixmap = self.Rasterscene2.addPixmap(QtGui.QPixmap())
-        
-        self.RasterPar['View1']['QPixmap'] = self.RasterView1QPixmap
-        self.RasterPar['View2']['QPixmap'] = self.RasterView2QPixmap
-        
-        self.RasterPar['View1']['overlap_QPixmap'] = self.Rasterscene1.addPixmap(QtGui.QPixmap())
-        self.RasterPar['View2']['overlap_QPixmap'] = self.Rasterscene2.addPixmap(QtGui.QPixmap())
-        
-        self.RasterView1.setScene(self.Rasterscene1)
-        self.RasterView2.setScene(self.Rasterscene2)
-        
-        self.view1box = self.Rasterscene1.addRect(0, 0, 0, 0)
-        self.view1box.setZValue(100)
-        self.view1_start = QPointF()
-        self.view1_end = QPointF()
-        self.RasterPar['View1']['box'] = QRectF(0,0,0,0)
-        self.RasterPar['View1']['viewRect'] = self.view1box
-        self.view1gridsgroup = None
-        
-        self.view2box = self.Rasterscene2.addRect(0, 0, 0, 0)
-        self.view2box.setZValue(100)
-        self.view2_start = QPointF()
-        self.view2_end = QPointF()
-        self.RasterPar['View2']['box'] = QRectF(0,0,0,0)
-        self.RasterPar['View2']['viewRect'] = self.view2box
-
-        self.RasterPar['View1']['CrossItem'] = CrossItem(corsssize,color=Qt.red,pensize=3)
-        self.RasterPar['View2']['CrossItem'] = CrossItem(corsssize,color=Qt.red,pensize=3)
-
-        self.Rasterscene1.addItem(self.RasterPar['View1']['CrossItem'])
-        self.Rasterscene2.addItem(self.RasterPar['View2']['CrossItem'])
-
-        self.RasterPar['View1']['CrossItem'].setZValue(100)
-        self.RasterPar['View2']['CrossItem'].setZValue(100)
+        self.init_scence_item_in_view12()
         self.RasterStarted = False
         #set root path
         if self.beamline == "TPS07A":
@@ -249,6 +211,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.RasterView1.mouseMoveEvent = self.DrawinRasterView1Move
         self.RasterView1.mousePressEvent = self.DrawinRasterView1Press
         self.RasterView1.mouseReleaseEvent = self.DrawinRasterView1Release
+        #view12 change size
         self.RasterView1.resizeEvent = self.RasterView1Resize
         
         self.RasterView2.mouseMoveEvent = self.DrawinRasterView2Move
@@ -496,15 +459,24 @@ class MainUI(QMainWindow,Ui_MainWindow):
             pass
              
     def Rasterclicked(self):
-        # self.clear_Raster_scence_item()
+        self.clear_Raster_scence_item()
+
         self.logger.info(f'Rasterclicked,Current phi={self.bluiceData["motor"]["gonio_phi"]["pos"]}')
         # self.can_move_in_rastrview_flag = False
+        self.Overlap_Select_1.setCurrentIndex(1)#Crystal Map with Dozor score
+        self.Overlap_Select_2.setCurrentIndex(1)#Crystal Map with Dozor score
         self.Par['StateCtl']['RasterDone'] = False
         #clear old box
         self.view1box.setRect(0, 0, 0, 0)
         self.view2box.setRect(0, 0, 0, 0)
         self.RasterPar['View1']['box'] = QRectF(0,0,0,0)
         self.RasterPar['View2']['box'] = QRectF(0,0,0,0)
+        self.RasterPar['View1']['Dtable'] = None
+        self.RasterPar['View2']['Dtable'] = None
+        self.RasterPar['View1']['Ztable'] = None
+        self.RasterPar['View2']['Ztable'] = None
+        self.initScoreArray('View1')
+        self.initScoreArray('View2')
         self.plotbox()
         # take current image
         self.logger.debug('take current angle picture(view1)')
@@ -1098,6 +1070,10 @@ class MainUI(QMainWindow,Ui_MainWindow):
         # print(event.oldSize())
         # print(event.size())
         self.plotView12(False)
+        self.plot_overlap_image('View1')                     
+        self.plot_overlap_image('View2')
+        self.reposition_view_cross() 
+
     def plotView12(self,Newone=True):
         if self.RasterView2QPixmap_ori.isNull():
             pass
@@ -1433,7 +1409,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             self.Qinfo["sendQ"].put(command)
             
             #wait detectorop
-            self.logger.warning(f'op state list = {self.opCompleted}')
+            self.logger.debug(f'op state list = {self.opCompleted}')
             self.logger.info(f'Wait for setup detctor done')
             oplist=['detector_ratser_setup']
 
@@ -1469,7 +1445,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         
         #make sure motor stop before we move
         motorchecklist=['gonio_phi','sample_x','sample_y','sample_z','attenuation']
-        self.logger.warning(f'Moving list = {self.MotorMoving}')
+        self.logger.debug(f'Moving list = {self.MotorMoving}')
         while True:
             self.logger.debug(f'Checking online {motorchecklist} moving state')
             checkarray = []
@@ -1637,7 +1613,12 @@ class MainUI(QMainWindow,Ui_MainWindow):
         sessionId = "no"
         fileindex = 0
         unknow = int(1) #1
+        #for beam size , gird size =1000 using beamsize 90
+        #par['beamsizeY'] is grid size, so we need change it
+        # beamsize = self.gridsizetobeamsize(par['beamsizeY'])
+        # new! change beam size only in EPIS DHS
         beamsize = par['beamsizeY'] # 50
+        
         atten = self.bluiceData['motor']['attenuation']['pos'] #0
         roi = 1
         numofX = par['numofX']
@@ -1647,6 +1628,9 @@ class MainUI(QMainWindow,Ui_MainWindow):
         ans =  [runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY]
         self.logger.info(f'{ans}')
         return ans
+    def gridsizetobeamsize(self,gridsize):
+        table={100:90,90:80,80:70,70:60,60:50,50:40,40:30,30:20,20:10,10:5,5:1}
+        return table[gridsize]
     def calRasterPar(self,view1=True):
         # startRasterScanEx
         # double omega_range,
@@ -1894,16 +1878,21 @@ class MainUI(QMainWindow,Ui_MainWindow):
             # temp['View2'].pop('jpg', None)
             # self.logger.info(f'got updatePar :{temp}======')
             if self.bluiceData['active']:
-                self.logger.info(f'I am active client,update Dtable only')
+                self.logger.info(f'I am active client,update Dtable only and XY')
                 #active only update Dtable
                 view1_data = self.Par['View1']
                 view2_data = self.Par['View2']
+
                 view1_data['Dtable'] = command[1]['View1']['Dtable']
                 view1_data['Ztable'] = command[1]['View1']['Ztable']
                 view1_data['BestPositions'] = command[1]['View1']['BestPositions']
+                view1_data['numofX'] = command[1]['View1']['numofX']
+                view1_data['numofY'] = command[1]['View1']['numofY']
                 view2_data['Dtable'] = command[1]['View2']['Dtable']
                 view2_data['Ztable'] = command[1]['View2']['Ztable']
                 view2_data['BestPositions'] = command[1]['View2']['BestPositions']
+                view2_data['numofX'] = command[1]['View2']['numofX']
+                view2_data['numofY'] = command[1]['View2']['numofY']
                 ui_par_data = self.Par['UI_par']
                 StateCtl_data = self.Par['StateCtl']
                 # self.logger.info(f'Test: view1_data Ztable {view1_data["Ztable"]}')
@@ -1980,7 +1969,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
             Ztable = np.reshape(Ztable, (row, col))
             BestPositions = np.frombuffer(base64.b64decode(par['BestPositions']))
             BestPositions = np.reshape(BestPositions, (int(np.size(BestPositions)/4),4))
-        except:
+        except Exception as e:
+            self.logger.warning(f'Has error when decodeTable {e}')
             Dtable = None
             Ztable = None
             BestPositions = None
@@ -2213,9 +2203,17 @@ class MainUI(QMainWindow,Ui_MainWindow):
         except:
                 pass
     def plotdozor(self,text,Type,view='View1',Opacity=1):
+        if view =='View1':
+            select =  self.Overlap_Select_1
+        else:
+            select =  self.Overlap_Select_2
+        if not select.currentIndex() in [2,3,4,5]:
+            return
         try:
             numofXbox =self.RasterPar[view]['numofX']
             numofYbox =self.RasterPar[view]['numofY']
+            if numofXbox == 0 or  numofYbox== 0:
+                return
             # self.logger.warning(f'plt:{self.RasterPar[view]["scoreArray"]}')
             if Type == "spots":
                 array = self.RasterPar[view]['spotsArray']
@@ -2271,7 +2269,10 @@ class MainUI(QMainWindow,Ui_MainWindow):
             self.RasterPar[view]['Textplotarray']=[[0]*numofYbox for i in range(numofXbox)]
             # self.logger.warning(f'numofXbox={numofXbox},numofYbox={numofYbox}')     
             ratio = self.getViewRatio(r)
-            smallbox = par['boxRectItemarray'][0][0]
+            try:
+                smallbox = par['boxRectItemarray'][0][0]
+            except IndexError:
+                smallbox = QGraphicsRectItem()
             
                 
             for x,item in enumerate(array):
@@ -2296,7 +2297,12 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     pos = (xc-temp.boundingRect().width()/2,yc-temp.boundingRect().height()/2)
                     # self.logger.info(f'x={x},y={y},pos={pos}')                
                     temp.setOpacity(Opacity)
+                    # try:
                     self.RasterPar[view]['Textplotarray'][x][y] = temp
+                    # except Exception as e:
+                    #     traceback.print_exc()
+                    #     self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
+                    #     self.logger.warning(f'Error:{e}')
             self.DrawColoronBox(array,view,Opacity)   
         except Exception as e:
             traceback.print_exc()
@@ -2807,24 +2813,73 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     self.Rasterscene2.removeItem(item)
                 except:
                     pass
+        #recover some setup
+        self.init_scence_item_in_view12()
+    def init_scence_item_in_view12(self):
+        #this usr for reinit scence_item in viwe12
+        self.RasterView1QPixmap_ori = QtGui.QPixmap()
+        self.RasterView2QPixmap_ori = QtGui.QPixmap()
+        
+        self.RasterView1QPixmap = self.Rasterscene1.addPixmap(QtGui.QPixmap())
+        self.RasterView2QPixmap = self.Rasterscene2.addPixmap(QtGui.QPixmap())
+        
+        self.RasterPar['View1']['QPixmap'] = self.RasterView1QPixmap
+        self.RasterPar['View2']['QPixmap'] = self.RasterView2QPixmap
+        
+        self.RasterPar['View1']['overlap_QPixmap'] = self.Rasterscene1.addPixmap(QtGui.QPixmap())
+        self.RasterPar['View2']['overlap_QPixmap'] = self.Rasterscene2.addPixmap(QtGui.QPixmap())
+        
+        self.RasterView1.setScene(self.Rasterscene1)
+        self.RasterView2.setScene(self.Rasterscene2)
+        
+        self.view1box = self.Rasterscene1.addRect(0, 0, 0, 0)
+        self.view1box.setZValue(100)
+        self.view1_start = QPointF()
+        self.view1_end = QPointF()
+        self.RasterPar['View1']['box'] = QRectF(0,0,0,0)
+        self.RasterPar['View1']['viewRect'] = self.view1box
+        self.view1gridsgroup = None
+        
+        self.view2box = self.Rasterscene2.addRect(0, 0, 0, 0)
+        self.view2box.setZValue(100)
+        self.view2_start = QPointF()
+        self.view2_end = QPointF()
+        self.RasterPar['View2']['box'] = QRectF(0,0,0,0)
+        self.RasterPar['View2']['viewRect'] = self.view2box
+
+        self.RasterPar['View1']['CrossItem'] = CrossItem(self.corsssize,color=Qt.red,pensize=3)
+        self.RasterPar['View2']['CrossItem'] = CrossItem(self.corsssize,color=Qt.red,pensize=3)
+
+        self.Rasterscene1.addItem(self.RasterPar['View1']['CrossItem'])
+        self.Rasterscene2.addItem(self.RasterPar['View2']['CrossItem'])
+
+        self.RasterPar['View1']['CrossItem'].setZValue(100)
+        self.RasterPar['View2']['CrossItem'].setZValue(100)
     def initScoreArray(self,view='View1'):
         self.logger.warning(f'initScoreArray for {view=}')
-        numofXbox = self.RasterPar[view]['numofX']
-        numofYbox = self.RasterPar[view]['numofY']
-        self.RasterPar[view]['Textplotarray']=[[0]*numofYbox for i in range(numofXbox)]
-        self.RasterPar[view]['scoreArray'] = np.zeros((numofXbox, numofYbox))
-        self.RasterPar[view]['scoreArray'][:] = np.nan
-        self.RasterPar[view]['resArray']=np.zeros((numofXbox, numofYbox))
-        self.RasterPar[view]['resArray'][:]=50#set all value to 50
-        self.RasterPar[view]['spotsArray']=np.zeros((numofXbox, numofYbox))
-        self.RasterPar[view]['spotsArray'][:] = np.nan
-        
-        self.Par[view]['scoreArray'] = np.zeros((numofXbox, numofYbox))
-        self.Par[view]['scoreArray'][:] = np.nan
-        self.Par[view]['resArray']=np.zeros((numofXbox, numofYbox))
-        self.Par[view]['resArray'][:]=50#set all value to 50
-        self.Par[view]['spotsArray']=np.zeros((numofXbox, numofYbox))
-        self.Par[view]['spotsArray'][:] = np.nan
+        try:
+            numofXbox = self.RasterPar[view]['numofX']
+            numofYbox = self.RasterPar[view]['numofY']
+        except:
+            numofXbox = self.Par[view]['numofX']
+            numofYbox = self.Par[view]['numofY']
+        try:
+            self.RasterPar[view]['Textplotarray']=[[0]*numofYbox for i in range(numofXbox)]
+            self.RasterPar[view]['scoreArray'] = np.zeros((numofXbox, numofYbox))
+            self.RasterPar[view]['scoreArray'][:] = np.nan
+            self.RasterPar[view]['resArray']=np.zeros((numofXbox, numofYbox))
+            self.RasterPar[view]['resArray'][:]=50#set all value to 50
+            self.RasterPar[view]['spotsArray']=np.zeros((numofXbox, numofYbox))
+            self.RasterPar[view]['spotsArray'][:] = np.nan
+            
+            self.Par[view]['scoreArray'] = np.zeros((numofXbox, numofYbox))
+            self.Par[view]['scoreArray'][:] = np.nan
+            self.Par[view]['resArray']=np.zeros((numofXbox, numofYbox))
+            self.Par[view]['resArray'][:]=50#set all value to 50
+            self.Par[view]['spotsArray']=np.zeros((numofXbox, numofYbox))
+            self.Par[view]['spotsArray'][:] = np.nan
+        except:
+            pass
         self.meshbest.sendCommandToMeshbest(('Clear_scoreArray'))
 
     def movefactor(self):
