@@ -1991,7 +1991,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         else:
             select =  self.Overlap_Select_2
             Opacity = self.view2_opacity.value()/100
-        self.logger.warning(f'Opacity={Opacity}')
+        self.logger.debug(f'Opacity={Opacity}')
         if select.currentIndex() == 0:
             self.setOpacity_dozor_plot(0,view,showGrid=False,ClearFill=True,ClearText=True)
             self.RasterPar[view]['overlap_QPixmap'].setOpacity(0)
@@ -2262,7 +2262,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 pass
             # numofXbox = par['numofX']
             # numofYbox = par['numofY']
-            self.logger.warning(f'{numofXbox=},{numofYbox=}')
+            self.logger.info(f'{numofXbox=},{numofYbox=}')
             myfont = QFont()
             myfont.setBold(False)
             myfont.setPointSize(10)
@@ -2284,7 +2284,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             
                     if temp.boundingRect().width()>smallbox.boundingRect().width():
                         resizeR = smallbox.boundingRect().width()/temp.boundingRect().width()
-                        myfont.setPointSize(10*resizeR)
+                        myfont.setPointSize(int(10*resizeR))
                         temp.setFont(myfont)
                         
                     # temp.setPen(QPen(QColor('yellow')))

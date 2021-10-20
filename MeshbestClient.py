@@ -159,6 +159,7 @@ class MestbestClient(QThread):
         sock.bind((host, 0))
         port = sock.getsockname()[1]
         sock.close()
+        time.sleep(0.1)
         return port 
     def quit(self,signum,frame):
         self.logger.critical(f'Quit Meshbest Client')
