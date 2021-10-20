@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'TPS07A_meshbestGUI.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -279,7 +281,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.Distance.sizePolicy().hasHeightForWidth())
         self.Distance.setSizePolicy(sizePolicy)
-        self.Distance.setMinimum(150.0)
+        self.Distance.setMinimum(140.0)
         self.Distance.setMaximum(1000.0)
         self.Distance.setObjectName("Distance")
         self.gridLayout_10.addWidget(self.Distance, 1, 0, 1, 1)
@@ -290,6 +292,10 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.Beamsize.sizePolicy().hasHeightForWidth())
         self.Beamsize.setSizePolicy(sizePolicy)
         self.Beamsize.setObjectName("Beamsize")
+        self.Beamsize.addItem("")
+        self.Beamsize.addItem("")
+        self.Beamsize.addItem("")
+        self.Beamsize.addItem("")
         self.Beamsize.addItem("")
         self.Beamsize.addItem("")
         self.Beamsize.addItem("")
@@ -600,17 +606,22 @@ class Ui_MainWindow(object):
         self.StartRaster.setText(_translate("MainWindow", "Start Raster"))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_3), _translate("MainWindow", "File Setup"))
         self.label_14.setText(_translate("MainWindow", "Detector Distance"))
-        self.Beamsize.setItemText(0, _translate("MainWindow", "50"))
-        self.Beamsize.setItemText(1, _translate("MainWindow", "40"))
-        self.Beamsize.setItemText(2, _translate("MainWindow", "30"))
-        self.Beamsize.setItemText(3, _translate("MainWindow", "20"))
-        self.Beamsize.setItemText(4, _translate("MainWindow", "10"))
-        self.Beamsize.setItemText(5, _translate("MainWindow", "5"))
-        self.Beamsize.setItemText(6, _translate("MainWindow", "1"))
+        self.Beamsize.setCurrentText(_translate("MainWindow", "10"))
+        self.Beamsize.setItemText(0, _translate("MainWindow", "100"))
+        self.Beamsize.setItemText(1, _translate("MainWindow", "90"))
+        self.Beamsize.setItemText(2, _translate("MainWindow", "80"))
+        self.Beamsize.setItemText(3, _translate("MainWindow", "70"))
+        self.Beamsize.setItemText(4, _translate("MainWindow", "60"))
+        self.Beamsize.setItemText(5, _translate("MainWindow", "50"))
+        self.Beamsize.setItemText(6, _translate("MainWindow", "40"))
+        self.Beamsize.setItemText(7, _translate("MainWindow", "30"))
+        self.Beamsize.setItemText(8, _translate("MainWindow", "20"))
+        self.Beamsize.setItemText(9, _translate("MainWindow", "10"))
+        self.Beamsize.setItemText(10, _translate("MainWindow", "5"))
         self.ExpousetimeType.setItemText(0, _translate("MainWindow", "Exposed time"))
         self.ExpousetimeType.setItemText(1, _translate("MainWindow", "Rate"))
         self.label_15.setText(_translate("MainWindow", "Dose"))
-        self.label_12.setText(_translate("MainWindow", "BeamSize"))
+        self.label_12.setText(_translate("MainWindow", "GirdSize"))
         self.label_13.setText(_translate("MainWindow", "Attenuation"))
         self.doubleSpinBox_12.setSuffix(_translate("MainWindow", "Mgy"))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_5), _translate("MainWindow", "Raster scan Par"))
@@ -653,4 +664,3 @@ class Ui_MainWindow(object):
         self.debug_Debug.setText(_translate("MainWindow", "Debug"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Debug"))
         self.menuMeshBestGUI.setTitle(_translate("MainWindow", "Experiment"))
-
