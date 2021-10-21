@@ -309,6 +309,11 @@ class BluiceClient(QThread):
                         elif command[0] == "stog_configure_string":
                             self.logger.debug(command)
                             self.updaterun(command)
+                            if command[1] == 'currentBeamsize':
+                                self.info['currentBeamsize'] = float(command[3])
+                            elif command[1] == 'sampleFlux':
+                                self.info['sampleFlux'] = float(command[3])
+                                # ['stog_configure_string', 'sampleFlux', 'ringstatus', '8001179775619.493']
                             pass                                   
                         elif command[0] == "stog_configure_ion_chamber":
                             self.logger.debug(command)
@@ -412,7 +417,13 @@ class BluiceClient(QThread):
                             self.logger.debug(command)
                         elif command[0] == "stog_set_string_completed" :
                             self.updaterun(command)
+                            
                             if command[1] == "tps_current" or command[1] == "tls_current" or command[1] == "beamlineOpenState" or command[1] == "tps_state":
+                                pass
+                            elif command[1] == 'sampleFlux':
+                                self.info['sampleFlux'] = float(command[3])
+                            elif command[1] == 'currentBeamsize':
+                                self.info['currentBeamsize'] = float(command[3])
                                 pass
                             else :
                                 self.logger.debug(command)
