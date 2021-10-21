@@ -1,0 +1,4 @@
+#! /bin/bash
+pyuic5 -o UI_CollectPar.py CollectPar.ui
+pyuic5 -o UI_DoseRelateApply.py DoseRelateApply.ui
+pyuic5 -o UI_DoseApply.py DoseApply.ui
