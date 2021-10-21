@@ -113,6 +113,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 
         self.Par['View1'] = init_meshbest_data
         self.Par['View2'] = init_meshbest_data
+        self.Par['View3'] = init_meshbest_data#for center by viwe12
         self.Par['UI_par'] = variables.init_uipar_data()
         statectrl ={}
         statectrl['RasterDone'] = False
@@ -1914,11 +1915,18 @@ class MainUI(QMainWindow,Ui_MainWindow):
             Dtable,Ztable,BestPositions = self.decodeTable(self.Par['View1'])
             self.RasterPar['View1']['Dtable'] = Dtable
             self.RasterPar['View1']['Ztable'] = Ztable
-            self.RasterPar['View1']['BestPositions'] = BestPositions
+            #filter bad pos
+            filterBestPositions = self.filter_BestPositions(BestPositions)
+
+            self.RasterPar['View1']['BestPositions'] = filterBestPositions
+            
             Dtable,Ztable,BestPositions = self.decodeTable(self.Par['View2'])
             self.RasterPar['View2']['Dtable'] = Dtable
             self.RasterPar['View2']['Ztable'] = Ztable
-            self.RasterPar['View2']['BestPositions'] = BestPositions
+            filterBestPositions = self.filter_BestPositions(BestPositions)
+
+
+            self.RasterPar['View2']['BestPositions'] = filterBestPositions
             
             self.RasterPar['View1']['scoreArray'] = view1_data['scoreArray']
             self.RasterPar['View1']['resArray'] = view1_data['resArray']
@@ -1945,11 +1953,22 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     #view1 update
                     self.Overlap_Select_1.setCurrentIndex(6)#Crystal Map with Dozor score
                     self.plot_overlap_image('View1') #make sure it update
+                    listnum1=len(self.RasterPar['View1']['BestPositions'])      
+                    self.List_number_1.setValue(listnum1)
+                    #creat collect info
+                    #plot position
+                    # self.plotBestpos('View1')
                     pass
                 else:
                     #view2 update
                     self.Overlap_Select_2.setCurrentIndex(6)#Crystal Map with Dozor score
                     self.plot_overlap_image('View2') #make sure it update
+                    listnum2=len(self.RasterPar['View2']['BestPositions'])
+                    self.List_number_2.setValue(listnum2)    
+                    #creat collect info
+                    #plot position
+                    # self.plotBestpos('View2')
+
                     pass
                 
             else:
@@ -2706,8 +2725,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             tempq = QPixmap()
             tempq.loadFromData(jpg,format='jpg')
             self.RasterView2QPixmap_ori = tempq
-        
-                   
+
         self.plotView12(False)   
         self.plot_overlap_image('View1')                     
         self.plot_overlap_image('View2') 
@@ -2933,7 +2951,123 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.plotView12()
         self.send_RasterInfo_to_meshbest()
 
-     
+    def create_collectinfo(self,view='View1'):
+        if view=='View1' or view == 'View2':
+            RasterPar = [view]
+            par = self.Par[view]
+        elif view == 'View3':#todo for viwe12
+            pass
+        
+        collectlist=list()
+        for i,item in enumerate(RasterPar['BestPositions']):
+            #,x,y,beamsize,socre
+            viewX= item[0]
+            viewY= item[1]
+            beamsize = self.CorrectBeamsize(item[2] * RasterPar['beamsizeY'])
+
+            CollectOrder = int(i+1)
+            CollecType = 'singleview'
+            CollectDone = False
+            FileName = f'{i+1:03d}'
+            FolderName = f'{self.RootPath.text()}/collect'
+            Distance = self.Distance.value()
+            Energy = self.bluiceData['motor']['energy']['pos']
+            TotalCollectRange = 10 #todo set a input?
+            StartPhi = RasterPar['gonio_phi'] - TotalCollectRange
+            EndPhi = RasterPar['gonio_phi'] + TotalCollectRange
+            Delta = 0.01 #todo set a input?
+            Atten = 0
+            ExpTime = 0.01
+            displaytext = "BeamSize"
+            DoseSelect = 0
+            dose = 10
+            RoughtDose = 10
+            EstimateDose = 10
+            newHdose,newAdose,newAtten,newExptime,newTrange,newDelta,NewDistance,NewEnergy=\
+            self.collectparwindows.calDosePar(displaytext,DoseSelect,beamsize,dose,RoughtDose,EstimateDose,Atten,ExpTime,TotalCollectRange,Delta,Distance,Energy)
+
+            pass
+    def CorrectBeamsize(self,beamsize):
+        AvailableBeamSizes = self.Par['AvailableBeamSizes']
+        newbeamsize=min(AvailableBeamSizes, key=lambda x:abs(x-beamsize))
+        return newbeamsize
+    def plotBestpos(self,View='View1'):
+        par = self.Par[View]
+        
+        for i,posdata in enumerate(par['collectInfo']): 
+            
+            FactorPixUmX = par['zoom_scale_x']
+            FactorPixUmY = par['zoom_scale_y']
+            BeamSize = posdata['BeamSize']
+            x=self.offsetX + posdata['View1X']*FactorPixUmX*self.rasterinfo['beamsize']*1000.0
+            y=self.offsetY + posdata['View1Y']*FactorPixUmY*self.rasterinfo['beamsize']*1000.0
+            width=posdata['BeamSize']*FactorPixUmX
+            height=posdata['BeamSize']*FactorPixUmY
+            newCircle,newText=self.CircleItem(x,y,width,height,Text=str(i+1),Ccolor="goldenrod",Tcolor="white")
+            
+            if posdata['CollectDone'] == True :
+                newCircle.setBrush(QColor('gray'))
+                newCircle.setPen(QPen(QColor('gray'),1))
+                newCircle.setOpacity(0.7)
+            newCircle,newText=self.CircleItem(x,y,width,height,Text=str(i+1),Ccolor="goldenrod",Tcolor="white")
+            self.scene.addItem(newCircle)
+            self.scene.addItem(newText)
+            self.CircleInScence.append(newCircle)
+            self.TextInScence.append(newText)
+
+        
+    def CircleItem(self,x,y,width,height,Ccolor="goldenrod",Tcolor="white",Text=""):
+        pos=QRectF(0,0,width,height)
+        pos.moveCenter(QPointF(x,y))
+        newCircle = QtWidgets.QGraphicsEllipseItem(pos)
+#        ans.setBrush(QBrush(QtCore.Qt.red, style = QtCore.Qt.NoBrush))#this for fill
+        newCircle.setPen(QPen(QColor(Ccolor),1))
+        newText = QtWidgets.QGraphicsTextItem(Text)
+#        print "text width",newText.boundingRect().width()
+        
+        newText.setDefaultTextColor(QColor(Tcolor))
+        myfont = QFont()
+        myfont.setBold(False)
+        myfont.setPointSize(10)
+        newText.setFont(myfont)
+        newText.setPos(x-newText.boundingRect().width()/2,y-newText.boundingRect().height()/2)
+        return newCircle,newText
+
+    def filter_BestPositions(self,BestPositions):
+        try:
+            ans =[]
+            for item in BestPositions:
+                if item[3] > 10:
+                    ans.append(item)
+        except:
+            ans = []
+        return ans
+        # [[6.00000000e+000 2.00000000e+000 3.33333333e+000 4.58015813e+007]
+        # [8.50000000e+000 2.00000000e+000 3.33333333e+000 3.38387528e+007]
+        # [6.50000000e+000 4.50000000e+000 2.33333333e+000 2.32227241e+007]
+        # [1.50000000e+000 9.40000000e+000 2.33333333e+000 2.17526962e+007]
+        # [2.50000000e+000 3.40000000e+000 2.33333333e+000 1.06971968e+007]
+        # [3.60000000e+000 2.10000000e+000 1.66666667e+000 2.37521285e+006]
+        # [3.60000000e+000 1.00000000e+001 1.33333333e+000 1.77364432e+006]
+        # [9.00000000e-001 7.40000000e+000 1.33333333e+000 1.20858045e+006]
+        # [3.90000000e+000 6.00000000e+000 3.33333333e+000 1.13546131e+006]
+        # [4.90000000e+000 1.00000000e+001 1.33333333e+000 7.20559120e+005]
+        # [6.00000000e+000 7.90000000e+000 3.33333333e+000 4.17105580e+005]
+        # [9.00000000e-001 6.20000000e+000 1.33333333e+000 4.08333472e+005]
+        # [9.00000000e-001 4.80000000e+000 1.33333333e+000 3.22684960e+005]
+        # [3.40000000e+000 8.60000000e+000 2.00000000e+000 1.07309991e+005]
+        # [7.60000000e+000 6.00000000e+000 3.00000000e+000 9.79957991e+004]
+        # [8.00000000e+000 8.10000000e+000 1.33333333e+000 9.57338560e+004]
+        # [5.90000000e+000 9.90000000e+000 1.00000000e+000 5.60388330e+004]
+        # [9.00000000e+000 6.00000000e+000 1.00000000e+000 4.62811230e+004]
+        # [6.90000000e+000 1.00000000e+001 1.33333333e+000 3.90628960e+004]
+        # [4.90000000e+000 4.00000000e+000 1.33333333e+000 2.40274112e+004]
+        # [2.00000000e+000 6.90000000e+000 1.33333333e+000 1.48011485e+004]
+        # [8.70000000e+000 4.70000000e+000 1.66666667e+000 8.15170150e+003]
+        # [6.00000000e+000 1.90000000e+000 1.00000000e+000 3.78520047e+003]
+        # [7.90000000e+000 9.10000000e+000 1.00000000e+000 3.44736000e+002]
+        # [6.92921936e-310 6.92921936e-310 4.65418559e-310 6.92949311e-310]
+        # [6.92921921e-310 6.92921966e-310 4.65418559e-310 6.92949310e-310]
     # self.viwe1_move_down.clicked.connect(self.viwe1_move_down_clicked)
     #     self.viwe1_move_up.clicked.connect(self.viwe1_move_up_clicked)
     #     self.viwe1_move_left.clicked.connect(self.viwe1_move_left_clicked)

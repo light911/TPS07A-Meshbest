@@ -36,6 +36,7 @@ class MestbestSever():
         
         self.Par['View1'] = init_meshbest_data
         self.Par['View2'] = init_meshbest_data
+        self.Par['View3'] = init_meshbest_data#for center by viwe12
         self.Par['UI_par'] = variables.init_uipar_data()
         statectrl ={}
         statectrl['RasterDone'] = False

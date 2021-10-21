@@ -6,7 +6,7 @@ Created on Thu Jul  2 14:45:55 2020
 @author: blctl
 """
 
-import PyQt5
+import PyQt5,sys,os
 from PyQt5 import QtWidgets, uic, QtGui, QtCore
 
 from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QGraphicsScene,QDialogButtonBox,QAbstractButton,QTableWidget
@@ -96,7 +96,8 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
         self.buttonBox.button(QDialogButtonBox.Reset).clicked.connect(self.buttonBoxResetClick)
         self.buttonBox.button(QDialogButtonBox.Apply).clicked.connect(self.buttonBoxApplyClick)
         self.buttonBox.button(QDialogButtonBox.Cancel).clicked.connect(self.buttonBoxCancelClick)
-        self.buttonBox.button(QDialogButtonBox.YesToAll).clicked.connect(self.buttonBoxYesToAllClick)
+        # self.buttonBox.button(QDialogButtonBox.YesToAll).clicked.connect(self.buttonBoxYesToAllClick)
+        self.ApplytoAll.clicked.connect(self.buttonBoxYesToAllClick)
 #        RoughHeaderItem=self.InfoTable.horizontalHeaderItem(3)
 #        self.InfoTable.mouseDoubleClickEvent=self.RoughDoseDoubleClick
 #        RoughHeaderItem.mouseDoubleClickEvent.connect(self.RoughDoseDoubleClick)
@@ -306,9 +307,9 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
         self.UpdatBaseonTable()
         
 #        self.CollectInfo = self.NewCollectInfo
-        for j in xrange(len(self.CollectInfo)):
+        for j in range(len(self.CollectInfo)):
                     self.CollectInfo.pop()
-        for i in xrange(len(self.NewCollectInfo)):
+        for i in range(len(self.NewCollectInfo)):
                     self.CollectInfo.append(self.NewCollectInfo[i])
         
         self.Done.emit()
@@ -366,7 +367,7 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
 
     def UpdatBaseonTable(self):
         self.NewCollectInfo=[]
-        for i in xrange(self.InfoTable.rowCount()) :
+        for i in range(self.InfoTable.rowCount()) :
             posdata={}
             posdata['View1X']=float(self.InfoTable.item(i,0).text())
             posdata['View1Y']=float(self.InfoTable.item(i,1).text())
@@ -556,9 +557,27 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
             self.InfoTable.setItem(row,4,newAdoseitem)
         
 if __name__ == '__main__':
+    # from .. import Config
+    import inspect
+    currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    parentdir = os.path.dirname(currentdir)
+    sys.path.insert(0, parentdir) 
+    import Config
+    beamlineinfo =Config.Par
+
+    if not QtWidgets.QApplication.instance():
+        print("new")
+        app = QtWidgets.QApplication(sys.argv)
+    else:
+        print("has old")
+        app = QtWidgets.QApplication.instance()
+
     
-    test=collectparui(123)
+
     
-    totaltime=0.1*10/0.5
-    test.RoughDose(6e12,12400,totaltime)
+    window=collectparui(123,beamlineinfo)
+    window.show()
+    sys.exit(app.exec_())
+    # totaltime=0.1*10/0.5
+    # test.RoughDose(6e12,12400,totaltime)
     

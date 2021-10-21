@@ -49,7 +49,7 @@ class NormalApply(QtWidgets.QDialog, Ui_Dialog_NormalApply,QThread):
         pass
     
     def initGuiEvent(self):
-         self.buttonBox.button(QDialogButtonBox.YesToAll).clicked.connect(self.buttonBoxYesToAllClick)
+         self.buttonBox.button(QDialogButtonBox.Apply).clicked.connect(self.buttonBoxYesToAllClick)
          self.buttonBox.button(QDialogButtonBox.Cancel).clicked.connect(self.buttonBoxCancelClick)
          
     def buttonBoxYesToAllClick(self):
@@ -84,7 +84,7 @@ class DoseApply(QtWidgets.QDialog, Ui_Dialog_DoseApply,QThread):
         pass
     
     def initGuiEvent(self):
-         self.buttonBox.button(QDialogButtonBox.YesToAll).clicked.connect(self.buttonBoxYesToAllClick)
+         self.buttonBox.button(QDialogButtonBox.Apply).clicked.connect(self.buttonBoxYesToAllClick)
          self.buttonBox.button(QDialogButtonBox.Cancel).clicked.connect(self.buttonBoxCancelClick)
          self.ConsiderOrder.currentIndexChanged.connect(self.ConsiderOrdervalueChanged)
 
@@ -127,7 +127,7 @@ class DoseRelateApply(QtWidgets.QDialog, Ui_Dialog_DoseRelateApply,QThread):
         pass
     
     def initGuiEvent(self):
-         self.buttonBox.button(QDialogButtonBox.YesToAll).clicked.connect(self.buttonBoxYesToAllClick)
+         self.buttonBox.button(QDialogButtonBox.Apply).clicked.connect(self.buttonBoxYesToAllClick)
          self.buttonBox.button(QDialogButtonBox.Cancel).clicked.connect(self.buttonBoxCancelClick)
          
     def buttonBoxYesToAllClick(self):

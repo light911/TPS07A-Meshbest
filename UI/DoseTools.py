@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Thu Jul  2 17:22:05 2020
@@ -13,9 +13,9 @@ def RoughDose(flux,energy,time):
         time for sec
         '''
         wave=12398.0/energy
-        print flux,wave,time
+        print (flux,wave,time)
         dose=flux*time*wave*wave/2000.0
-        print dose
+        print(dose) 
         return dose
     
 if __name__ == '__main__':
