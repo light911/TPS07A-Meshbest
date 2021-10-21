@@ -14,19 +14,20 @@ from PyQt5.QtGui import QPixmap,QPainter,QBrush,QPen,QColor,QFont
 from PyQt5.QtCore import QRect,QPoint,QRectF,QPointF,Qt
 from PyQt5.QtCore import QObject,QThread,pyqtSignal,pyqtSlot,QMutex,QMutexLocker
 
-from GUIMain_collectpar_tools import NormalApply,DoseApply,DoseRelateApply
+from GUI_Collectpar_tools import NormalApply,DoseApply,DoseRelateApply
+from UI_CollectPar import Ui_Dialog
 #from GUIMain_collectpar_tools_dose import DoseApply
-qtCreatorFile = "/data/program/MeshBestGUI/UI/CollectPar.ui"  
-#print qtCreatorFile
-Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile) 
+# qtCreatorFile = "/data/program/MeshBestGUI/UI/CollectPar.ui"  
+# #print qtCreatorFile
+# Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile) 
 
 
-class collectparui(QtWidgets.QDialog, Ui_MainWindow,QThread): 
+class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread): 
     Done = pyqtSignal()
     def __init__(self,CollectInfo,beamlineinfo):
         #reload init
         QtWidgets.QMainWindow.__init__(self)
-        Ui_MainWindow.__init__(self)
+        Ui_Dialog.__init__(self)
         self.setupUi(self)
         self.CollectInfo=CollectInfo
 #        print type(self.CollectInfo)
@@ -103,8 +104,8 @@ class collectparui(QtWidgets.QDialog, Ui_MainWindow,QThread):
 #        QTableWidget.a
         
     def RoughDoseDoubleClick(self,item):
-        print item
-        print "RoughDoseDoubleClick"
+        print (item)
+        print ("RoughDoseDoubleClick")
         
     def buttonBoxYesToAllClick(self):
         if len((self.InfoTable.selectedRanges())) == 0:
@@ -115,19 +116,19 @@ class collectparui(QtWidgets.QDialog, Ui_MainWindow,QThread):
             for item in self.InfoTable.selectedRanges():
                 if item.leftColumn() != SelectedColumn:
                     return
-#        print len((self.InfoTable.selectedRanges()))
+
         for item in self.InfoTable.selectedRanges():
             if item.columnCount() > 1:
                 return
             
         #Everything Fine
         self.SelectedColumn = self.InfoTable.selectedRanges()[0].leftColumn()
-#        print "Do somthing on index:",self.SelectedColumn
+
         self.SelectedRow=[]            
         for item in self.InfoTable.selectedRanges():
             for i in range(item.topRow(),item.bottomRow()+1):
                 self.SelectedRow.append(i)
-#        print "Row inde",self.SelectedRow
+
         if self.SelectedColumn == 0 or self.SelectedColumn == 1 or self.SelectedColumn == 2:
             return
         
@@ -171,10 +172,10 @@ class collectparui(QtWidgets.QDialog, Ui_MainWindow,QThread):
             self.NormalApply.updateTitle(self.InfoTable.horizontalHeaderItem(self.SelectedColumn).text())
 #            print float(self.InfoTable.item(self.SelectedRow[0], self.SelectedColumn).text())
             self.NormalApply.show()
-            print "normal change"
+            print ("normal change")
         
     def afterNormalApplyDone(self,value):
-        print "got",value
+        print ("got",value)
 #        print self.beamlineinfo["Flux"]
         for row in self.SelectedRow :
             additem = QTableWidgetItem(str(value))
@@ -260,7 +261,7 @@ class collectparui(QtWidgets.QDialog, Ui_MainWindow,QThread):
                     ExpTime = float(self.InfoTable.item(row,6).text())
                     Delta = float(self.InfoTable.item(row,8).text())
                 
-                print  self.SelectedColumn,mode,TotalCollectRange,Atten,ExpTime   
+                print(self.SelectedColumn,mode,TotalCollectRange,Atten,ExpTime)
                 beamsize = self.CorrectBeamsize(float(self.InfoTable.item(row,2).text()))
                 Energy = float(self.InfoTable.item(row,10).text())               
                 Distance = float(self.InfoTable.item(row,9).text())
@@ -299,7 +300,7 @@ class collectparui(QtWidgets.QDialog, Ui_MainWindow,QThread):
         
     def buttonBoxResetClick(self):
         self.update()
-        print "click"
+        print("click")
 
     def buttonBoxApplyClick(self):
         self.UpdatBaseonTable()
@@ -555,9 +556,9 @@ class collectparui(QtWidgets.QDialog, Ui_MainWindow,QThread):
             self.InfoTable.setItem(row,4,newAdoseitem)
         
 if __name__ == '__main__':
-    print "1"
+    
     test=collectparui(123)
-    print "2"
+    
     totaltime=0.1*10/0.5
     test.RoughDose(6e12,12400,totaltime)
-    print "3"
+    

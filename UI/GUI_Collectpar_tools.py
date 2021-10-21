@@ -14,26 +14,29 @@ from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QGraphicsScene,QDialo
 from PyQt5.QtGui import QPixmap,QPainter,QBrush,QPen,QColor,QFont
 from PyQt5.QtCore import QRect,QPoint,QRectF,QPointF,Qt
 from PyQt5.QtCore import QObject,QThread,pyqtSignal,pyqtSlot,QMutex,QMutexLocker
-qtCreatorFile = "/data/program/MeshBestGUI/UI/NormalApply.ui"  
-#print qtCreatorFile
-Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile) 
+from UI_NormalApply import Ui_Dialog as Ui_Dialog_NormalApply
+from UI_DoseApply import Ui_Dialog as Ui_Dialog_DoseApply
+from UI_DoseRelateApply import Ui_Dialog as Ui_Dialog_DoseRelateApply
+# qtCreatorFile = "/data/program/MeshBestGUI/UI/NormalApply.ui"  
+# #print qtCreatorFile
+# Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile) 
 
-qtCreatorFile2 = "/data/program/MeshBestGUI/UI/DoseApply.ui"  
-#print qtCreatorFile
-Ui_MainWindow2, QtBaseClass = uic.loadUiType(qtCreatorFile2) 
+# qtCreatorFile2 = "/data/program/MeshBestGUI/UI/DoseApply.ui"  
+# #print qtCreatorFile
+# Ui_MainWindow2, QtBaseClass = uic.loadUiType(qtCreatorFile2) 
 
-qtCreatorFile3 = "/data/program/MeshBestGUI/UI/DoseRelateApply.ui"  
+# qtCreatorFile3 = "/data/program/MeshBestGUI/UI/DoseRelateApply.ui"  
 
-Ui_MainWindow3, QtBaseClass = uic.loadUiType(qtCreatorFile3) 
+# Ui_MainWindow3, QtBaseClass = uic.loadUiType(qtCreatorFile3) 
 
 
      
-class NormalApply(QtWidgets.QDialog, Ui_MainWindow,QThread): 
+class NormalApply(QtWidgets.QDialog, Ui_Dialog_NormalApply,QThread): 
     Done = pyqtSignal(float)
     def __init__(self):
         #reload init
         QtWidgets.QMainWindow.__init__(self)
-        Ui_MainWindow.__init__(self)
+        Ui_Dialog_NormalApply.__init__(self)
         self.setupUi(self)
 #        self.title="item"
         self.DefaultValue=float()
@@ -63,12 +66,12 @@ class NormalApply(QtWidgets.QDialog, Ui_MainWindow,QThread):
     def updateminValue(self,value):
         self.doubleSpinBox.setMinimum(value)
 
-class DoseApply(QtWidgets.QDialog, Ui_MainWindow2,QThread): 
+class DoseApply(QtWidgets.QDialog, Ui_Dialog_DoseApply,QThread): 
     DoseApplyDone = pyqtSignal(str,float)
     def __init__(self):
         #reload init
         QtWidgets.QMainWindow.__init__(self)
-        Ui_MainWindow.__init__(self)
+        Ui_Dialog_DoseApply.__init__(self)
         self.setupUi(self)
 #        self.title="item"
         self.DefaultValue=float()
@@ -106,12 +109,12 @@ class DoseApply(QtWidgets.QDialog, Ui_MainWindow2,QThread):
     def updateminValue(self,value):
         self.doubleSpinBox.setMinimum(value)
         
-class DoseRelateApply(QtWidgets.QDialog, Ui_MainWindow3,QThread): 
+class DoseRelateApply(QtWidgets.QDialog, Ui_Dialog_DoseRelateApply,QThread): 
     DoseApplyDone = pyqtSignal(str,float)
     def __init__(self):
         #reload init
         QtWidgets.QMainWindow.__init__(self)
-        Ui_MainWindow.__init__(self)
+        Ui_Dialog_DoseRelateApply.__init__(self)
         self.setupUi(self)
 #        self.title="item"
         self.DefaultValue=float()
