@@ -14,9 +14,9 @@ from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QGraphicsScene,QDialo
 from PyQt5.QtGui import QPixmap,QPainter,QBrush,QPen,QColor,QFont
 from PyQt5.QtCore import QRect,QPoint,QRectF,QPointF,Qt
 from PyQt5.QtCore import QObject,QThread,pyqtSignal,pyqtSlot,QMutex,QMutexLocker
-from UI_NormalApply import Ui_Dialog as Ui_Dialog_NormalApply
-from UI_DoseApply import Ui_Dialog as Ui_Dialog_DoseApply
-from UI_DoseRelateApply import Ui_Dialog as Ui_Dialog_DoseRelateApply
+from UI.UI_NormalApply import Ui_Dialog as Ui_Dialog_NormalApply
+from UI.UI_DoseApply import Ui_Dialog as Ui_Dialog_DoseApply
+from UI.UI_DoseRelateApply import Ui_Dialog as Ui_Dialog_DoseRelateApply
 # qtCreatorFile = "/data/program/MeshBestGUI/UI/NormalApply.ui"  
 # #print qtCreatorFile
 # Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile) 

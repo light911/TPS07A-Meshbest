@@ -170,9 +170,16 @@
      </widget>
     </item>
     <item>
+     <widget class="QPushButton" name="ApplytoAll">
+      <property name="text">
+       <string>Apply a value to selected item</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QDialogButtonBox" name="buttonBox">
       <property name="standardButtons">
-       <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Reset|QDialogButtonBox::YesToAll</set>
+       <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Reset</set>
       </property>
       <property name="centerButtons">
        <bool>false</bool>

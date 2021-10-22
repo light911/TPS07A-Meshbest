@@ -14,8 +14,8 @@ from PyQt5.QtGui import QPixmap,QPainter,QBrush,QPen,QColor,QFont
 from PyQt5.QtCore import QRect,QPoint,QRectF,QPointF,Qt
 from PyQt5.QtCore import QObject,QThread,pyqtSignal,pyqtSlot,QMutex,QMutexLocker
 
-from GUI_Collectpar_tools import NormalApply,DoseApply,DoseRelateApply
-from UI_CollectPar import Ui_Dialog
+from UI.GUI_Collectpar_tools import NormalApply,DoseApply,DoseRelateApply
+from UI.UI_CollectPar import Ui_Dialog
 #from GUIMain_collectpar_tools_dose import DoseApply
 # qtCreatorFile = "/data/program/MeshBestGUI/UI/CollectPar.ui"  
 # #print qtCreatorFile
@@ -24,14 +24,18 @@ from UI_CollectPar import Ui_Dialog
 
 class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread): 
     Done = pyqtSignal()
-    def __init__(self,CollectInfo,beamlineinfo):
+    def __init__(self,beamlineinfo,view):
         #reload init
         QtWidgets.QMainWindow.__init__(self)
         Ui_Dialog.__init__(self)
         self.setupUi(self)
-        self.CollectInfo=CollectInfo
-#        print type(self.CollectInfo)
-        self.beamlineinfo=beamlineinfo
+        self.view = view
+        
+
+        self.beamlineinfo = beamlineinfo
+        # self.CollectInfo=CollectInfo
+        self.CollectInfo = self.beamlineinfo[self.view]['collectInfo']
+#      
         self.NormalApply = NormalApply()
         self.NormalApply.Done.connect(self.afterNormalApplyDone)
         self.DoseApply = DoseApply()
@@ -305,12 +309,15 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
 
     def buttonBoxApplyClick(self):
         self.UpdatBaseonTable()
-        
+
+        # self.CollectInfo = beamlineinfo[self.view]['collectInfo']
+
 #        self.CollectInfo = self.NewCollectInfo
-        for j in range(len(self.CollectInfo)):
-                    self.CollectInfo.pop()
-        for i in range(len(self.NewCollectInfo)):
-                    self.CollectInfo.append(self.NewCollectInfo[i])
+        # for j in range(len(self.CollectInfo)):
+        #             self.CollectInfo.pop()
+        # for i in range(len(self.NewCollectInfo)):
+        #             self.CollectInfo.append(self.NewCollectInfo[i])
+        self.beamlineinfo[self.view]['collectInfo'] = self.NewCollectInfo
         
         self.Done.emit()
         self.close()
@@ -326,12 +333,13 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
 #        print "2"
 #        print self.CollectInfo
 #        print type(self.CollectInfo)
+        self.CollectInfo = self.beamlineinfo[self.view]['collectInfo']
         self.InfoTable.setRowCount(len(self.CollectInfo))
         row = 0
 #                print self.CollectInfo
         for item in self.CollectInfo:
-            self.addHeaditem(row,item['View1X'],\
-                             item['View1Y'],\
+            self.addHeaditem(row,item['ViewX'],\
+                             item['ViewY'],\
                              item['BeamSize'],\
                              item['RoughtDose'],\
                              item['EstimateDose'],\
@@ -366,15 +374,16 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
 
 
     def UpdatBaseonTable(self):
+        self.CollectInfo = self.beamlineinfo[self.view]['collectInfo']
         self.NewCollectInfo=[]
         for i in range(self.InfoTable.rowCount()) :
             posdata={}
-            posdata['View1X']=float(self.InfoTable.item(i,0).text())
-            posdata['View1Y']=float(self.InfoTable.item(i,1).text())
-            posdata['View2X']=float(self.InfoTable.item(i,0).text())
-            posdata['View2Y']=float(self.InfoTable.item(i,1).text())
+            posdata['ViewX']=float(self.InfoTable.item(i,0).text())
+            posdata['ViewY']=float(self.InfoTable.item(i,1).text())
+            # posdata['View2X']=float(self.InfoTable.item(i,0).text())
+            # posdata['View2Y']=float(self.InfoTable.item(i,1).text())
             posdata['CollectOrder']=int(i+1)
-            posdata['CollecType']=0
+            posdata['CollectType']=0
             
 
             posdata['CollectDone']=self.CollectInfo[i]['CollectDone']
@@ -416,15 +425,21 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
         dose=fluxden*time*wave*wave/2000.0/1e6
 #        print dose
         return dose
-    def calDosePar(self,mode,DoseSelect,beamsize,Dose,Hdose,Adose,Atten,ExposedTime,Trange,Framewidth,Distance,Energy):
+    def calDosePar(self,mode,DoseSelect,beamsize,Dose,Hdose,Adose,Atten,ExposedTime,Trange,Framewidth,Distance,Energy,flux=None):
 #        print self.beamlineinfo['Flux']
         # dose is Mgy, in cal should change to gy
         
         index = self.beamlineinfo["AvailableBeamSizes"].index(beamsize)
-        flux = self.beamlineinfo['Flux'][str(beamsize)]
-        dosefactor = self.beamlineinfo["DoseFactor"][index]
-        bestdose = self.beamlineinfo["BestDose"][index]
-        BeamFWHM = self.beamlineinfo["BeamFWHM"][index]
+        if flux:
+            pass#has flux input
+        else:
+            flux = self.beamlineinfo['Flux'][str(beamsize)]
+        # dosefactor = self.beamlineinfo["DoseFactor"][index]
+        # bestdose = self.beamlineinfo["BestDose"][index]
+        # BeamFWHM = self.beamlineinfo["BeamFWHM"][index]
+        dosefactor = 1
+        bestdose = 10
+        BeamFWHM = beamsize*beamsize
         minExposedTime = self.beamlineinfo["minExposedTime"]
 #        Dose = Dose *1e6
         fluxden=flux/BeamFWHM
@@ -555,9 +570,44 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
             newAdoseitem=QTableWidgetItem(str(newAdose))
             self.InfoTable.setItem(row,3,newHdoseitem)
             self.InfoTable.setItem(row,4,newAdoseitem)
+    def predict_flux(self,currentBeamsize,currentAtten,sampleFlux,Targetbeamsize,par):
+        # currentBeamsize =  float(self.bluiceData['string']['currentBeamsize'])
+        # currentAtten = self.bluiceData['motor']['attenuation']#float
+        # sampleFlux = float(self.bluiceData['string']['sampleFlux'])
         
+        tr = (100-currentAtten)/100
+        if tr <= 0:
+            FullFlux = 0
+        else:
+            FullFlux = sampleFlux/tr
+        if FullFlux == 0:
+            #no beam or something else
+            #using default
+            if currentBeamsize >= 20:
+                FullFlux=par['Flux'][100]
+            else:
+                FullFlux=par['Flux'][1]
+            pass
+        else:
+            pass
+
+        if currentBeamsize >= 20 and Targetbeamsize >= 20:
+            # same
+            flux = FullFlux
+        elif currentBeamsize < 20 and Targetbeamsize >= 20:
+            # FullFlux is smaller
+            flux = FullFlux / par['Fluxfactor']
+        elif currentBeamsize < 20 and Targetbeamsize < 20:
+            flux = FullFlux
+        elif currentBeamsize > 20 and Targetbeamsize < 20:
+            flux = FullFlux * par['Fluxfactor']
+        else:
+            #shoud not got to here
+                flux =FullFlux
+        return flux
 if __name__ == '__main__':
     # from .. import Config
+    from GUI_Collectpar_tools import NormalApply,DoseApply,DoseRelateApply
     import inspect
     currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
     parentdir = os.path.dirname(currentdir)
