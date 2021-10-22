@@ -692,4 +692,11 @@ class Ui_MainWindow(object):
         self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_6), _translate("MainWindow", "Tab 2"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "Crystal Center and Raster"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Collect), _translate("MainWindow", "Collect"))
-        self.debug_string.setText(_t
+        self.debug_string.setText(_translate("MainWindow", "string"))
+        self.debug_motor.setText(_translate("MainWindow", "Motor"))
+        self.debug_operation.setText(_translate("MainWindow", "operation"))
+        self.debug_shutter.setText(_translate("MainWindow", "shutter"))
+        self.debug_raster.setText(_translate("MainWindow", "Raster"))
+        self.debug_Debug.setText(_translate("MainWindow", "Debug"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Debug"))
+        self.menuMeshBestGUI.setTitle(_translate("MainWindow", "Experiment"))
