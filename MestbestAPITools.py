@@ -128,77 +128,82 @@ def genDTableMapv2(Dtable,cmap='hot_with_alpha'):
     # plt.imshow(Dtable, cmap='hot', interpolation='nearest', origin='upper', extent=[0.5, (col + 0.5), (row + 0.5), 0.5])
 def genZTableMap(Ztable,Dtable,BestPositions,cmap='hot_with_alpha',addPositions=True,listnum=10,addText=True,Textsize=12,txtcolor='white',Circle_color='orange',overlapDozor=True):
     defCmap()
-    
-    cmap2 = colors.LinearSegmentedColormap.from_list('my_cmap2', [(0, 0, 0), (0, 0, 0.001)], 256)
-    cmap2._init()
-    alphas = numpy.linspace(-0.01, -1, cmap2.N + 3)
-    cmap2._lut[:, -1] = alphas
-#    
-#    f,ax = plt.subplots()
-#    h = ax.imshow(np.random.rand(100,100),cmap=cmap2)
-#    plt.colorbar(mappable=h)
-    
-    
-    if numpy.all(Ztable==-1):
-        overlapDozor = False
-    #print Dtable
-    row=len(Ztable)
-    col=len(Ztable[0])
-    #print row,col
-    fig = Figure(tight_layout=True,frameon=False,figsize=(col/5.0,row/5.0))
-    
-    #fig.set_size_inches(col/5,row/5,forward=True)
-    #fig.patch.set_facecolor((1,0.47,0.42))
-    #ax=fig.add_subplot(111)
-    ax = fig.add_axes([0,0,1,1])
-    
-    ax.axis('off')
-    #fig.tight_layout(pad=0)
-    #fig.subplots_adjust(left=0.0,right=1.0,top=1.0,bottom=0.0)
-    difminpar=0.2
-    CrystImage=ax.imshow(Ztable, cmap=cmap, interpolation='nearest', origin='upper',extent=[0, col, row, 0],vmin=-1)
-    if overlapDozor:
-        OpacityImage=ax.imshow(Dtable, cmap=cmap2, interpolation='nearest', origin='upper', vmin=difminpar, \
-                              vmax=numpy.percentile(Dtable[Dtable>difminpar], 99), extent=[0, col, row, 0])
-    
-    if addPositions:
+    try:
+        cmap2 = colors.LinearSegmentedColormap.from_list('my_cmap2', [(0, 0, 0), (0, 0, 0.001)], 256)
+        cmap2._init()
+        alphas = numpy.linspace(-0.01, -1, cmap2.N + 3)
+        cmap2._lut[:, -1] = alphas
+    #    
+    #    f,ax = plt.subplots()
+    #    h = ax.imshow(np.random.rand(100,100),cmap=cmap2)
+    #    plt.colorbar(mappable=h)
+        
+        
+        if numpy.all(Ztable==-1):
+            overlapDozor = False
+        #print Dtable
+        row=len(Ztable)
+        col=len(Ztable[0])
+        #print row,col
+        fig = Figure(tight_layout=True,frameon=False,figsize=(col/5.0,row/5.0))
+        
+        #fig.set_size_inches(col/5,row/5,forward=True)
+        #fig.patch.set_facecolor((1,0.47,0.42))
         #ax=fig.add_subplot(111)
-        # BestPositions = np.loadtxt(inuptfile.replace("Ztable","Result_BestPositions"))
-        # print (BestPositions)
-        # print(len(BestPositions))
-        if listnum < len(BestPositions):
-            for i in range(listnum):
-                position = BestPositions[i]
-                # print(i)
-                # print(position)
-                ax.add_artist(Circle((position[0], position[1]), position[2]/2.0, zorder=5, clip_on=False,linewidth=1, edgecolor=Circle_color, fill=False))
-                if addText:
-                    ax.text(position[0], position[1],i+1,color=txtcolor,size=Textsize,ha='center', va='center')
-        else: #plot all  
-            i=0
-            for position in BestPositions:
-                ax.add_artist(Circle((position[0], position[1]), position[2]/2.0, zorder=5, clip_on=False,
-                                     linewidth=1, edgecolor=Circle_color, fill=False))
-                if addText:
-                    ax.text(position[0], position[1],i+1,color=txtcolor,size=Textsize,ha='center', va='center')
-                i=i+1
-    
-    
-    #hot
-    
-    fig.savefig("test.png")
-    canvas = FigureCanvas(fig)
-    canvas.draw()
-    size = canvas.size()
-    #print "canvas size=",size
-    width, height = size.width(), size.height()
-    #print width, height
-    #image = QImage(canvas.buffer_rgba(),width,height,QImage.Format_ARGB32)
-    image = QImage(canvas.buffer_rgba(),width,height,QImage.Format_RGBA8888)
-    #plt.close()
-    
-    #print image
-    #print canvas
+        ax = fig.add_axes([0,0,1,1])
+        
+        ax.axis('off')
+        #fig.tight_layout(pad=0)
+        #fig.subplots_adjust(left=0.0,right=1.0,top=1.0,bottom=0.0)
+        difminpar=0.2
+        CrystImage=ax.imshow(Ztable, cmap=cmap, interpolation='nearest', origin='upper',extent=[0, col, row, 0],vmin=-1)
+        if overlapDozor:
+            OpacityImage=ax.imshow(Dtable, cmap=cmap2, interpolation='nearest', origin='upper', vmin=difminpar, \
+                                vmax=numpy.percentile(Dtable[Dtable>difminpar], 99), extent=[0, col, row, 0])
+        
+        if addPositions:
+            #ax=fig.add_subplot(111)
+            # BestPositions = np.loadtxt(inuptfile.replace("Ztable","Result_BestPositions"))
+            # print (BestPositions)
+            # print(len(BestPositions))
+            if listnum < len(BestPositions):
+                for i in range(listnum):
+                    position = BestPositions[i]
+                    # print(i)
+                    # print(position)
+                    ax.add_artist(Circle((position[0], position[1]), position[2]/2.0, zorder=5, clip_on=False,linewidth=1, edgecolor=Circle_color, fill=False))
+                    if addText:
+                        ax.text(position[0], position[1],i+1,color=txtcolor,size=Textsize,ha='center', va='center')
+            else: #plot all  
+                i=0
+                for position in BestPositions:
+                    ax.add_artist(Circle((position[0], position[1]), position[2]/2.0, zorder=5, clip_on=False,
+                                        linewidth=1, edgecolor=Circle_color, fill=False))
+                    if addText:
+                        ax.text(position[0], position[1],i+1,color=txtcolor,size=Textsize,ha='center', va='center')
+                    i=i+1
+        
+        
+        #hot
+        
+        fig.savefig("test.png")
+        canvas = FigureCanvas(fig)
+        canvas.draw()
+        size = canvas.size()
+        #print "canvas size=",size
+        width, height = size.width(), size.height()
+        #print width, height
+        #image = QImage(canvas.buffer_rgba(),width,height,QImage.Format_ARGB32)
+        image = QImage(canvas.buffer_rgba(),width,height,QImage.Format_RGBA8888)
+        #plt.close()
+        
+        #print image
+        #print canvas
+    except Exception as e:
+        # traceback.print_exc()
+        # self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
+        print(f'Error:{e}')
+
     return QPixmap(image)
     #plt.imshow(Dtable, cmap='hot', interpolation='nearest', origin='upper', extent=[0.5, (col + 0.5), (row + 0.5), 0.5])
 

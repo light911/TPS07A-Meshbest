@@ -110,7 +110,7 @@
          <string> mA</string>
         </property>
         <property name="decimals">
-         <number>1</number>
+         <number>3</number>
         </property>
         <property name="maximum">
          <double>1000.000000000000000</double>
@@ -142,16 +142,54 @@
          <string/>
         </property>
         <property name="suffix">
-         <string>Kev</string>
+         <string> ev</string>
         </property>
         <property name="decimals">
          <number>3</number>
         </property>
         <property name="minimum">
-         <double>4.000000000000000</double>
+         <double>4000.000000000000000</double>
         </property>
         <property name="maximum">
-         <double>20.000000000000000</double>
+         <double>20000.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Beamline flux:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="beamlineflux">
+        <property name="inputMethodHints">
+         <set>Qt::ImhNone</set>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Plain</enum>
+        </property>
+        <property name="lineWidth">
+         <number>1</number>
+        </property>
+        <property name="midLineWidth">
+         <number>0</number>
+        </property>
+        <property name="text">
+         <string>0 phs/sec</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::AutoText</enum>
+        </property>
+        <property name="scaledContents">
+         <bool>false</bool>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
         </property>
        </widget>
       </item>
@@ -937,6 +975,13 @@
               </property>
              </widget>
             </item>
+            <item row="3" column="2">
+             <widget class="QPushButton" name="collectAllpos_1">
+              <property name="text">
+               <string>Collect All Position</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
          </layout>
@@ -1090,6 +1135,13 @@
              <widget class="QPushButton" name="DetailInfo2">
               <property name="text">
                <string>Display collect info</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="2">
+             <widget class="QPushButton" name="collectAllpos_2">
+              <property name="text">
+               <string>Collect All Position</string>
               </property>
              </widget>
             </item>
