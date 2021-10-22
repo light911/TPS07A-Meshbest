@@ -218,6 +218,16 @@
             <string>I has no idea.....</string>
            </property>
           </item>
+          <item>
+           <property name="text">
+            <string>Single Crystal</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Small wedge</string>
+           </property>
+          </item>
          </widget>
         </item>
        </layout>
@@ -504,8 +514,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>98</width>
-             <height>41</height>
+             <width>1070</width>
+             <height>72</height>
             </rect>
            </property>
            <attribute name="label">
@@ -889,13 +899,10 @@
           </item>
           <item>
            <layout class="QGridLayout" name="gridLayout_3">
-            <item row="1" column="2">
-             <widget class="QPushButton" name="viwe1_move_right">
+            <item row="2" column="1">
+             <widget class="QPushButton" name="viwe1_move_down">
               <property name="text">
-               <string>&gt;</string>
-              </property>
-              <property name="autoRepeat">
-               <bool>false</bool>
+               <string>v</string>
               </property>
              </widget>
             </item>
@@ -913,10 +920,20 @@
               </property>
              </widget>
             </item>
-            <item row="2" column="1">
-             <widget class="QPushButton" name="viwe1_move_down">
+            <item row="1" column="2">
+             <widget class="QPushButton" name="viwe1_move_right">
               <property name="text">
-               <string>v</string>
+               <string>&gt;</string>
+              </property>
+              <property name="autoRepeat">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QPushButton" name="DetailInfo1">
+              <property name="text">
+               <string>Display collect info</string>
               </property>
              </widget>
             </item>
@@ -1041,10 +1058,10 @@
           </item>
           <item>
            <layout class="QGridLayout" name="gridLayout_11">
-            <item row="1" column="0">
-             <widget class="QPushButton" name="viwe2_move_left">
+            <item row="0" column="1">
+             <widget class="QPushButton" name="viwe2_move_up">
               <property name="text">
-               <string>&lt;</string>
+               <string>^</string>
               </property>
              </widget>
             </item>
@@ -1055,10 +1072,10 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
-             <widget class="QPushButton" name="viwe2_move_up">
+            <item row="1" column="0">
+             <widget class="QPushButton" name="viwe2_move_left">
               <property name="text">
-               <string>^</string>
+               <string>&lt;</string>
               </property>
              </widget>
             </item>
@@ -1066,6 +1083,13 @@
              <widget class="QPushButton" name="viwe2_move_down">
               <property name="text">
                <string>v</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QPushButton" name="DetailInfo2">
+              <property name="text">
+               <string>Display collect info</string>
               </property>
              </widget>
             </item>

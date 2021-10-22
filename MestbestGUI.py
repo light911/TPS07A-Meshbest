@@ -6,6 +6,7 @@ Created on Fri Jul  9 10:37:32 2021
 @author: blctl
 """
 import argparse,sys,os,signal,math,time,traceback
+from re import X
 from functools import partial
 import beamlineinfo
 import logsetup
@@ -32,6 +33,7 @@ import webimage
 import variables
 from MestbestAPITools import genZTableMap
 import multiprocessing as mp
+from UI.GUI_Collectpar import collectparui
 # import faulthandler
 # faulthandler.enable()
 
@@ -126,6 +128,11 @@ class MainUI(QMainWindow,Ui_MainWindow):
         logfolder.mkdir(parents=True, exist_ok=True)
 
         self.logger = logsetup.getloger2('MestbestGUI',LOG_FILENAME,level = self.Par['Debuglevel'])
+
+        temp = self.Par['View1']['collectInfo']
+        self.collectparwindows = collectparui(self.Par,view='View3')
+        self.collectparwindows1 = collectparui(self.Par,view='View1')
+        self.collectparwindows2 = collectparui(self.Par,view='View2')
         
         self.logger.info(f'GUI PID = {self.pid}')
         self.initGUI()
@@ -226,15 +233,27 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.Overlap_Select_1.currentIndexChanged.connect(self.Overlap_Select_1_value_change)
         self.Overlap_Select_2.currentIndexChanged.connect(self.Overlap_Select_2_value_change)
         
+        
         self.List_number_1.valueChanged.connect(self.List_number_1_value_change)
         self.List_number_2.valueChanged.connect(self.List_number_2_value_change)
         self.view1_opacity.valueChanged.connect(self.view1_opacity_value_change)
         self.view2_opacity.valueChanged.connect(self.view2_opacity_value_change)
         self.view1_opacity.mouseReleaseEvent = self.view1_opacity_mouseReleaseEvent
         self.view2_opacity.mouseReleaseEvent = self.view2_opacity_mouseReleaseEvent
+
+        self.DetailInfo1.clicked.connect(self.DetailInfo1_clicked)
+        self.DetailInfo2.clicked.connect(self.DetailInfo2_clicked)
         pass        
 
-
+    def DetailInfo1_clicked(self):
+        self.collectparwindows1.show()
+        self.collectparwindows1.beamlineinfo = self.Par
+        self.collectparwindows1.update()
+    def DetailInfo2_clicked(self):
+        self.collectparwindows2.show()
+        self.collectparwindows2.beamlineinfo = self.Par
+        self.collectparwindows2.update()
+        pass
     def setColor(self):
         self.Active.setStyleSheet('background-color: red')
         
@@ -1956,6 +1975,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     listnum1=len(self.RasterPar['View1']['BestPositions'])      
                     self.List_number_1.setValue(listnum1)
                     #creat collect info
+                    self.create_collectinfo('View1')
                     #plot position
                     # self.plotBestpos('View1')
                     pass
@@ -1966,6 +1986,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     listnum2=len(self.RasterPar['View2']['BestPositions'])
                     self.List_number_2.setValue(listnum2)    
                     #creat collect info
+                    self.create_collectinfo('View2')
                     #plot position
                     # self.plotBestpos('View2')
 
@@ -2067,6 +2088,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         newimage = tempimage.scaled(TargetImageSize,QtCore.Qt.KeepAspectRatio)
         self.RasterPar[view]['overlap_QPixmap'].setPixmap(newimage)
         self.RasterPar[view]['overlap_QPixmap'].setPos(scanarea.x(),scanarea.y())
+        # self.plotBestpos(view)
         pass
     
     def setOpacity_dozor_plot(self,opacity,view='View1',showGrid = True,ClearFill=False,ClearText=False):
@@ -2741,12 +2763,16 @@ class MainUI(QMainWindow,Ui_MainWindow):
     
     def List_number_1_value_change (self):
         if self.bluiceData['active']:
+            self.create_collectinfo('View1')
             self.plot_overlap_image("View1")
             self.update_ui_par_to_meshbest()
+            
     def List_number_2_value_change (self):
         if self.bluiceData['active']:
+            self.create_collectinfo('View2')
             self.plot_overlap_image("View2")
             self.update_ui_par_to_meshbest()
+            
     def view1_opacity_value_change (self):
         if self.bluiceData['active']:
             self.plot_overlap_image("View1")
@@ -2953,20 +2979,22 @@ class MainUI(QMainWindow,Ui_MainWindow):
 
     def create_collectinfo(self,view='View1'):
         if view=='View1' or view == 'View2':
-            RasterPar = [view]
+            RasterPar = self.RasterPar[view]
             par = self.Par[view]
         elif view == 'View3':#todo for viwe12
             pass
         
         collectlist=list()
+        
         for i,item in enumerate(RasterPar['BestPositions']):
+            posdata={}
             #,x,y,beamsize,socre
-            viewX= item[0]
-            viewY= item[1]
-            beamsize = self.CorrectBeamsize(item[2] * RasterPar['beamsizeY'])
+            posdata['ViewX'] = item[0]
+            posdata['ViewY'] = item[1]
+            BeamSize = self.CorrectBeamsize(item[2] * RasterPar['beamsizeY'])
 
             CollectOrder = int(i+1)
-            CollecType = 'singleview'
+            CollectType = 0#todo collec
             CollectDone = False
             FileName = f'{i+1:03d}'
             FolderName = f'{self.RootPath.text()}/collect'
@@ -2983,16 +3011,74 @@ class MainUI(QMainWindow,Ui_MainWindow):
             dose = 10
             RoughtDose = 10
             EstimateDose = 10
+            #get flux
+            currentBeamsize =  float(self.bluiceData['string']['currentBeamsize']['txt'])
+            currentAtten = self.bluiceData['motor']['attenuation']['pos']#float
+            sampleFlux = float(self.bluiceData['string']['sampleFlux']['txt'])
+            flux = self.predict_flux(currentBeamsize,currentAtten,sampleFlux,BeamSize,self.Par)
+            
             newHdose,newAdose,newAtten,newExptime,newTrange,newDelta,NewDistance,NewEnergy=\
-            self.collectparwindows.calDosePar(displaytext,DoseSelect,beamsize,dose,RoughtDose,EstimateDose,Atten,ExpTime,TotalCollectRange,Delta,Distance,Energy)
-
+            self.collectparwindows.calDosePar(displaytext,DoseSelect,BeamSize,dose,RoughtDose,EstimateDose,Atten,ExpTime,TotalCollectRange,Delta,Distance,Energy,flux)
+            posdata['BeamSize'] = BeamSize
+            posdata['CollectOrder'] = CollectOrder
+            posdata['CollectType'] = CollectType
+            posdata['CollectDone'] = CollectDone
+            posdata['FileName'] = FileName
+            posdata['FolderName'] = FolderName
+            posdata['Distance'] = Distance
+            posdata['Energy'] = Energy
+            posdata['StartPhi'] = StartPhi
+            posdata['EndPhi'] = EndPhi
+            posdata['TotalCollectRange'] = newTrange
+            posdata['Delta'] = newDelta
+            posdata['ExpTime'] = newExptime
+            posdata['Atten'] = newAtten
+            posdata['RoughtDose']=newHdose
+            posdata['EstimateDose'] = newAdose
+            collectlist.append(posdata)
+        self.Par[view]['collectInfo'] = collectlist
+        #todo update table?
+    def predict_flux(self,currentBeamsize,currentAtten,sampleFlux,Targetbeamsize,par):
+        # currentBeamsize =  float(self.bluiceData['string']['currentBeamsize'])
+        # currentAtten = self.bluiceData['motor']['attenuation']#float
+        # sampleFlux = float(self.bluiceData['string']['sampleFlux'])
+        
+        tr = (100-currentAtten)/100
+        if tr <= 0:
+            FullFlux = 0
+        else:
+            FullFlux = sampleFlux/tr
+        if FullFlux == 0:
+            #no beam or something else
+            #using default
+            if currentBeamsize >= 20:
+                FullFlux=par['Flux'][100]
+            else:
+                FullFlux=par['Flux'][1]
             pass
+        else:
+            pass
+
+        if currentBeamsize >= 20 and Targetbeamsize >= 20:
+            # same
+            flux = FullFlux
+        elif currentBeamsize < 20 and Targetbeamsize >= 20:
+            # FullFlux is smaller
+            flux = FullFlux / par['Fluxfactor']
+        elif currentBeamsize < 20 and Targetbeamsize < 20:
+            flux = FullFlux
+        elif currentBeamsize > 20 and Targetbeamsize < 20:
+            flux = FullFlux * par['Fluxfactor']
+        else:
+            #shoud not got to here
+                flux =FullFlux
+        return flux
     def CorrectBeamsize(self,beamsize):
         AvailableBeamSizes = self.Par['AvailableBeamSizes']
         newbeamsize=min(AvailableBeamSizes, key=lambda x:abs(x-beamsize))
         return newbeamsize
     def plotBestpos(self,View='View1'):
-        par = self.Par[View]
+        par = self.Par[View]#todo
         
         for i,posdata in enumerate(par['collectInfo']): 
             
@@ -3001,6 +3087,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             BeamSize = posdata['BeamSize']
             x=self.offsetX + posdata['View1X']*FactorPixUmX*self.rasterinfo['beamsize']*1000.0
             y=self.offsetY + posdata['View1Y']*FactorPixUmY*self.rasterinfo['beamsize']*1000.0
+            
             width=posdata['BeamSize']*FactorPixUmX
             height=posdata['BeamSize']*FactorPixUmY
             newCircle,newText=self.CircleItem(x,y,width,height,Text=str(i+1),Ccolor="goldenrod",Tcolor="white")
