@@ -845,6 +845,10 @@ class BluiceClient(QThread):
             #gtos_start_operation runsConfig 6.10 blctl deleteRun 3
             
         wedge_size="36000"
+        #  ['stog_configure_string', 'run1', 'self', 'complete', '2001', '1', 'empty',
+        #  '/data/blctl/20211017_07A/temp', '1', 'Phi', '147.283117', '2148.283117', 
+        # '1.0', '180.0', '0.0100', '599.980360', '7.932', '49.752163', '1',
+        #  '12699.883911', '{}', '{}', '{}', '{}', '2', '0', '0']
         command.append("gtos_set_string run1 inactive " + "0 1 " + file_root + " " + directory + " 1 phi "\
                 + start_angle + " " + end_angle + " " + delta + " " + wedge_size + " " + exposure_time\
                 + " " + distance +" "+ self.info["run1"]["beam_stop"] + " " + attenuation + " 1 " + energy1\

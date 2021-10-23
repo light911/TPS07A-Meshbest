@@ -115,7 +115,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.Par = {}
         self.state = self.m1.dict() 
         self.Par.update(Config.Par)
-        
+        self.collectPause =False
         init_meshbest_data = variables.init_meshbest_data()
                 
         self.Par['View1'] = init_meshbest_data
@@ -249,8 +249,15 @@ class MainUI(QMainWindow,Ui_MainWindow):
 
         self.DetailInfo1.clicked.connect(self.DetailInfo1_clicked)
         self.DetailInfo2.clicked.connect(self.DetailInfo2_clicked)
-        pass        
 
+        self.collectAllpos_1.clicked.connect(self.collectAllpos_1_clicked)
+        self.collectAllpos_2.clicked.connect(self.collectAllpos_2_clicked)
+        pass        
+    def collectAllpos_1_clicked(self):
+        self.CollectdataSeq('View1')
+        pass
+    def collectAllpos_2_clicked(self):
+        pass
     def DetailInfo1_clicked(self):
         self.collectparwindows1.show()
         self.collectparwindows1.beamlineinfo = self.Par
@@ -614,7 +621,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 else:
                     self.timer.singleShot(100,self.waitMotorStopUpdate)
                 
-    def waitMotorStopUpdate_v2(self,motorchecklist,callback,checktime=100):
+    def waitMotorStopUpdate_v2(self,motorchecklist,callback,callbackarg=(),checktime=100):
             self.logger.debug(f'Checking {motorchecklist} moving state')
             checkarray = []
             posarray = []
@@ -623,12 +630,13 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 posarray.append(self.bluiceData['motor'][motor]['pos'])
             if all(checkarray):
                 self.logger.debug(f'motor:{motorchecklist} move done')
-                callback() #go tonext function
+                self.logger.warning(f'callback {callback} with args{callbackarg}')
+                callback(*callbackarg) #go tonext function  
             else:
                 if self.abort:
                     self.logger.debug('Got Abort,stop wait waitMotorStopUpdate_v2!')
                 else:
-                    self.timer.singleShot(checktime, partial(self.waitMotorStopUpdate_v2,motorchecklist,callback))
+                    self.timer.singleShot(checktime, partial(self.waitMotorStopUpdate_v2,motorchecklist,callback,callbackarg,checktime))
                 
     def waitMotorInPosUpdate(self,motorchecklist,motorposchecklist,callback,diffvalue=0.001):
             self.logger.debug(f'Check {motorchecklist} in pos {motorposchecklist}')
@@ -686,7 +694,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     self.timer.singleShot(100,self.waitPhiInPosUpdate)
         # else:
         #      self.logger.debug('timer inactive!')
-    def waitOperationDone(self,oplist,callback,checktime=100):
+    def waitOperationDone(self,oplist,callback,callbackarg=(),checktime=100):
         '''
         
 
@@ -696,6 +704,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
             the operation to check is done.
         callback : Function
             The Function to do after operation is done.
+        callbackarg : args
+            args for Function 
 
         Returns
         -------
@@ -708,12 +718,14 @@ class MainUI(QMainWindow,Ui_MainWindow):
             checkarray.append(not (self.bluiceData['operation'][op]['moving']))
         if all(checkarray):
             self.logger.debug(f'op:{oplist} move done')
-            callback() #go tonext function
+            #go to next function
+            self.logger.warning(f'callback {callback} with args{callbackarg}')
+            callback(*callbackarg)
         else:
             if self.abort:
                 self.logger.debug('Got Abort,stop wait waitOperationDone!')
             else:
-                self.timer.singleShot(checktime, partial(self.waitOperationDone,oplist,callback))
+                self.timer.singleShot(checktime, partial(self.waitOperationDone,oplist,callback,callbackarg,checktime))
         pass
     def Centermodeclicked(self):
         command = f'gtos_start_motor_move change_mode 0'
@@ -3065,8 +3077,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
             Distance = self.Distance.value()
             Energy = self.bluiceData['motor']['energy']['pos']
             TotalCollectRange = 10 #todo set a input?
-            StartPhi = RasterPar['gonio_phi'] - TotalCollectRange
-            EndPhi = RasterPar['gonio_phi'] + TotalCollectRange
+            StartPhi = RasterPar['gonio_phi'] - TotalCollectRange /2
+            EndPhi = RasterPar['gonio_phi'] + TotalCollectRange /2
             Delta = 0.01 #todo set a input?
             Atten = 0
             ExpTime = 0.01
@@ -3091,8 +3103,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
             posdata['FolderName'] = FolderName
             posdata['Distance'] = Distance
             posdata['Energy'] = Energy
-            posdata['StartPhi'] = StartPhi
-            posdata['EndPhi'] = EndPhi
+            posdata['StartPhi'] = RasterPar['gonio_phi'] - newTrange /2
+            posdata['EndPhi'] = RasterPar['gonio_phi'] + newTrange /2
             posdata['TotalCollectRange'] = newTrange
             posdata['Delta'] = newDelta
             posdata['ExpTime'] = newExptime
@@ -3319,6 +3331,173 @@ class MainUI(QMainWindow,Ui_MainWindow):
         # par = copy.deepcopy(self.Par)
         par = variables.Raster_to_Meshbest_par(self.RasterPar, self.Par)
         self.meshbest.sendCommandToMeshbest(('Update_par',par))
+    #collect bolck
+
+    def CollectdataSeq(self,view):
+        self.saveImageforCollect()
+        self.collectPause = False##todo
+        self.showforreadycollect(False)
+        self.CollectAction(view)
+
+    def CollectAction(self,view):
+        par =self.Par[view]
+        CollectInfo = self.Par[view]['collectInfo']
+        #check pause?
+        if len(CollectInfo) > 0:
+           
+            CurrentCollectindex, CurrentCollectinfo = self.findNeedCollectInfo(view)
+            if CurrentCollectindex == -1:
+                #collect done
+                self.showforreadycollect(True)
+                return False
+
+            self.logger.warning(f'{CurrentCollectindex=}')
+            
+            
+            RasterInfo = self.RasterPar[view]
+            offsetx = RasterInfo['box'].x() 
+            offsety = RasterInfo['box'].y() 
+            FactorPixUmX = par['zoom_scale_x']
+            FactorPixUmY = par['zoom_scale_y']
+            gridsizeX = par['beamsizeX']
+            gridsizeY = par['beamsizeY']
+            x= (offsetx + CurrentCollectinfo['ViewX']*FactorPixUmX*gridsizeX)
+            y= (offsety + CurrentCollectinfo['ViewY']*FactorPixUmY*gridsizeY)
+
+            #move sample
+            self.makecollectred(CurrentCollectindex,view)
+            samplex = RasterInfo['sample_x']
+            sampley = RasterInfo['sample_y']
+            samplez = RasterInfo['sample_z']
+            angle = RasterInfo['gonio_phi']
+            zoomx = RasterInfo['zoom_scale_x']
+            zoomy = RasterInfo['zoom_scale_y']
+
+            
+            samplez,sampley,samplex = self.calXYZbaseonCAMCenter(x,y,angle,zoomx,zoomy,samplex,sampley,samplez)
+
+            start_angle = CurrentCollectinfo['StartPhi']
+
+            attenuation = CurrentCollectinfo['Atten']
+
+            command = f'gtos_start_motor_move gonio_phi {start_angle}'
+            # print(command)
+            self.Qinfo["sendQ"].put(command)
+            command = f'gtos_start_motor_move sample_x {samplex}'
+            # print(command)
+            self.Qinfo["sendQ"].put(command)
+            command = f'gtos_start_motor_move sample_y {sampley}'
+            # print(command)
+            self.Qinfo["sendQ"].put(command)
+            command = f'gtos_start_motor_move sample_z {samplez}'
+            # print(command)
+            self.Qinfo["sendQ"].put(command)
+            command = f'gtos_start_motor_move attenuation {attenuation}'
+             # print(command)
+            self.Qinfo["sendQ"].put(command)
+
+
+            motorchecklist=['gonio_phi','sample_x','sample_y','sample_z','attenuation']
+            motorposchecklist=[start_angle,samplex,sampley,samplez,attenuation]
+            
+            callback = self.CollectAction_collect#next job
+            callbackarg = (view,CurrentCollectinfo,CurrentCollectindex)
+            self.logger.warning(f'wating {motorchecklist} ')
+            self.timer.singleShot(200, partial(self.waitMotorStopUpdate_v2,motorchecklist,callback,callbackarg))           
+            return True
+
+    def CollectAction_collect(self,view,CurrentCollectinfo,CurrentCollectindex):
+#            setupRun(self,file_root,directory,start_angle,end_angle,delta,exposure_time,distance,attenuation,beamsize,energy1=-1,shuttered="1"):
+        energy = str(self.Energy.value())    
+        info=CurrentCollectinfo
+        self.bluice.job = 'collect'
+        self.bluice.file_root = str(info['FileName'])
+        self.bluice.directory = str(info['FolderName'])
+        self.bluice.start_angle = str(info['StartPhi'])
+        self.bluice.end_angle = str(info['EndPhi'])
+        self.bluice.delta = str(info['Delta'])
+        self.bluice.exposure_time = str(info['ExpTime'])
+        self.bluice.distance = str(info['Distance'])
+        self.bluice.attenuation = str(info['Atten'])
+        self.bluice.beamsize = str(info['BeamSize'])
+        self.bluice.energy1 = str(info['Energy'])
+#        self.bluice2.start()
+        self.opCompleted['collectRuns'] = False#this may be useless
+        self.bluiceData['operation']['collectRuns']['moving'] = True
+        self.logger.warning(f'ask bluice Collect  {CurrentCollectinfo}')
+        self.bluice.collect(str(info['FileName']),str(info['FolderName']),str(info['StartPhi']),\
+                            str(info['EndPhi']),str(info['Delta']),str(info['ExpTime']),\
+                            str(info['Distance']),str(info['Atten']),str(info['BeamSize']),str(energy))        
+
+        #wait collect done(operation)
+        self.logger.info(f'Wait for Collect operation')
+        oplist=['collectRuns']
+        callback = self.after_collectdone
+        callbackarg = (view,CurrentCollectindex)
+        self.timer.singleShot(100, partial(self.waitOperationDone
+                                            ,oplist,callback,callbackarg))
+
+        
+    def after_collectdone(self,view,CurrentCollectindex):
+        #make something to do after collect one run
+        #replace one item
+        self.makecollectgreen(CurrentCollectindex,view)
+        temp=self.Par[view]['collectInfo'].pop(CurrentCollectindex)
+        temp['CollectDone']=True
+        self.Par[view]['collectInfo'].insert(CurrentCollectindex,temp)
+        #update display
+        #todo update GUI_collecrpar.py
+
+        
+        #go for next check pause?
+        self.CollectAction(view)
+
+    def findNeedCollectInfo(self,view) :
+        CollectInfo = self.Par[view]['collectInfo']
+        index=-1
+        i=0
+        for item in CollectInfo:
+            if item['CollectDone'] == False:
+                index = i
+                return index,item
+            i = i + 1 
+        return -1,{}
+    def makecollectgreen(self,CurrentCollectindex,view):
+        if CurrentCollectindex == -1:
+            pass
+        else:
+            Circle = self.RasterPar[view]['pos_circle_array'][CurrentCollectindex]
+            Circle.setBrush(QColor('green'))
+            Circle.setPen(QPen(QColor('green'),1))
+            Circle.setOpacity(0.7)
+
+    def makecollectred(self,CurrentCollectindex,view):
+        if CurrentCollectindex == -1:
+            pass
+        else:
+            Circle = self.RasterPar[view]['pos_circle_array'][CurrentCollectindex]
+            Circle.setBrush(QColor('red'))
+            Circle.setPen(QPen(QColor('red'),1))
+            Circle.setOpacity(0.7)
+
+    def saveImageforCollect(self):
+        #todo
+        pass
+    def showforreadycollect(self,show):
+        #todo
+        #show true=wait for collect
+        #show False= collecting
+        # self.Collectdata.setEnabled(show)
+        # self.Abort.setEnabled(True)
+        # self.Pause.setEnabled(not show)
+        pass
+
+
+
+
+
+
+
     def quit(self,signum,frame):
         self.logger.critical(f'Main GUi exit')
         self.logger.critical(f'Call bluice closed')
