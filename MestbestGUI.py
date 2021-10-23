@@ -3077,8 +3077,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
             Distance = self.Distance.value()
             Energy = self.bluiceData['motor']['energy']['pos']
             TotalCollectRange = 10 #todo set a input?
-            StartPhi = RasterPar['gonio_phi'] - TotalCollectRange /2
-            EndPhi = RasterPar['gonio_phi'] + TotalCollectRange /2
+            StartPhi = RasterPar['gonio_phi'] - (TotalCollectRange /2)
+            EndPhi = RasterPar['gonio_phi'] + (TotalCollectRange /2)
             Delta = 0.01 #todo set a input?
             Atten = 0
             ExpTime = 0.01
@@ -3103,14 +3103,15 @@ class MainUI(QMainWindow,Ui_MainWindow):
             posdata['FolderName'] = FolderName
             posdata['Distance'] = Distance
             posdata['Energy'] = Energy
-            posdata['StartPhi'] = RasterPar['gonio_phi'] - newTrange /2
-            posdata['EndPhi'] = RasterPar['gonio_phi'] + newTrange /2
+            posdata['StartPhi'] = RasterPar['gonio_phi'] - (newTrange /2)
+            posdata['EndPhi'] = RasterPar['gonio_phi'] + (newTrange /2)
             posdata['TotalCollectRange'] = newTrange
             posdata['Delta'] = newDelta
             posdata['ExpTime'] = newExptime
             posdata['Atten'] = newAtten
             posdata['RoughtDose']=newHdose
             posdata['EstimateDose'] = newAdose
+            # self.logger.warning(f'{posdata["StartPhi"]},{posdata["EndPhi"]},{newTrange}')
             if i >=numlist:
                 pass
             else:
