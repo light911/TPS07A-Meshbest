@@ -46,7 +46,8 @@ class adxv():
             orgy = f['/entry/instrument/detector/beam_center_y'][()]
             distance = f['/entry/instrument/detector/detector_distance'][()]*1000
             overload = f['/entry/instrument/detector/saturation_value'][()]
-
+        self.logger.warning(f'{wavelength=},{orgx=},{orgy=},{distance=},{overload=}')
+        self.logger.warning(f'{self.wavelength=},{self.beam_centerX=},{self.beam_centerY=},{self.distance=},{self.overload=}')
         if self.wavelength != wavelength or self.beam_centerX != orgx or self.beam_centerY != orgy or self.distance != distance or self.overload != overload:
             #need open a new one adxv
             _new=True
@@ -60,6 +61,9 @@ class adxv():
 
         if self.process.is_alive() and _new:
             #has adxv running need closed and reopen
+            commands =['exit']
+            self.sendcommand(self.port,commands)
+            time.sleep(0.1)
             self.logger.warning('process is_alive and need new process')
             self.process.terminate()
             self.port = self.get_free_port()
@@ -170,7 +174,7 @@ if __name__ == '__main__':
 
     a.showimage('/data/blctl/20211027_07A/154945/collect/001_0000_master.h5',5)
     time.sleep(5)
-    a.showimage('/data/blctl/20211027_07A/154945/collect/001_0000_master.h5',10)
+    a.showimage('/data/blctl/20211027_07A/154945/RasterScanview2_0000_master.h5',10)
     time.sleep(5)
     # a.openadxv(port)
     # p = Process(target=a.openadxv, args=(port,),name='ADXV')

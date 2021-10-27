@@ -1403,6 +1403,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         pass
     def StartRasterclicked(self):
         self.logger.info(f'Button Start Raster clicked')
+        self.Qinfo["sendQ"].put('gtos_set_string system_status {Start Rastering...} black #d0d000')
         self.Par['StateCtl']['AbletoStartRaster'] = False
         self.Overlap_Select_1.setCurrentIndex(2)
         self.Overlap_Select_2.setCurrentIndex(2)
@@ -1428,12 +1429,13 @@ class MainUI(QMainWindow,Ui_MainWindow):
         # self.can_move_in_rastrview_flag = True
         self.Par['StateCtl']['RasterDone'] = True
         self.update_ui_par_to_meshbest()
+        self.Qinfo["sendQ"].put('gtos_set_string system_status Ready black #00a040')
         pass
     
     def ArmDetectorandMeshbest(self):
         # this not work
         self.logger.info(f'{self.RasterPar["View2"]["box"]}, so .....{self.RasterPar["View2"]["box"] == QRectF(0,0,0,0)}')
-        
+        self.Qinfo["sendQ"].put('gtos_set_string system_status {Wait for Detector setup(Raster)} black #d0d000')
         if self.RasterRunstep ==0:
             view=1
             if self.RasterPar['View1']['box'] == QRectF(0,0,0,0):
@@ -1490,6 +1492,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 if all(checkarray):
                     self.logger.debug(f'op:{oplist} move done')
                     break
+                QApplication.processEvents()
                 time.sleep(0.1)
             callback()
             # self.bluiceData['operation']['detector_ratser_setup']['moving'] = True
@@ -1520,6 +1523,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             if all(checkarray):
                 self.logger.debug(f'motor:{motorchecklist} move done')
                 break
+            QApplication.processEvents()
             time.sleep(0.2)
             
         
@@ -1561,6 +1565,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
     def TriMD3Raster(self):
         
         self.logger.info(f'Ready for Tri. MD3')
+        self.Qinfo["sendQ"].put('gtos_set_string system_status {Wait for MD3 scan (Raster)} black #d0d000')
         if self.RasterRunstep == 1:
             parlist = self.calstartRasterScanPar(view1=True)
             self.RasterRunstep = 2
@@ -1628,6 +1633,74 @@ class MainUI(QMainWindow,Ui_MainWindow):
     def StartRasterclicked_3(self):
         self.logger.info('scan Raster done')
         pass
+    def calMutiPosPar(self,info):
+        # self.operationHandle = command[1]
+        # self.runIndex = int(command[2])
+        # self.filename = command[3]
+        # self.directory = command[4]
+        # self.userName = command[5]
+        # self.axisName = command[6]
+        # self.exposureTime = float(command[7])
+        # self.oscillationStart = float(command[8])
+        
+        # self.detosc =  float(command[9])
+        # self.TotalFrames = int(command[10]) #1
+        # self.distance = float(command[11])
+        # self.wavelength = float(command[12])
+        # self.detectoroffX = float(command[13])
+        # self.detectoroffY = float(command[14])
+        
+        # self.sessionId = command[17]
+        # self.fileindex = int(command[18])
+        # self.unknow = int(command[19]) #1
+        # self.beamsize = command[20] # 50
+        # self.atten = command[21] #0
+        
+        # self.bluice.job = 'collect'
+        # self.bluice.file_root = str(info['FileName'])
+        # self.bluice.directory = str(info['FolderName'])
+        # self.bluice.start_angle = str(info['StartPhi'])
+        # self.bluice.end_angle = str(info['EndPhi'])
+        # self.bluice.delta = str(info['Delta'])
+        # self.bluice.exposure_time = str(info['ExpTime'])
+        # self.bluice.distance = str(info['Distance'])
+        # self.bluice.attenuation = str(info['Atten'])
+        # self.bluice.beamsize = str(info['BeamSize'])
+        # self.bluice.energy1 = str(info['Energy'])
+        runIndex = int(1)
+        
+        filename = str(info['FileName'])
+        directory = str(info['FolderName'])
+        # directory = self.RootPathforRaster
+        userName = self.user
+        axisName = "gonio_phi"
+        exposureTime = str(info['ExpTime'])
+        oscillationStart = str(info['StartPhi'])
+        
+        detosc =  str(info['Delta'])
+        TotalFrames =  str(math.ceil(abs(float(info['EndPhi'])-float(info['StartPhi']))/float(info['Delta'])))#1
+        # distance = self.bluiceData['motor']['detector_z']['pos']
+        distance = str(info['Distance'])
+        wavelength = 1/self.bluiceData['motor']['energy']['pos']*12398
+        detectoroffX = self.bluiceData['motor']['detector_vert']['pos']
+        detectoroffY = self.bluiceData['motor']['detector_horz']['pos']
+        
+        sessionId = "no"
+        fileindex = 0
+        unknow = int(1) #1
+        #for beam size , gird size =1000 using beamsize 90
+        #par['beamsizeY'] is grid size, so we need change it
+        # beamsize = self.gridsizetobeamsize(par['beamsizeY'])
+        # new! change beam size only in EPIS DHS
+        beamsize = str(info['BeamSize']) # 50
+        
+        atten = self.bluiceData['motor']['attenuation']['pos'] #or str(info['Atten'])
+
+        
+        ans =  [runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten]
+        self.logger.info(f'{ans}')
+        return ans
+
     def calRasterParDetector(self,view1=True):
         # self.operationHandle = command[1]
         # self.runIndex = int(command[2])
@@ -1672,7 +1745,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         TotalFrames = int(par['numofX']*par['numofY'] ) #1
         # distance = self.bluiceData['motor']['detector_z']['pos']
         distance = self.Distance.value()
-        wavelength = 1/self.bluiceData['motor']['energy']['pos']*12.4
+        wavelength = 1/self.bluiceData['motor']['energy']['pos']*12398
         detectoroffX = self.bluiceData['motor']['detector_vert']['pos']
         detectoroffY = self.bluiceData['motor']['detector_horz']['pos']
         
@@ -1692,7 +1765,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         #  sscanf(commandBuffer.textInBuffe
         # self.logger.info(f'Default action for {command[0]}:{command[1:]}')
         ans =  [runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY]
-        self.logger.info(f'{ans}')
+        self.logger.debug(f'{ans}')
         return ans
     def gridsizetobeamsize(self,gridsize):
         table={100:90,90:80,80:70,70:60,60:50,50:40,40:30,30:20,20:10,10:5,5:1}
@@ -2730,6 +2803,27 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     self.TPSStateText.setText('Open')
                 else:
                     self.TPSStateText.setText('Closed')
+            elif name == "system_status":
+                
+                data =self.bluiceData['string']['system_status']['txt']
+                if data.find('{') != -1:
+                    end = data.find('}')
+                    state=data[1:end]
+                    ans = data[end+1:].split()
+                    textc = ans[0]
+                    bagc =  ans[1]
+
+                    
+                else:
+                    ans = data.split()
+                    state = ans[0]
+                    textc = ans[1]
+                    bagc =  ans[2]
+                self.LastInfo.setText(state)
+                self.LastInfo.setStyleSheet(f'color: {textc};background-color: {bagc}')
+
+                # print(f'state = {state},color for text ={textc}, color for background = {bagc}')
+
             # print(name,value)
 
 
@@ -3496,28 +3590,19 @@ class MainUI(QMainWindow,Ui_MainWindow):
 #            setupRun(self,file_root,directory,start_angle,end_angle,delta,exposure_time,distance,attenuation,beamsize,energy1=-1,shuttered="1"):
         energy = str(self.Energy.value())    
         info=CurrentCollectinfo
-        self.bluice.job = 'collect'
-        self.bluice.file_root = str(info['FileName'])
-        self.bluice.directory = str(info['FolderName'])
-        self.bluice.start_angle = str(info['StartPhi'])
-        self.bluice.end_angle = str(info['EndPhi'])
-        self.bluice.delta = str(info['Delta'])
-        self.bluice.exposure_time = str(info['ExpTime'])
-        self.bluice.distance = str(info['Distance'])
-        self.bluice.attenuation = str(info['Atten'])
-        self.bluice.beamsize = str(info['BeamSize'])
-        self.bluice.energy1 = str(info['Energy'])
-#        self.bluice2.start()
-        self.opCompleted['collectRuns'] = False#this may be useless
-        self.bluiceData['operation']['collectRuns']['moving'] = True
-        self.logger.warning(f'ask bluice Collect  {CurrentCollectinfo}')
-        self.bluice.collect(str(info['FileName']),str(info['FolderName']),str(info['StartPhi']),\
-                            str(info['EndPhi']),str(info['Delta']),str(info['ExpTime']),\
-                            str(info['Distance']),str(info['Atten']),str(info['BeamSize']),str(energy))        
+        parlist = self.calMutiPosPar(CurrentCollectinfo)
+        self.logger.debug(f'patlist = {parlist}')
+        command = f"gtos_start_operation mutiPosCollect {self.bluiceID}.{self.bluiceCounter} "
+        self.bluiceCounter += self.bluiceCounter
+            
+        for item in parlist:
+            command = command + str(item) + " "
+        self.opCompleted['mutiPosCollect'] = False
+        self.Qinfo["sendQ"].put(command)
 
         #wait collect done(operation)
         self.logger.info(f'Wait for Collect operation')
-        oplist=['collectRuns']
+        oplist=['mutiPosCollect']
         callback = self.after_collectdone
         callbackarg = (view,CurrentCollectindex)
         self.timer.singleShot(100, partial(self.waitOperationDone
