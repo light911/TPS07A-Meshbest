@@ -271,14 +271,17 @@ class MainUI(QMainWindow,Ui_MainWindow):
         currentAtten = self.bluiceData['motor']['attenuation']['pos']#float
         sampleFlux = float(self.bluiceData['string']['sampleFlux']['txt'])
         self.collectparwindows1.currentAtten = currentAtten
-        self.collectparwindows1.currentBeamsize = currentBeamsize
+        self.collectparwindows1.currentbeamsize = currentBeamsize
         self.collectparwindows1.sampleFlux = sampleFlux
         self.collectparwindows1.update()
     def DetailInfo2_clicked(self):
+        currentBeamsize =  float(self.bluiceData['string']['currentBeamsize']['txt'])
+        currentAtten = self.bluiceData['motor']['attenuation']['pos']#float
+        sampleFlux = float(self.bluiceData['string']['sampleFlux']['txt'])
         self.collectparwindows2.show()
         self.collectparwindows2.beamlineinfo = self.Par
         self.collectparwindows2.currentAtten = currentAtten
-        self.collectparwindows2.currentBeamsize = currentBeamsize
+        self.collectparwindows2.currentbeamsize = currentBeamsize
         self.collectparwindows2.sampleFlux = sampleFlux
         self.collectparwindows2.update()
         pass
