@@ -784,7 +784,7 @@
                </widget>
               </item>
               <item row="1" column="4">
-               <widget class="QDoubleSpinBox" name="doubleSpinBox_12">
+               <widget class="QDoubleSpinBox" name="rasterdose">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -968,17 +968,17 @@
               </property>
              </widget>
             </item>
-            <item row="3" column="1">
-             <widget class="QPushButton" name="DetailInfo1">
-              <property name="text">
-               <string>Display collect info</string>
-              </property>
-             </widget>
-            </item>
             <item row="3" column="2">
              <widget class="QPushButton" name="collectAllpos_1">
               <property name="text">
                <string>Collect All Position</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QPushButton" name="DetailInfo1">
+              <property name="text">
+               <string>Display collect info</string>
               </property>
              </widget>
             </item>
@@ -1131,17 +1131,17 @@
               </property>
              </widget>
             </item>
-            <item row="3" column="1">
-             <widget class="QPushButton" name="DetailInfo2">
-              <property name="text">
-               <string>Display collect info</string>
-              </property>
-             </widget>
-            </item>
             <item row="3" column="2">
              <widget class="QPushButton" name="collectAllpos_2">
               <property name="text">
                <string>Collect All Position</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QPushButton" name="DetailInfo2">
+              <property name="text">
+               <string>Display collect info</string>
               </property>
              </widget>
             </item>

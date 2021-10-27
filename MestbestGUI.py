@@ -126,6 +126,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         statectrl['RasterDone'] = False
         statectrl['AbletoStartRaster'] = False
         statectrl['reciveserverupdate'] = True
+        statectrl['AbletoCollect'] = False
         self.Par['StateCtl']=statectrl
 
         home = str(Path.home())
@@ -142,13 +143,15 @@ class MainUI(QMainWindow,Ui_MainWindow):
         
         self.logger.info(f'GUI PID = {self.pid}')
         self.initGUI()
-        self.initGuiEvent()
+        # self.initGuiEvent()
         self.setBluice()
+        time.sleep(1)
         self.setSampleimage()
         self.setupMeshbest(LOG_FILENAME)
         self.timer = QTimer()
         self.abort = False
         self.convertlist = variables.convertlist()
+        self.initGuiEvent()
     def initGUI(self):
         # self.scene = graphicsScene(self)
         self.scene = QGraphicsScene()
@@ -182,7 +185,10 @@ class MainUI(QMainWindow,Ui_MainWindow):
             beamline = "07A/"
         path = f"/data/{self.user}/"+datetime.now().strftime("%Y%m%d_")+beamline
         self.RootPath.setText(path)
+        self.RootPathforRaster = self.RootPath.text()
         # print(self.RootPath.text())
+        self.collectAllpos_1.setEnabled(False)
+        self.collectAllpos_2.setEnabled(False)
         pass
     
     def initGuiEvent(self):
@@ -261,10 +267,19 @@ class MainUI(QMainWindow,Ui_MainWindow):
     def DetailInfo1_clicked(self):
         self.collectparwindows1.show()
         self.collectparwindows1.beamlineinfo = self.Par
+        currentBeamsize =  float(self.bluiceData['string']['currentBeamsize']['txt'])
+        currentAtten = self.bluiceData['motor']['attenuation']['pos']#float
+        sampleFlux = float(self.bluiceData['string']['sampleFlux']['txt'])
+        self.collectparwindows1.currentAtten = currentAtten
+        self.collectparwindows1.currentBeamsize = currentBeamsize
+        self.collectparwindows1.sampleFlux = sampleFlux
         self.collectparwindows1.update()
     def DetailInfo2_clicked(self):
         self.collectparwindows2.show()
         self.collectparwindows2.beamlineinfo = self.Par
+        self.collectparwindows2.currentAtten = currentAtten
+        self.collectparwindows2.currentBeamsize = currentBeamsize
+        self.collectparwindows2.sampleFlux = sampleFlux
         self.collectparwindows2.update()
         pass
     def setColor(self):
@@ -490,8 +505,13 @@ class MainUI(QMainWindow,Ui_MainWindow):
             self.send_RasterInfo_to_meshbest()
         else:
             pass
-             
+    def getfolderforraster(self):
+        root = self.RootPath.text()
+        new_path = root + f'/{datetime.now().strftime("%H%M%S")}'
+        return new_path
+
     def Rasterclicked(self):
+        self.RootPathforRaster = self.getfolderforraster()
         self.clear_Raster_scence_item()
 
         self.logger.info(f'Rasterclicked,Current phi={self.bluiceData["motor"]["gonio_phi"]["pos"]}')
@@ -1169,6 +1189,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         if self.bluiceData['active']:
             self.plotbox()
             self.update_ui_par_to_meshbest()
+        self.CalRasterDose()
     def Distance_value_change(self):
         if self.bluiceData['active']:
             self.update_ui_par_to_meshbest()
@@ -1637,7 +1658,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
             
         # runIndex =view1 =101 view2 =102
         filename = filename
-        directory = self.RootPath.text()
+        # directory = self.RootPath.text()
+        directory = self.RootPathforRaster
         userName = self.user
         axisName = "gonio_phi"
         exposureTime = self.ExpouseValue.value()
@@ -1981,10 +2003,16 @@ class MainUI(QMainWindow,Ui_MainWindow):
             # self.logger.info(f'after view1 decode = {self.RasterPar["View1"]["Dtable"]}')
             # self.logger.info(f'after view2 decode = {self.RasterPar["View2"]["Dtable"]}')
             if self.bluiceData['active']:
-                pass
+                if len(self.Par['View1']['collectInfo'])>0:
+                    self.collectAllpos_1.setEnabled(True)
+                if len(self.Par['View2']['collectInfo'])>0:
+                    self.collectAllpos_2.setEnabled(True)
+                        
             else:
                 # self.logger.debug(f'view1_data update Par :{self.RasterPar["View1"]["scoreArray"]}')
                 # self.logger.debug(f'after update Par :{self.RasterPar}')
+                self.collectAllpos_1.setEnabled(False)
+                self.collectAllpos_2.setEnabled(False)
                 pass
             
             self.full_update(self.Par)
@@ -2693,6 +2721,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 except:
                     flux =0
                 self.beamlineflux.setText(f'{flux:.3e} phs/sec')
+                self.CalRasterDose()
             elif name == 'tps_state':
                 if value[0]=='Beams':
                     self.TPSStateText.setText('Open')
@@ -2735,6 +2764,21 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.Raster.setEnabled(True)
         if self.Par['StateCtl']['AbletoStartRaster']:
             self.StartRaster.setEnabled(True)
+
+        if len(self.Par['View1']['collectInfo'])>0:        
+            self.collectAllpos_1.setEnabled(True)
+        if len(self.Par['View2']['collectInfo'])>0:        
+            self.collectAllpos_2.setEnabled(True)
+
+        self.viwe1_move_down.setEnabled(True)
+        self.viwe1_move_up.setEnabled(True)
+        self.viwe1_move_left.setEnabled(True)
+        self.viwe1_move_right.setEnabled(True)
+        self.viwe2_move_down.setEnabled(True)
+        self.viwe2_move_up.setEnabled(True)
+        self.viwe2_move_left.setEnabled(True)
+        self.viwe2_move_right.setEnabled(True)
+                    
     def setToPassive(self):
         self.Active.setText("Passive")
         self.bluiceData['active'] = False
@@ -2743,7 +2787,16 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.logger.info(f'Client become passive')
         self.SampleViedo.setCursor(QCursor(QtCore.Qt.ForbiddenCursor))
         self.SampleViedo.setToolTip('Active is needed')
-        
+        self.collectAllpos_1.setEnabled(False)
+        self.collectAllpos_2.setEnabled(False)
+        self.viwe1_move_down.setEnabled(False)
+        self.viwe1_move_up.setEnabled(False)
+        self.viwe1_move_left.setEnabled(False)
+        self.viwe1_move_right.setEnabled(False)
+        self.viwe2_move_down.setEnabled(False)
+        self.viwe2_move_up.setEnabled(False)
+        self.viwe2_move_left.setEnabled(False)
+        self.viwe2_move_right.setEnabled(False)
     
     def changeActive(self):
         # print(self.bluiceclientlists,self.bluiceID)
@@ -3073,7 +3126,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
             CollectType = 0#todo collec
             CollectDone = False
             FileName = f'{i+1:03d}'
-            FolderName = f'{self.RootPath.text()}/collect'
+            
+            FolderName = f'{self.RootPathforRaster}/collect'
             Distance = self.Distance.value()
             Energy = self.bluiceData['motor']['energy']['pos']
             TotalCollectRange = 10 #todo set a input?
@@ -3091,7 +3145,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             currentBeamsize =  float(self.bluiceData['string']['currentBeamsize']['txt'])
             currentAtten = self.bluiceData['motor']['attenuation']['pos']#float
             sampleFlux = float(self.bluiceData['string']['sampleFlux']['txt'])
-            flux = self.predict_flux(currentBeamsize,currentAtten,sampleFlux,BeamSize,self.Par)
+            flux = self.collectparwindows.predict_flux(currentBeamsize,currentAtten,sampleFlux,BeamSize,self.Par)
             
             newHdose,newAdose,newAtten,newExptime,newTrange,newDelta,NewDistance,NewEnergy=\
             self.collectparwindows.calDosePar(displaytext,DoseSelect,BeamSize,dose,RoughtDose,EstimateDose,Atten,ExpTime,TotalCollectRange,Delta,Distance,Energy,flux)
@@ -3118,7 +3172,13 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 collectlist.append(posdata)
         self.logger.warning(f'View = {view}, len collectlist={len(collectlist)}')
         self.Par[view]['collectInfo'] = collectlist
+        if len(self.Par[view]['collectInfo'])>0:
+            if view=='View1':
+                self.collectAllpos_1.setEnabled(True)
+            else:
+                self.collectAllpos_2.setEnabled(True)
         self.send_RasterInfo_to_meshbest()#also send par[view][collectInfo]
+        
         #todo update table?
     def predict_flux(self,currentBeamsize,currentAtten,sampleFlux,Targetbeamsize,par):
         # currentBeamsize =  float(self.bluiceData['string']['currentBeamsize'])
@@ -3155,6 +3215,28 @@ class MainUI(QMainWindow,Ui_MainWindow):
             #shoud not got to here
                 flux =FullFlux
         return flux
+    def CalRasterDose(self):
+        try:
+            currentBeamsize =  float(self.bluiceData['string']['currentBeamsize']['txt'])
+            currentAtten = self.bluiceData['motor']['attenuation']['pos']#float
+            sampleFlux = float(self.bluiceData['string']['sampleFlux']['txt'])
+            BeamSize = float(self.Beamsize.currentText())
+            flux = self.collectparwindows.predict_flux(currentBeamsize,currentAtten,sampleFlux,BeamSize,self.Par)
+            if self.ExpousetimeType.currentText() == "Exposed time":
+                exposure_time = self.ExpouseValue.value()
+            elif self.ExpousetimeType.currentText() == "Rate":
+                exposure_time = 1 / self.ExpouseValue.value()
+            else:
+                self.logger.warning(f"Undefine name {self.ExpousetimeType.currentText()} in ExpousetimeType")
+                exposure_time = self.ExpouseValue.value()
+            setatten=self.Attenuation.value()
+            wave = 12398.0/self.bluiceData['motor']['energy']['pos']
+            dose=flux*(1-setatten/100)*exposure_time*wave*wave/BeamSize/BeamSize/2000.0/1e6#MGy
+            # print(setatten,dose,flux,exposure_time,self.bluiceData['motor']['energy']['pos'])
+            self.rasterdose.setValue(dose)
+        except Exception as e:
+            self.logger.info(f'Error:{e}')
+
     def CorrectBeamsize(self,beamsize):
         AvailableBeamSizes = self.Par['AvailableBeamSizes']
         newbeamsize=min(AvailableBeamSizes, key=lambda x:abs(x-beamsize))
@@ -3486,6 +3568,20 @@ class MainUI(QMainWindow,Ui_MainWindow):
         pass
     def showforreadycollect(self,show):
         #todo
+        if self.bluiceData['active']:
+            pass
+        else:
+            show = False
+        self.Raster.setEnabled(show)
+        self.StartRaster.setEnabled(show)
+        self.viwe1_move_down.setEnabled(show)
+        self.viwe1_move_up.setEnabled(show)
+        self.viwe1_move_left.setEnabled(show)
+        self.viwe1_move_right.setEnabled(show)
+        self.viwe2_move_down.setEnabled(show)
+        self.viwe2_move_up.setEnabled(show)
+        self.viwe2_move_left.setEnabled(show)
+        self.viwe2_move_right.setEnabled(show)
         #show true=wait for collect
         #show False= collecting
         # self.Collectdata.setEnabled(show)
