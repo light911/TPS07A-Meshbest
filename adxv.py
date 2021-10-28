@@ -67,9 +67,9 @@ class adxv():
             self.logger.warning('process is_alive and need new process')
             self.process.terminate()
             self.port = self.get_free_port()
-            self.process = Process(target=a.openadxv, args=(self.port,),name='ADXV')
+            self.process = Process(target=self.openadxv, args=(self.port,),name='ADXV')
             self.process.start()
-            time.sleep(0.5)
+            time.sleep(1)
             pass
         elif self.process.is_alive():
             #has adxv running no need to reopen
@@ -77,9 +77,9 @@ class adxv():
         else:
             #no adxv running need to open
             self.port = self.get_free_port()
-            self.process = Process(target=a.openadxv, args=(self.port,),name='ADXV')
+            self.process = Process(target=self.openadxv, args=(self.port,),name='ADXV')
             self.process.start()
-            time.sleep(0.5)
+            time.sleep(1)
         # /data/blctl/20211027_07A/154945/collect/001_0000_master.h5
         # /data/blctl/20211027_07A/154945/collect/001_0000_data_000001.h5
         datanum = math.ceil(N/1000)

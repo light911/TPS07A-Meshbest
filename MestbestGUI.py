@@ -16,7 +16,7 @@ from PyQt5 import QtWidgets,QtGui,QtCore
 from PyQt5.QtCore import QLineF, QPointF, QRectF, Qt,QSizeF, QSize
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow,QGraphicsScene,QGraphicsItem,QGraphicsRectItem,QGraphicsTextItem
-from PyQt5.QtCore import QObject,QThread,pyqtSignal,pyqtSlot,QMutex,QMutexLocker,QEvent,QTimer
+from PyQt5.QtCore import QObject,QThread,pyqtSignal,pyqtSlot,QMutex,QMutexLocker,QEvent,QTimer,QPoint
 from PyQt5.QtGui import QPainter,QBrush,QPen,QColor,QFont,QCursor
 from pathlib import Path
 
@@ -34,6 +34,7 @@ import variables
 from MestbestAPITools import genZTableMap
 import multiprocessing as mp
 from UI.GUI_Collectpar import collectparui
+from adxv import adxv
 # import faulthandler
 # faulthandler.enable()
 
@@ -142,6 +143,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.collectparwindows2 = collectparui(self.Par,view='View2')
         
         self.logger.info(f'GUI PID = {self.pid}')
+        self.adxv=adxv(self.Par)
         self.initGUI()
         # self.initGuiEvent()
         self.setBluice()
@@ -185,7 +187,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             beamline = "07A/"
         path = f"/data/{self.user}/"+datetime.now().strftime("%Y%m%d_")+beamline
         self.RootPath.setText(path)
-        self.RootPathforRaster = self.RootPath.text()
+        # self.RootPathforRaster = self.RootPath.text()
         # print(self.RootPath.text())
         self.collectAllpos_1.setEnabled(False)
         self.collectAllpos_2.setEnabled(False)
@@ -317,6 +319,24 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     traceback.print_exc()
                     self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
                     self.logger.warning(f'Error:{e}')
+            elif event.button() == Qt.RightButton:#=2
+                position = QPoint(event.pos().x(),event.pos().y())
+                mouseX=self.RasterView1.mapToScene(position).x()
+                mouseY=self.RasterView1.mapToScene(position).y()
+                print(position,mouseX,mouseY)#semm the same?
+                findx=-1
+                findy=-1
+                for x,items in enumerate(self.RasterPar['View1']['boxRectItemarray']):
+                        for y,item in enumerate(items):
+                            if item.contains(position):
+                                findx=x
+                                findy=y
+                print(findx,findy)
+                frame = self.convertXYtoFrame(findx,findy,view1=True)
+                # path=f'/data/blctl/20211027_07A/154945/RasterScanview1_0000_master.h5'
+                path=f'{self.RootPath_2.text()}/RasterScanview1_0000_master.h5'
+                self.adxv.showimage(path,frame)
+                pass
 
         else:
             self.logger.debug(f'last event,got {event.button()=}')
@@ -430,6 +450,24 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     traceback.print_exc()
                     self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
                     self.logger.warning(f'Error:{e}')
+            elif event.button() == Qt.RightButton:#=2
+                position = QPoint(event.pos().x(),event.pos().y())
+                mouseX=self.RasterView2.mapToScene(position).x()
+                mouseY=self.RasterView2.mapToScene(position).y()
+                print(position,mouseX,mouseY)#semm the same?
+                findx=-1
+                findy=-1
+                for x,items in enumerate(self.RasterPar['View2']['boxRectItemarray']):
+                        for y,item in enumerate(items):
+                            if item.contains(position):
+                                findx=x
+                                findy=y
+                print(findx,findy)
+                frame = self.convertXYtoFrame(findx,findy,view1=False)
+                # path=f'/data/blctl/20211027_07A/154945/RasterScanview1_0000_master.h5'
+                path=f'{self.RootPath_2.text()}/RasterScanview2_0000_master.h5'
+                self.adxv.showimage(path,frame)
+                pass
         else:
             if event.button() == 1:
                 self.view2box.setPen(QPen(QColor('red')))
@@ -510,11 +548,16 @@ class MainUI(QMainWindow,Ui_MainWindow):
             pass
     def getfolderforraster(self):
         root = self.RootPath.text()
-        new_path = root + f'/{datetime.now().strftime("%H%M%S")}'
+        if root[-1:]=='/':
+            new_path = root + f'{datetime.now().strftime("%H%M%S")}'
+        else:
+            new_path = root + f'/{datetime.now().strftime("%H%M%S")}'
+        
         return new_path
 
     def Rasterclicked(self):
-        self.RootPathforRaster = self.getfolderforraster()
+        # self.RootPathforRaster = self.getfolderforraster()
+        self.RootPath_2.setText(self.getfolderforraster())
         self.clear_Raster_scence_item()
 
         self.logger.info(f'Rasterclicked,Current phi={self.bluiceData["motor"]["gonio_phi"]["pos"]}')
@@ -1059,22 +1102,27 @@ class MainUI(QMainWindow,Ui_MainWindow):
            self.Raster.setEnabled(False)
            self.StartRaster.setEnabled(False)
            
-           uiparlists,uiindexlists= variables.ui_par_lists()
+           uiparlists,uiindexlists,uitextlists= variables.ui_par_lists()
            for item in uiparlists:
                uiitem = getattr(self,item)
                uiitem.setEnabled(False)
            for item in uiindexlists:
                uiitem = getattr(self,item)
                uiitem.setEnabled(False)
-        
+           for item in uitextlists:
+               uiitem = getattr(self,item)
+               uiitem.setEnabled(False)
        else:
            # self.Raster.setEnabled(True)
            # self.StartRaster.setEnabled(True)
-           uiparlists,uiindexlists= variables.ui_par_lists()
+           uiparlists,uiindexlists,uitextlists= variables.ui_par_lists()
            for item in uiparlists:
                uiitem = getattr(self,item)
                uiitem.setEnabled(True)
            for item in uiindexlists:
+               uiitem = getattr(self,item)
+               uiitem.setEnabled(True)
+           for item in uitextlists:
                uiitem = getattr(self,item)
                uiitem.setEnabled(True)
            pass
@@ -1734,8 +1782,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
             
         # runIndex =view1 =101 view2 =102
         filename = filename
-        # directory = self.RootPath.text()
-        directory = self.RootPathforRaster
+        directory = self.RootPath_2.text()
+        # directory = self.RootPathforRaster
         userName = self.user
         axisName = "gonio_phi"
         exposureTime = self.ExpouseValue.value()
@@ -2545,7 +2593,27 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 row = 0
         self.logger.debug(f'Frame={number} ,numofX={numofX},numofY={numofY},offset={offset},col={col},row={row}')
         return col,row#X,Y
-        
+
+    def convertXYtoFrame(self,x,y,view1=True):
+        if view1:
+            par = self.RasterPar['View1']
+        else:
+            par = self.RasterPar['View2']
+            
+        numofX = par['numofX']
+        numofY = par['numofY']
+        reversedx=numofX-x-1
+        reversedy=numofY-y-1
+        if reversedx%2 ==0:
+            #even
+            frame = reversedx*numofY+y+1
+            
+        else:
+            #odd
+            
+            frame = reversedx*numofY+reversedy+1
+        print(f'{reversedx=},{reversedy=},{frame=}')
+        return frame
     def messageFromBluice(self,command):
         
         if command[0] == "stog_login_complete":
@@ -2915,7 +2983,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             
     def full_update(self,par):
         # self.logger.warning(f'full_update')
-        uiparlists, uiindexlists = variables.ui_par_lists()
+        uiparlists, uiindexlists, uitextlists= variables.ui_par_lists()
         for item in uiparlists:
             newitem = getattr(self,item)
             if self.Par['UI_par'][item]:
@@ -2925,6 +2993,10 @@ class MainUI(QMainWindow,Ui_MainWindow):
             newitem = getattr(self,item)
             if self.Par['UI_par'][item]:
                 newitem.setCurrentIndex(self.Par['UI_par'][item])
+        for item in uitextlists:
+            newitem = getattr(self,item)
+            if self.Par['UI_par'][item]:
+                newitem.setText(self.Par['UI_par'][item])
         #update par to RasterPar
         try :
             for view in ["View1","View2"]:
@@ -3224,7 +3296,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             CollectDone = False
             FileName = f'{i+1:03d}'
             
-            FolderName = f'{self.RootPathforRaster}/collect'
+            FolderName = f'{self.RootPath_2.text()}/collect'
             Distance = self.Distance.value()
             Energy = self.bluiceData['motor']['energy']['pos']
             TotalCollectRange = 10 #todo set a input?
@@ -3479,24 +3551,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.meshbest.sendCommandToMeshbest(('Update_par',par))
         
     def update_ui_par_to_meshbest(self):
-        uiparlists,uiindexlists= variables.ui_par_lists()
-        
-        for item in uiparlists:
-            newitem = getattr(self,item)
-            # print(f'Name:{item}, value={newitem.value()}')
-            self.Par['UI_par'][item] = newitem.value()
-            
-        for item in uiindexlists:
-            newitem = getattr(self,item)
-            # print(f'Name:{item}, value={newitem.currentIndex()}')
-            self.Par['UI_par'][item] = newitem.currentIndex()
-        
-        # par = copy.deepcopy(self.Par)
-        par = variables.Raster_to_Meshbest_par(self.RasterPar, self.Par)
-        self.meshbest.sendCommandToMeshbest(('Update_par',par))
-    def update_All_par_to_meshbest(self):
-        # TODO
-        uiparlists,uiindexlists= variables.ui_par_lists()
+        uiparlists,uiindexlists,uitextlists= variables.ui_par_lists()
         
         for item in uiparlists:
             newitem = getattr(self,item)
@@ -3508,6 +3563,31 @@ class MainUI(QMainWindow,Ui_MainWindow):
             # print(f'Name:{item}, value={newitem.currentIndex()}')
             self.Par['UI_par'][item] = newitem.currentIndex()
 
+        for item in uitextlists:
+            newitem = getattr(self,item)
+            # print(f'Name:{item}, value={newitem.currentIndex()}')
+            self.Par['UI_par'][item] = newitem.text()
+        
+        # par = copy.deepcopy(self.Par)
+        par = variables.Raster_to_Meshbest_par(self.RasterPar, self.Par)
+        self.meshbest.sendCommandToMeshbest(('Update_par',par))
+    def update_All_par_to_meshbest(self):
+        # TODO
+        uiparlists,uiindexlists,uitextlists= variables.ui_par_lists()
+        
+        for item in uiparlists:
+            newitem = getattr(self,item)
+            # print(f'Name:{item}, value={newitem.value()}')
+            self.Par['UI_par'][item] = newitem.value()
+            
+        for item in uiindexlists:
+            newitem = getattr(self,item)
+            # print(f'Name:{item}, value={newitem.currentIndex()}')
+            self.Par['UI_par'][item] = newitem.currentIndex()
+            
+        for item in uitextlists:
+            newitem = getattr(self,item)
+            self.Par['UI_par'][item] = newitem.text()
         # par = copy.deepcopy(self.Par)
         par = variables.Raster_to_Meshbest_par(self.RasterPar, self.Par)
         self.meshbest.sendCommandToMeshbest(('Update_par',par))
