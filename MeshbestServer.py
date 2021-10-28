@@ -16,6 +16,8 @@ from Eiger.fileWriter import stream2cbf
 import variables
 import importlib
 import DozorPar
+# from ldapclient import ladpcleint #not use any more
+
 #https://stackoverflow.com/questions/29788809/python-how-to-pass-an-autoproxy-object
 
 
@@ -77,11 +79,15 @@ class MestbestSever():
         # for i in range(self.processnum):#number of cpu
         #     Process(target=self.worker, args=(self.job_queue,)).start()
         #creat temp foder
+        # self.ladp = ladpcleint()
         tempfolder = "/tmp/meshbest"
         if os.path.isdir(tempfolder):
             pass
         else:
             os.makedirs(tempfolder)
+        self.user='blctl'
+        self.uid=1000
+        self.gid=501
 
     def worker(self,job_queue):
         os.nice(19)
@@ -104,7 +110,7 @@ class MestbestSever():
         p1 = Process(name='ManagerServer',target=self.ManagerServer,args=(self.MangerPort,))
         p1.start()
         #start monitor
-        p2 = Process(name='Monitor',target=self.Monitor,args=(self.ServerQ,self.ZMQQ,))
+        p2 = Process(name='Monitor',target=self.Monitor,args=(self.ServerQ,self.ZMQQ,self.meshbestjobQ,))
         p2.start()
         
         
@@ -284,25 +290,25 @@ class MestbestSever():
          # View2_data['box'] = rasterpar['View2']['box']
          
          #No not update scoreArray,resArray,spotsArray,Dable,Ztable
-         scoreArray_1 = copy.deepcopy(self.Par['View1']['spotsArray'])
+         spotsArray_1 = copy.deepcopy(self.Par['View1']['spotsArray'])
          resArray_1 = copy.deepcopy(self.Par['View1']['resArray'])
          scoreArray_1 = copy.deepcopy(self.Par['View1']['scoreArray'])
          Dtable_1 = copy.deepcopy(self.Par['View1']['Dtable'])
          Ztable_1 = copy.deepcopy(self.Par['View1']['Ztable'])
          
-         scoreArray_2 = copy.deepcopy(self.Par['View2']['spotsArray'])
+         spotsArray_2 = copy.deepcopy(self.Par['View2']['spotsArray'])
          resArray_2 = copy.deepcopy(self.Par['View2']['resArray'])
          scoreArray_2 = copy.deepcopy(self.Par['View2']['scoreArray'])
          Dtable_2 = copy.deepcopy(self.Par['View2']['Dtable'])
          Ztable_2 = copy.deepcopy(self.Par['View2']['Ztable'])
          
-         View1_data['spotsArray'] = scoreArray_1
+         View1_data['spotsArray'] = spotsArray_1
          View1_data['resArray'] = resArray_1
          View1_data['scoreArray'] = scoreArray_1
          View1_data['Dtable'] = Dtable_1
          View1_data['Ztable'] = Ztable_1
          
-         View2_data['spotsArray'] = scoreArray_2
+         View2_data['spotsArray'] = spotsArray_2
          View2_data['resArray'] = resArray_2
          View2_data['scoreArray'] = scoreArray_2
          View2_data['Dtable'] = Dtable_2
@@ -319,7 +325,7 @@ class MestbestSever():
          self.logger.debug(f'after update par from Client: {temp}')
          return 
     
-    def Monitor(self,ServerQ,ZMQQ):       
+    def Monitor(self,ServerQ,ZMQQ,meshbestjobQ):       
         self.logger.info(f'Start Monitor')
         while True:
             #check command
@@ -339,8 +345,14 @@ class MestbestSever():
                         self.addManagerClient(command[1])
                         pass
                      elif command[0] == "armview":
-                        # 'armview',[runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY]]
+                        # 'armview',[runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY,uid,gid]]
                         self.logger.info(f'Got Arm Veiw 1: {command[1]}')
+                        #update user uid
+                        userName = command[1][3]
+                        uid = command[1][21]
+                        gid = command[1][22]
+                        meshbestjobQ.put(('updateuser', userName,uid,gid))
+                        self.user = command[1][3]
                         #sholud clear old data and has new array for resArray/spotsArray/scoreArray
                         if command[1][1] == "RasterScanview1":
                             view='View1'
@@ -483,6 +495,12 @@ class MestbestSever():
                      # self.logger.info(f'command is tuple')
                      if command[0] == "regID" :
                          pass
+                     elif command[0] == 'updateuser':
+                         self.user = command[1]
+                         self.uid = int(command[2])
+                         self.gid = int(command[3])
+                        #  self.uid,self.gid,passwd = self.ladp.getuserinfo(self.user)
+                         pass
                      elif command[0] == "BeginOfSeries":
                          if command[1] == 101:
                              self.logger.debug(f'view1 header get')
@@ -594,12 +612,12 @@ class MestbestSever():
                              checkingViwe = self.checkingViwe1
                              meshPositionsdata = self.meshPositionsdata_1
                              self.logger.info(f'set to view1')
-                             path='/tmp/meshbest/viwe_1.json'
+                             path=f'{self.Par["UI_par"]["RootPath_2"]}/viwe_1.json'
                          else:
                              checkingViwe = self.checkingViwe2
                              meshPositionsdata = self.meshPositionsdata_2
                              self.logger.info(f'set to view2')
-                             path='/tmp/meshbest/viwe_2.json'
+                             path=f'{self.Par["UI_par"]["RootPath_2"]}/viwe_2.json'
                              
                          jsondata = self.PreparejasonData(header,meshPositionsdata)
                          
@@ -610,7 +628,7 @@ class MestbestSever():
                          # self.logger.info(f'jsondata = {jsondata}')
                          with open(path, 'w') as outfile:
                              json.dump(jsondata, outfile, sort_keys=True, indent=4, ensure_ascii=False)
-                         
+                         self.recursive_chown(self.Par["UI_par"]["RootPath_2"],self.uid,self.gid)
                          self.logger.info(f'write to flie {path}')
                          
                          
@@ -656,6 +674,7 @@ class MestbestSever():
                                 Par['Ztable'] = my_sid_ans['data']['MeshBest']['Ztable']
                                 Par['BestPositions'] = my_sid_ans['data']['MeshBest']['BestPositions']
                                 self.Par['View1'] = Par
+                                path=f'{self.Par["UI_par"]["RootPath_2"]}/viwe_1_result.json'
                                 
                             else:
                                 Par = copy.deepcopy(self.Par['View2'])
@@ -665,13 +684,25 @@ class MestbestSever():
                                 Par['Ztable'] = my_sid_ans['data']['MeshBest']['Ztable']
                                 Par['BestPositions'] = my_sid_ans['data']['MeshBest']['BestPositions']
                                 self.Par['View2'] = Par
+                                path=f'{self.Par["UI_par"]["RootPath_2"]}/viwe_2_result.json'
                             
-                            self.logger.info(f'Gready to updatepar self.Par=  {self.Par} ')
+                            with open(path, 'w') as outfile:
+                                json.dump(ans, outfile, sort_keys=True, indent=4, ensure_ascii=False)
+                            self.recursive_chown(self.Par["UI_par"]["RootPath_2"],self.uid,self.gid)
+
+                            self.logger.info(f'Ready to updatepar self.Par=  {self.Par} ')
                             # self.logger.info(f'Dtable={Dtable},Ztable={Ztable},BestPositions={BestPositions}')    
                             ServerQ.put(('Direct_Update_par','meshbetjob',sid))
                             ServerQ.put(('notify_ui_update','meshbetjob',sid))
                         elif my_sid_ans['State'] == 'Fail':
                             self.logger.info(f'sid {sid} meshbest job fail!,time pass= {timepass}')
+                            if sid == 101:
+                                path=f'{self.Par["UI_par"]["RootPath_2"]}viwe_1_fail_result.json'
+                            else:
+                                path=f'{self.Par["UI_par"]["RootPath_2"]}viwe_2_fail_result.json'
+                            with open(path, 'w') as outfile:
+                                json.dump(ans, outfile, sort_keys=True, indent=4, ensure_ascii=False)
+                            self.recursive_chown(self.Par["UI_par"]["RootPath_2"],self.uid,self.gid)
                             #todo add some messge to GUI?
                             pass
                         else:
@@ -899,6 +930,13 @@ class MestbestSever():
         del temp['View1']['jpg']
         del temp['View2']['jpg']
         self.logger.debug(f'After init should :{view}={temp}')
+    def recursive_chown(self,path,uid,gid):
+        for dirpath, dirnames, filenames in os.walk(path):
+            os.chown(dirpath,uid,gid)
+            for filename in filenames:
+                os.chown(os.path.join(dirpath, filename),uid,gid)
+                
+                os.chmod(os.path.join(dirpath, filename), 0o700)
     def quit(self,signum,frame):
         self.logger.critical(f'Start Quit Meshbest Server PID:{os.getpid()},active_children={mp.active_children()}')
         try:

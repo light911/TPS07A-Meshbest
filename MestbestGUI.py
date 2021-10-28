@@ -5,7 +5,7 @@ Created on Fri Jul  9 10:37:32 2021
 
 @author: blctl
 """
-import argparse,sys,os,signal,math,time,traceback
+import argparse,sys,os,signal,math,time,traceback,getpass
 from re import X
 from functools import partial
 import beamlineinfo
@@ -35,6 +35,9 @@ from MestbestAPITools import genZTableMap
 import multiprocessing as mp
 from UI.GUI_Collectpar import collectparui
 from adxv import adxv
+from pathlib import Path
+
+
 # import faulthandler
 # faulthandler.enable()
 
@@ -48,6 +51,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         #setup par
         self.bluicekey = key
         self.user = user
+        self.uid = os.getuid()
+        self.gid = os.getgid()
         self.stra = stra
         self.passwd = passwd
         self.beamline = beamline
@@ -323,12 +328,13 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 position = QPoint(event.pos().x(),event.pos().y())
                 mouseX=self.RasterView1.mapToScene(position).x()
                 mouseY=self.RasterView1.mapToScene(position).y()
+                convert_pos = QPoint(mouseX,mouseY)
                 print(position,mouseX,mouseY)#semm the same?
                 findx=-1
                 findy=-1
                 for x,items in enumerate(self.RasterPar['View1']['boxRectItemarray']):
                         for y,item in enumerate(items):
-                            if item.contains(position):
+                            if item.contains(convert_pos):
                                 findx=x
                                 findy=y
                 print(findx,findy)
@@ -455,11 +461,12 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 mouseX=self.RasterView2.mapToScene(position).x()
                 mouseY=self.RasterView2.mapToScene(position).y()
                 print(position,mouseX,mouseY)#semm the same?
+                convert_pos = QPoint(mouseX,mouseY)
                 findx=-1
                 findy=-1
                 for x,items in enumerate(self.RasterPar['View2']['boxRectItemarray']):
                         for y,item in enumerate(items):
-                            if item.contains(position):
+                            if item.contains(convert_pos):
                                 findx=x
                                 findy=y
                 print(findx,findy)
@@ -591,7 +598,11 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.RasterPar['View1']['zoom_scale_y']=self.bluiceData['motor']['zoom_scale_y']['pos']        
         self.RasterPar['View1']['size'] = self.RasterView1QPixmap_ori.size()
         self.RasterPar['View1']['jpg'] = jpg
-        
+        Path(self.RootPath_2.text()).mkdir(parents=True, exist_ok=True)
+        path = f'{self.RootPath_2.text()}/crystalimage_1.jpg'
+        self.RasterView1QPixmap_ori.save(path,'jpg')
+        # with open(path, 'w') as outfile:
+        #     outfile.write('jpg')
         # self.logger.warning(f'self.RasterPar = {self.RasterPar["View1"]}')
         
         #rotate 90 deg
@@ -635,6 +646,11 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.RasterPar['View2']['zoom_scale_y']=self.bluiceData['motor']['zoom_scale_y']['pos']
         self.RasterPar['View2']['size'] = self.RasterView2QPixmap_ori.size()
         self.RasterPar['View2']['jpg'] = jpg
+        
+        path = f'{self.RootPath_2.text()}/crystalimage_2.jpg'
+        self.RasterView2QPixmap_ori.save(path,'jpg')
+        # with open(path, 'w') as outfile:
+        #     outfile.write('jpg')
         # self.logger.warning(f'self.RasterPar = {self.RasterPar["View2"]}')
         # self.meshbest.sendCommandToMeshbest(('UpdateView2jpg',jpg))
         # self.send_RasterInfo_to_meshbest()
@@ -1812,7 +1828,9 @@ class MainUI(QMainWindow,Ui_MainWindow):
         numofY = par['numofY'] 
         #  sscanf(commandBuffer.textInBuffe
         # self.logger.info(f'Default action for {command[0]}:{command[1:]}')
-        ans =  [runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY]
+        uid = self.uid
+        gid = self.gid
+        ans =  [runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY,uid,gid]
         self.logger.debug(f'{ans}')
         return ans
     def gridsizetobeamsize(self,gridsize):
@@ -3438,15 +3456,20 @@ class MainUI(QMainWindow,Ui_MainWindow):
             self.logger.warning(f'Error on {e}')
         
         ratio =  self.getViewRatio(View)
-        offsetx = RasterInfo['box'].x() 
-        offsety = RasterInfo['box'].y() 
+        
         FactorPixUmX = par['zoom_scale_x']
         FactorPixUmY = par['zoom_scale_y']
         gridsizeX = par['beamsizeX']
         gridsizeY = par['beamsizeY']
+        try:
+            halfoffsetX = FactorPixUmX*gridsizeX/2
+            halfoffsetY = FactorPixUmX*gridsizeX/2
+        except:
+            halfoffsetX = 0
+            halfoffsetY = 0
+        offsetx = RasterInfo['box'].x() - halfoffsetX
+        offsety = RasterInfo['box'].y() - halfoffsetY
         for i,posdata in enumerate(par['collectInfo']): 
-            
-            
             BeamSize = posdata['BeamSize']
         
             x= (offsetx + posdata['ViewX']*FactorPixUmX*gridsizeX)/ ratio
@@ -3924,7 +3947,7 @@ if __name__ == "__main__":
         if args.user :
             user = args.user
         else:
-            user = "blctl"
+            user = getpass.getuser()
         if args.stra :
             stra = args.stra    
         else:
@@ -3947,7 +3970,7 @@ if __name__ == "__main__":
                 # print(context)
         #reading setup
         info = beamlineinfo.BeamlineInfo[beamline]
-            
+        print(user)    
         window = MainUI(folder,key,user,stra,beamline,info,passwd,base64passwd)
         window.show()
         sys.exit(app.exec_())
