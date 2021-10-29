@@ -192,25 +192,27 @@ class Stream2Cbf(FileWriter):
         if len(frames)==5:
             self.metadata["appendix"] = frames[4].bytes
         self.metadata["real_time"] = json.loads(frames[3].bytes)["real_time"]
-        
-        if self.metadata["appendix"]['runIndex'] == '101' or self.metadata["appendix"]['runIndex'] =='102':
+        try:
+            if self.metadata["appendix"]['runIndex'] == '101' or self.metadata["appendix"]['runIndex'] =='102':
+                
             
-        
-            # info = json.loads(frames[1].bytes)
-            # header = json.loads(frames[0].bytes)
-            # data = frames[2]
-            series = header["series"]
-            frame = header["frame"]
-            # data = FileWriter().__decodeImage__(frames,ServerQ,meshbestjobQ,info,header,job_queue)
-            # r = self.process.apply_async(self.__decodeImage2__,args=(data,ServerQ,self.metadata,meshbestjobQ,info,header,job_queue,))
-            #to using 
-            # r.get()
-            # job_queue.put((frames,ServerQ,self.metadata,meshbestjobQ))
-            dozor_par = self.dozor_par
-            p1 = Process(target=self.__decodeImage2__,args=(frames,ServerQ,self.metadata,meshbestjobQ,info,header,job_queue,dozor_par,))
-            p1.start()
-        else:
-            self.logger.debug(f'Run index {self.metadata["appendix"]["runIndex"]} not a raster scan,frame= {header["frame"]}')
+                # info = json.loads(frames[1].bytes)
+                # header = json.loads(frames[0].bytes)
+                # data = frames[2]
+                series = header["series"]
+                frame = header["frame"]
+                # data = FileWriter().__decodeImage__(frames,ServerQ,meshbestjobQ,info,header,job_queue)
+                # r = self.process.apply_async(self.__decodeImage2__,args=(data,ServerQ,self.metadata,meshbestjobQ,info,header,job_queue,))
+                #to using 
+                # r.get()
+                # job_queue.put((frames,ServerQ,self.metadata,meshbestjobQ))
+                dozor_par = self.dozor_par
+                p1 = Process(target=self.__decodeImage2__,args=(frames,ServerQ,self.metadata,meshbestjobQ,info,header,job_queue,dozor_par,))
+                p1.start()
+            else:
+                self.logger.debug(f'Run index {self.metadata["appendix"]["runIndex"]} not a raster scan,frame= {header["frame"]}')
+        except Exception as e:
+            self.logger.warning(f'Has error on {e}')
         
         self.currentframe = int(header["frame"])
         
@@ -272,10 +274,13 @@ class Stream2Cbf(FileWriter):
         self.logger.info(f"Time for whole Series = {time.time()-self.timer} sec")
         # self.notify_observers('EndOfSeries',self.basename,self.currentframe+1)
         ServerQ.put(('EndOfSeries'))
-        if self.metadata["appendix"]['runIndex'] == '101' or self.metadata["appendix"]['runIndex'] =='102':
-            meshbestjobQ.put(('EndOfSeries',self.metadata))
-        if self.__verbose__:
-            print("[OK] received end of series ", json.loads(frames[0].bytes))
+        try:
+            if self.metadata["appendix"]['runIndex'] == '101' or self.metadata["appendix"]['runIndex'] =='102':
+                meshbestjobQ.put(('EndOfSeries',self.metadata))
+            if self.__verbose__:
+                print("[OK] received end of series ", json.loads(frames[0].bytes))
+        except Exception as e:
+            self.logger.warning(f'Has error on {e}')
         return True
     
     #man dhs need register after active calss

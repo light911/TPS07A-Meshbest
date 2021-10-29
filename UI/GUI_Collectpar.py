@@ -44,6 +44,9 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
         self.DoseRelateApply.DoseApplyDone.connect(self.afterDoseRelateApplyApplyDone)
 #        self.AvailableBeamSizes=[50,30,20,10,5]
 #        self.Flux=[3.31E12,1.4E12,7.56E11,1.71E11,7.5E10]
+        self.currentbeamsize=10
+        self.currentAtten = 0
+        self.sampleFlux=0
         self.initgui()
         self.initGuiEvent()
 #        print self.beamlineinfo['Fulx']
@@ -197,7 +200,7 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
             DoseSelect=0#for Hotlton cal
             
         
-
+        
         for row in self.SelectedRow :
             beamsize = self.CorrectBeamsize(float(self.InfoTable.item(row,2).text()))
             Energy = float(self.InfoTable.item(row,10).text())
@@ -209,8 +212,9 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
             RoughtDose = float(self.InfoTable.item(row,3).text())
             EstimateDose = float(self.InfoTable.item(row,4).text())
             dose = float(value)
+            flux = self.predict_flux(self.currentbeamsize,self.currentAtten,self.sampleFlux,beamsize,self.beamlineinfo)
             newHdose,newAdose,newAtten,newExptime,newTrange,newDelta,NewDistance,NewEnergy=\
-            self.calDosePar(text,DoseSelect,beamsize,dose,RoughtDose,EstimateDose,Atten,ExpTime,TotalCollectRange,Delta,Distance,Energy)
+            self.calDosePar(text,DoseSelect,beamsize,dose,RoughtDose,EstimateDose,Atten,ExpTime,TotalCollectRange,Delta,Distance,Energy,flux)
             newHdoseitem=QTableWidgetItem(str(newHdose))
             newAdoseitem=QTableWidgetItem(str(newAdose))
             newAttenitem=QTableWidgetItem(str(newAtten))
@@ -439,7 +443,10 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
         # BeamFWHM = self.beamlineinfo["BeamFWHM"][index]
         dosefactor = 1
         bestdose = 10
-        BeamFWHM = beamsize*beamsize
+        if beamsize == 1:
+            BeamFWHM = 2*2
+        else:
+            BeamFWHM = beamsize*beamsize
         minExposedTime = self.beamlineinfo["minExposedTime"]
 #        Dose = Dose *1e6
         fluxden=flux/BeamFWHM
@@ -484,7 +491,42 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
             pass
 #        print TimeCanUse,ExposedTime,Hdose,fluxden,wave
         return Hdose,Adose,Atten,ExposedTime,Trange,Framewidth,Distance,Energy
-    
+    def predict_flux(self,currentBeamsize,currentAtten,sampleFlux,Targetbeamsize,par):
+        # currentBeamsize =  float(self.bluiceData['string']['currentBeamsize'])
+        # currentAtten = self.bluiceData['motor']['attenuation']#float
+        # sampleFlux = float(self.bluiceData['string']['sampleFlux'])
+        
+        tr = (100-currentAtten)/100
+        if tr <= 0:
+            FullFlux = 0
+        else:
+            FullFlux = sampleFlux/tr
+        if FullFlux == 0:
+            #no beam or something else
+            #using default
+            if currentBeamsize >= 20:
+                FullFlux=par['Flux'][100]
+            else:
+                FullFlux=par['Flux'][1]
+            pass
+        else:
+            pass
+        
+        if currentBeamsize >= 20 and Targetbeamsize >= 20:
+            # same
+            flux = FullFlux
+        elif currentBeamsize < 20 and Targetbeamsize >= 20:
+            # FullFlux is smaller
+            flux = FullFlux / par['Fluxfactor']
+        elif currentBeamsize < 20 and Targetbeamsize < 20:
+            flux = FullFlux
+        elif currentBeamsize > 20 and Targetbeamsize < 20:
+            flux = FullFlux * par['Fluxfactor']
+        else:
+            #shoud not got to here
+                flux =FullFlux
+        # print(f'sampleFlux={sampleFlux}, predict_flux={flux},currentatten={currentAtten},tr={tr}')
+        return flux
     def calkeepDoseRelatedPar(self,mode,beamsize,Hdose,Adose,Atten,ExposedTime,Trange,Framewidth,Distance,Energy):
 #        print self.beamlineinfo['Flux']
         # dose is Mgy, in cal should change to gy
@@ -570,41 +612,41 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
             newAdoseitem=QTableWidgetItem(str(newAdose))
             self.InfoTable.setItem(row,3,newHdoseitem)
             self.InfoTable.setItem(row,4,newAdoseitem)
-    def predict_flux(self,currentBeamsize,currentAtten,sampleFlux,Targetbeamsize,par):
-        # currentBeamsize =  float(self.bluiceData['string']['currentBeamsize'])
-        # currentAtten = self.bluiceData['motor']['attenuation']#float
-        # sampleFlux = float(self.bluiceData['string']['sampleFlux'])
+    # def predict_flux(self,currentBeamsize,currentAtten,sampleFlux,Targetbeamsize,par):
+    #     # currentBeamsize =  float(self.bluiceData['string']['currentBeamsize'])
+    #     # currentAtten = self.bluiceData['motor']['attenuation']#float
+    #     # sampleFlux = float(self.bluiceData['string']['sampleFlux'])
         
-        tr = (100-currentAtten)/100
-        if tr <= 0:
-            FullFlux = 0
-        else:
-            FullFlux = sampleFlux/tr
-        if FullFlux == 0:
-            #no beam or something else
-            #using default
-            if currentBeamsize >= 20:
-                FullFlux=par['Flux'][100]
-            else:
-                FullFlux=par['Flux'][1]
-            pass
-        else:
-            pass
+    #     tr = (100-currentAtten)/100
+    #     if tr <= 0:
+    #         FullFlux = 0
+    #     else:
+    #         FullFlux = sampleFlux/tr
+    #     if FullFlux == 0:
+    #         #no beam or something else
+    #         #using default
+    #         if currentBeamsize >= 20:
+    #             FullFlux=par['Flux'][100]
+    #         else:
+    #             FullFlux=par['Flux'][1]
+    #         pass
+    #     else:
+    #         pass
 
-        if currentBeamsize >= 20 and Targetbeamsize >= 20:
-            # same
-            flux = FullFlux
-        elif currentBeamsize < 20 and Targetbeamsize >= 20:
-            # FullFlux is smaller
-            flux = FullFlux / par['Fluxfactor']
-        elif currentBeamsize < 20 and Targetbeamsize < 20:
-            flux = FullFlux
-        elif currentBeamsize > 20 and Targetbeamsize < 20:
-            flux = FullFlux * par['Fluxfactor']
-        else:
-            #shoud not got to here
-                flux =FullFlux
-        return flux
+    #     if currentBeamsize >= 20 and Targetbeamsize >= 20:
+    #         # same
+    #         flux = FullFlux
+    #     elif currentBeamsize < 20 and Targetbeamsize >= 20:
+    #         # FullFlux is smaller
+    #         flux = FullFlux / par['Fluxfactor']
+    #     elif currentBeamsize < 20 and Targetbeamsize < 20:
+    #         flux = FullFlux
+    #     elif currentBeamsize > 20 and Targetbeamsize < 20:
+    #         flux = FullFlux * par['Fluxfactor']
+    #     else:
+    #         #shoud not got to here
+    #             flux =FullFlux
+    #     return flux
 if __name__ == '__main__':
     # from .. import Config
     from GUI_Collectpar_tools import NormalApply,DoseApply,DoseRelateApply

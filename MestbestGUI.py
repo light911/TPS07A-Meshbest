@@ -246,7 +246,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.RasterView2.mouseReleaseEvent = self.DrawinRasterView2Release
         
         #parchange
-        self.Beamsize.currentIndexChanged.connect(self.Beamsize_value_change)
+        self.selectGridsize.currentIndexChanged.connect(self.selectGridsize_value_change)
+        self.selectBeamsize.currentIndexChanged.connect(self.selectBeamsize_value_change)
         self.Distance.valueChanged.connect(self.Distance_value_change)
         
         self.Overlap_Select_1.currentIndexChanged.connect(self.Overlap_Select_1_value_change)
@@ -1251,22 +1252,32 @@ class MainUI(QMainWindow,Ui_MainWindow):
             except:
                 ratio = 1
         return ratio    
-    def Beamsize_value_change(self):
+    def selectGridsize_value_change(self):
         #only replot if @active
         if self.bluiceData['active']:
             self.plotbox()
+            gridsize = float(self.selectGridsize.currentText())
+            defaultselectbeamsize = self.gridsizetobeamsize(gridsize)
+            index = self.selectBeamsize.findText(str(defaultselectbeamsize))
+            self.selectBeamsize.setCurrentIndex(index)
             self.update_ui_par_to_meshbest()
+        self.CalRasterDose()
+    def selectBeamsize_value_change(self):
+        if self.bluiceData['active']:
+            self.update_ui_par_to_meshbest()
+            
         self.CalRasterDose()
     def Distance_value_change(self):
         if self.bluiceData['active']:
             self.update_ui_par_to_meshbest()
         
     def plotbox(self,Newone=True):
-            self.logger.debug(f'plotbox at beamsize {float(self.Beamsize.currentText())}')
+            self.logger.debug(f'plotbox at Gridsize {float(self.selectGridsize.currentText())}')
             # print('plotbox is called!')
-            # print(self.Beamsize.currentText())
-            beamsizeX = float(self.Beamsize.currentText())
-            beamsizeY = float(self.Beamsize.currentText())
+            # print(self.selectGridsize.currentText())
+            # beamsizeX = float(self.selectGridsize.currentText())
+            gridsizeX = float(self.selectGridsize.currentText())
+            gridsizeY = float(self.selectGridsize.currentText())
             
             try:
                 # camscaleX = self.bluiceData['motor']['zoom_scale_x']['pos']#um/pix
@@ -1282,8 +1293,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
             try:    
                 # numofXbox1 = math.ceil(self.RasterPar['View1']['box'].width()*camscaleX/beamsizeX)
                 # numofYbox1 = math.ceil(self.RasterPar['View1']['box'].height()*camscaleY/beamsizeY)
-                numofXbox1 = round(self.RasterPar['View1']['box'].width()*camscaleX/beamsizeX)
-                numofYbox1 = round(self.RasterPar['View1']['box'].height()*camscaleY/beamsizeY)
+                numofXbox1 = round(self.RasterPar['View1']['box'].width()*camscaleX/gridsizeX)
+                numofYbox1 = round(self.RasterPar['View1']['box'].height()*camscaleY/gridsizeY)
                 if numofXbox1 == 1:
                     numofXbox1 = 2#unable to raster wiht x num =1
             except Exception as e:
@@ -1302,8 +1313,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
 
             self.RasterPar['View1']['numofX']=numofXbox1
             self.RasterPar['View1']['numofY']=numofYbox1
-            self.RasterPar['View1']['beamsizeX']=beamsizeX
-            self.RasterPar['View1']['beamsizeY']=beamsizeY
+            self.RasterPar['View1']['gridsizeX']=gridsizeX
+            self.RasterPar['View1']['gridsizeY']=gridsizeY
             bigbox = self.RasterPar['View1']['box']
 
             # ratio = (self.RasterView1QPixmap_ori.width()/self.RasterView1QPixmap.boundingRect().width())
@@ -1333,8 +1344,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 self.clear_dozor_plot()
                 self.initScoreArray('View1')
             # print(f'{beamsizeX=},{camscaleX=},{ratio=}')
-            w = beamsizeX / camscaleX / ratio
-            h = beamsizeY / camscaleY / ratio
+            w = gridsizeX / camscaleX / ratio
+            h = gridsizeY / camscaleY / ratio
             
             # print(f'number={numofXbox1},{numofYbox1}, size={w},{h}')
             for y in range(numofYbox1):
@@ -1362,8 +1373,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
             
             try:    
                 
-                numofXbox2 = round(self.RasterPar['View2']['box'].width()*camscaleX/beamsizeX)
-                numofYbox2 = round(self.RasterPar['View2']['box'].height()*camscaleY/beamsizeY)
+                numofXbox2 = round(self.RasterPar['View2']['box'].width()*camscaleX/gridsizeX)
+                numofYbox2 = round(self.RasterPar['View2']['box'].height()*camscaleY/gridsizeY)
                 if numofXbox2 == 1:
                     numofXbox2 = 2#unable to raster wiht x num =1
             except Exception as e:
@@ -1372,8 +1383,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
 
             self.RasterPar['View2']['numofX']=numofXbox2
             self.RasterPar['View2']['numofY']=numofYbox2
-            self.RasterPar['View2']['beamsizeX']=beamsizeX
-            self.RasterPar['View2']['beamsizeY']=beamsizeY
+            self.RasterPar['View2']['gridsizeX']=gridsizeX
+            self.RasterPar['View2']['gridsizeY']=gridsizeY
             
             bigbox = self.RasterPar['View2']['box']
             ratio = self.getViewRatio(2)
@@ -1402,8 +1413,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 self.initScoreArray('View2')
             # self.RasterPar['View1']['boxitemsize'] = [[0]*numofXbox1]*numofYbox1
             
-            w = beamsizeX / camscaleX / ratio
-            h = beamsizeY / camscaleY / ratio
+            w = gridsizeX / camscaleX / ratio
+            h = gridsizeY / camscaleY / ratio
             
             # print(f'number={numofXbox1},{numofYbox1}, size={w},{h}')
             for y in range(numofYbox2):
@@ -1753,8 +1764,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         fileindex = 0
         unknow = int(1) #1
         #for beam size , gird size =1000 using beamsize 90
-        #par['beamsizeY'] is grid size, so we need change it
-        # beamsize = self.gridsizetobeamsize(par['beamsizeY'])
+        #par['gridsizeY'] is grid size, so we need change it
+        # beamsize = self.gridsizetobeamsize(par['gridsizeY'])
         # new! change beam size only in EPIS DHS
         beamsize = str(info['BeamSize']) # 50
         
@@ -1816,11 +1827,12 @@ class MainUI(QMainWindow,Ui_MainWindow):
         sessionId = "no"
         fileindex = 0
         unknow = int(1) #1
-        #for beam size , gird size =1000 using beamsize 90
-        #par['beamsizeY'] is grid size, so we need change it
-        # beamsize = self.gridsizetobeamsize(par['beamsizeY'])
-        # new! change beam size only in EPIS DHS
-        beamsize = par['beamsizeY'] # 50
+        #for beam size , gird size =100 using beamsize 90
+        #par['gridsizeY'] is grid size, so we need change it
+        # beamsize = self.gridsizetobeamsize(par['gridsizeY'])
+        # new! change beam size only in EPICS DHS
+        # beamsize = par['gridsizeY'] # 50
+        beamsize = self.selectBeamsize.currentText() # 50
         
         atten = self.bluiceData['motor']['attenuation']['pos'] #0
         roi = 1
@@ -1830,11 +1842,13 @@ class MainUI(QMainWindow,Ui_MainWindow):
         # self.logger.info(f'Default action for {command[0]}:{command[1:]}')
         uid = self.uid
         gid = self.gid
-        ans =  [runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY,uid,gid]
+        gridsizex = par['gridsizeX']
+        gridsizey = par['gridsizeY']
+        ans =  [runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY,uid,gid,gridsizex,gridsizey]
         self.logger.debug(f'{ans}')
         return ans
     def gridsizetobeamsize(self,gridsize):
-        table={100:90,90:80,80:70,70:60,60:50,50:40,40:30,30:20,20:10,10:5,5:1}
+        table={100:80,90:70,80:60,70:50,60:40,50:30,40:20,30:10,20:5,10:1,5:1}
         return table[gridsize]
     def calRasterPar(self,view1=True):
         # startRasterScanEx
@@ -1865,8 +1879,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         sampley = par['sample_y']
         samplez = par['sample_z']
         
-        start_pointX_pixel = par['box'].right() - par['beamsizeX']/2/zoomx
-        start_pointY_pixel = par['box'].bottom() - par['beamsizeY']/2/zoomy
+        start_pointX_pixel = par['box'].right() - par['gridsizeX']/2/zoomx
+        start_pointY_pixel = par['box'].bottom() - par['gridsizeY']/2/zoomy
         # centerX = self.oriImageSize.width()/2
         # centerY = self.oriImageSize.height()/2
         # detX_pixel = start_pointX_pixel - centerX
@@ -1878,8 +1892,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         #todo
         omega_range = 0
         
-        line_range = (par['numofY']* par['beamsizeY'])/1000*-1
-        total_uturn_range = ((par['numofX']-1) * par['beamsizeX'])/1000
+        line_range = (par['numofY']* par['gridsizeY'])/1000*-1
+        total_uturn_range = ((par['numofX']-1) * par['gridsizeX'])/1000
         start_omega = par['gonio_phi']
         # start_y = par['sample_z'] + (par['zoom_scale_y']*detY_pixel)/1000
         start_z = par['align_z']
@@ -1936,9 +1950,9 @@ class MainUI(QMainWindow,Ui_MainWindow):
         #todo
         ScanRange = 0
         #start ar edge of y box
-        y_range = abs((par['numofY']* par['beamsizeY'])/1000)
+        y_range = abs((par['numofY']* par['gridsizeY'])/1000)
         #start at center of x box
-        x_range = abs(((par['numofX']-1) * par['beamsizeX'])/1000)
+        x_range = abs(((par['numofX']-1) * par['gridsizeX'])/1000)
         ScanStartAngle = par['gonio_phi']
   
         number_of_lines = par['numofX']
@@ -1958,7 +1972,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         
         self.logger.info(f'cal raster par : x_range:{x_range},y_range:{y_range},number_of_lines:{number_of_lines},frames_per_lines:{frames_per_lines}')
         self.logger.info(f'cal raster par : ScanStartAngle:{ScanStartAngle},ScanExposureTime:{ScanExposureTime},ScanRange:{ScanRange}')
-        return [x_range,y_range,number_of_lines,frames_per_lines,0,ScanStartAngle,ScanExposureTime,ScanRange]
+        return [x_range,y_range,number_of_lines,frames_per_lines,1,ScanStartAngle,ScanExposureTime,ScanRange]
     def calXYZbaseonCAMCenter(self,Xpix,Ypix,angle,zoomx,zoomy,samplex,sampley,samplez):
         #samplxyz for center pos
         # self.logger.warning(f'input:X:{Xpix},Y:{Ypix},phi:{angle},zx:{zoomx},zy:{zoomy},samplex:{samplex},sampley:{sampley},samplez:{samplez}')
@@ -2557,8 +2571,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         else:
             par = self.RasterPar['View2']
             
-        beamsizeX = par['beamsizeX']
-        beamsizeY = par['beamsizeY']
+        gridsizeX = par['gridsizeX']
+        gridsizeY = par['gridsizeY']
         camscaleX = par['zoom_scale_x']
         camscaleY = par['zoom_scale_y']
         numofXbox = par['numofX']
@@ -2566,8 +2580,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         bigbox = par['box']
         startx = bigbox.x() / ratio
         starty = bigbox.y() / ratio
-        w = beamsizeX / camscaleX / ratio
-        h = beamsizeY / camscaleY / ratio
+        w = gridsizeX / camscaleX / ratio
+        h = gridsizeY / camscaleY / ratio
         
         x0 = startx + indexX*w
         y0 = starty + indexY*h
@@ -3030,8 +3044,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 # self.RasterPar[view]['zoom_scale_y']=self.Par[view]['zoom_scale_y']
                 # self.RasterPar[view]['numofX']=self.Par[view]['numofX']
                 # self.RasterPar[view]['numofY']=self.Par[view]['numofY']
-                # self.RasterPar[view]['beamsizeX']=self.Par[view]['beamsizeX']
-                # self.RasterPar[view]['beamsizeY']=self.Par[view]['beamsizeY']
+                # self.RasterPar[view]['gridsizeX']=self.Par[view]['gridsizeX']
+                # self.RasterPar[view]['gridsizeY']=self.Par[view]['gridsizeY']
                 # self.RasterPar[view]['scoreArray']=self.Par[view]['scoreArray']
                 # self.RasterPar[view]['resArray']=self.Par[view]['resArray']
                 # self.RasterPar[view]['spotsArray']=self.Par[view]['spotsArray']
@@ -3307,7 +3321,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             #,x,y,beamsize,socre
             posdata['ViewX'] = item[0]
             posdata['ViewY'] = item[1]
-            BeamSize = self.CorrectBeamsize(item[2] * RasterPar['beamsizeY'])
+            BeamSize = self.CorrectBeamsize(item[2] * RasterPar['gridsizeY'])
 
             CollectOrder = int(i+1)
             CollectType = 0#todo collec
@@ -3407,8 +3421,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
             currentBeamsize =  float(self.bluiceData['string']['currentBeamsize']['txt'])
             currentAtten = self.bluiceData['motor']['attenuation']['pos']#float
             sampleFlux = float(self.bluiceData['string']['sampleFlux']['txt'])
-            BeamSize = float(self.Beamsize.currentText())
-            flux = self.collectparwindows.predict_flux(currentBeamsize,currentAtten,sampleFlux,BeamSize,self.Par)
+            TargetBeamSize = float(self.selectBeamsize.currentText())
+            flux = self.collectparwindows.predict_flux(currentBeamsize,currentAtten,sampleFlux,TargetBeamSize,self.Par)
             if self.ExpousetimeType.currentText() == "Exposed time":
                 exposure_time = self.ExpouseValue.value()
             elif self.ExpousetimeType.currentText() == "Rate":
@@ -3418,7 +3432,18 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 exposure_time = self.ExpouseValue.value()
             setatten=self.Attenuation.value()
             wave = 12398.0/self.bluiceData['motor']['energy']['pos']
-            dose=flux*(1-setatten/100)*exposure_time*wave*wave/BeamSize/BeamSize/2000.0/1e6#MGy
+            if TargetBeamSize == 1:
+                beamXsize = 5#beam size in hor direct,fwhm=2
+            elif TargetBeamSize == 5:
+                beamXsize = TargetBeamSize/2.35*6# 6 sigma
+            elif TargetBeamSize == 10:
+                beamXsize = TargetBeamSize/2.35*6# 6 sigma
+            else:
+                beamXsize = TargetBeamSize+10#10umbigger
+
+            beamYsize = float(self.selectGridsize.currentText())#gridsize in ver
+            beamarea = beamXsize *beamYsize
+            dose=flux*(1-setatten/100)*exposure_time*wave*wave/beamarea/2000.0/1e6#MGy
             # print(setatten,dose,flux,exposure_time,self.bluiceData['motor']['energy']['pos'])
             self.rasterdose.setValue(dose)
         except Exception as e:
@@ -3459,8 +3484,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         
         FactorPixUmX = par['zoom_scale_x']
         FactorPixUmY = par['zoom_scale_y']
-        gridsizeX = par['beamsizeX']
-        gridsizeY = par['beamsizeY']
+        gridsizeX = par['gridsizeX']
+        gridsizeY = par['gridsizeY']
         try:
             halfoffsetX = FactorPixUmX*gridsizeX/2
             halfoffsetY = FactorPixUmX*gridsizeX/2
@@ -3638,12 +3663,19 @@ class MainUI(QMainWindow,Ui_MainWindow):
             
             
             RasterInfo = self.RasterPar[view]
-            offsetx = RasterInfo['box'].x() 
-            offsety = RasterInfo['box'].y() 
+            
             FactorPixUmX = par['zoom_scale_x']
             FactorPixUmY = par['zoom_scale_y']
-            gridsizeX = par['beamsizeX']
-            gridsizeY = par['beamsizeY']
+            gridsizeX = par['gridsizeX']
+            gridsizeY = par['gridsizeY']
+            try:
+                halfoffsetX = FactorPixUmX*gridsizeX/2
+                halfoffsetY = FactorPixUmX*gridsizeX/2
+            except:
+                halfoffsetX = 0
+                halfoffsetY = 0
+            offsetx = RasterInfo['box'].x() - halfoffsetX
+            offsety = RasterInfo['box'].y()  - halfoffsetY
             x= (offsetx + CurrentCollectinfo['ViewX']*FactorPixUmX*gridsizeX)
             y= (offsety + CurrentCollectinfo['ViewY']*FactorPixUmY*gridsizeY)
 
