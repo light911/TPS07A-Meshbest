@@ -271,6 +271,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.CollectdataSeq('View1')
         pass
     def collectAllpos_2_clicked(self):
+        self.CollectdataSeq('View2')
         pass
     def DetailInfo1_clicked(self):
         self.collectparwindows1.show()
@@ -3334,7 +3335,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             TotalCollectRange = 10 #todo set a input?
             StartPhi = RasterPar['gonio_phi'] - (TotalCollectRange /2)
             EndPhi = RasterPar['gonio_phi'] + (TotalCollectRange /2)
-            Delta = 0.01 #todo set a input?
+            Delta = 0.1 #todo set a input?
             Atten = 0
             ExpTime = 0.01
             displaytext = "BeamSize"
@@ -3481,14 +3482,17 @@ class MainUI(QMainWindow,Ui_MainWindow):
             self.logger.warning(f'Error on {e}')
         
         ratio =  self.getViewRatio(View)
-        
-        FactorPixUmX = par['zoom_scale_x']
-        FactorPixUmY = par['zoom_scale_y']
+        try:
+            FactorPixUmX = 1/par['zoom_scale_x']
+            FactorPixUmY = 1/par['zoom_scale_y']
+        except:
+            FactorPixUmX = 1
+            FactorPixUmY = 1
         gridsizeX = par['gridsizeX']
         gridsizeY = par['gridsizeY']
         try:
             halfoffsetX = FactorPixUmX*gridsizeX/2
-            halfoffsetY = FactorPixUmX*gridsizeX/2
+            halfoffsetY = FactorPixUmY*gridsizeY/2
         except:
             halfoffsetX = 0
             halfoffsetY = 0
@@ -3664,13 +3668,17 @@ class MainUI(QMainWindow,Ui_MainWindow):
             
             RasterInfo = self.RasterPar[view]
             
-            FactorPixUmX = par['zoom_scale_x']
-            FactorPixUmY = par['zoom_scale_y']
+            try:
+                FactorPixUmX = 1/par['zoom_scale_x']
+                FactorPixUmY = 1/par['zoom_scale_y']
+            except:
+                FactorPixUmX = 1
+                FactorPixUmY = 1
             gridsizeX = par['gridsizeX']
             gridsizeY = par['gridsizeY']
             try:
                 halfoffsetX = FactorPixUmX*gridsizeX/2
-                halfoffsetY = FactorPixUmX*gridsizeX/2
+                halfoffsetY = FactorPixUmY*gridsizeY/2
             except:
                 halfoffsetX = 0
                 halfoffsetY = 0

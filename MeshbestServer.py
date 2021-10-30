@@ -902,7 +902,7 @@ class MestbestSever():
             
                     "MeshBest":
                             {
-                                    "difminpar":0.02,
+                                    "difminpar":1,
                                     "Ztable":"",
                                     "Dtable":"",
                                     "positionReference":""

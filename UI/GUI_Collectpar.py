@@ -437,7 +437,8 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
         if flux:
             pass#has flux input
         else:
-            flux = self.beamlineinfo['Flux'][str(beamsize)]
+            # flux = self.beamlineinfo['Flux'][str(beamsize)]
+            flux = self.predict_flux(self.currentbeamsize,self.currentAtten,self.sampleFlux,beamsize,self.beamlineinfo)
         # dosefactor = self.beamlineinfo["DoseFactor"][index]
         # bestdose = self.beamlineinfo["BestDose"][index]
         # BeamFWHM = self.beamlineinfo["BeamFWHM"][index]
@@ -527,13 +528,25 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
                 flux =FullFlux
         # print(f'sampleFlux={sampleFlux}, predict_flux={flux},currentatten={currentAtten},tr={tr}')
         return flux
-    def calkeepDoseRelatedPar(self,mode,beamsize,Hdose,Adose,Atten,ExposedTime,Trange,Framewidth,Distance,Energy):
+    def calkeepDoseRelatedPar(self,mode,beamsize,Hdose,Adose,Atten,ExposedTime,Trange,Framewidth,Distance,Energy,flux=None):
 #        print self.beamlineinfo['Flux']
         # dose is Mgy, in cal should change to gy
         
         index = self.beamlineinfo["AvailableBeamSizes"].index(beamsize)
-        flux = self.beamlineinfo['Flux'][str(beamsize)]
-        BeamFWHM = self.beamlineinfo["BeamFWHM"][index]
+        if flux:
+            pass#has flux input
+        else:
+            # flux = self.beamlineinfo['Flux'][str(beamsize)]
+            flux = self.predict_flux(self.currentbeamsize,self.currentAtten,self.sampleFlux,beamsize,self.beamlineinfo)
+        # dosefactor = self.beamlineinfo["DoseFactor"][index]
+        # bestdose = self.beamlineinfo["BestDose"][index]
+        # BeamFWHM = self.beamlineinfo["BeamFWHM"][index]
+        dosefactor = 1
+        bestdose = 10
+        if beamsize == 1:
+            BeamFWHM = 2*2
+        else:
+            BeamFWHM = beamsize*beamsize
         minExposedTime = self.beamlineinfo["minExposedTime"]
 #        Dose = Dose *1e6
         fluxden=flux/BeamFWHM
@@ -575,15 +588,25 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
 #        print TimeCanUse,ExposedTime,Hdose,fluxden,wave
         return Hdose,Adose,Atten,ExposedTime,Trange,Framewidth,Distance,Energy
     
-    def updateDose(self,beamsize,Atten,ExposedTime,Trange,Framewidth,Distance,Energy):
+    def updateDose(self,beamsize,Atten,ExposedTime,Trange,Framewidth,Distance,Energy,flux=None):
 #        print self.beamlineinfo['Flux']
         # dose is Mgy, in cal should change to gy
         
         index = self.beamlineinfo["AvailableBeamSizes"].index(beamsize)
-        flux = self.beamlineinfo['Flux'][str(beamsize)]
-        dosefactor = self.beamlineinfo["DoseFactor"][index]
-        bestdose = self.beamlineinfo["BestDose"][index]
-        BeamFWHM = self.beamlineinfo["BeamFWHM"][index]
+        if flux:
+            pass#has flux input
+        else:
+            # flux = self.beamlineinfo['Flux'][str(beamsize)]
+            flux = self.predict_flux(self.currentbeamsize,self.currentAtten,self.sampleFlux,beamsize,self.beamlineinfo)
+        # dosefactor = self.beamlineinfo["DoseFactor"][index]
+        # bestdose = self.beamlineinfo["BestDose"][index]
+        # BeamFWHM = self.beamlineinfo["BeamFWHM"][index]
+        dosefactor = 1
+        bestdose = 10
+        if beamsize == 1:
+            BeamFWHM = 2*2
+        else:
+            BeamFWHM = beamsize*beamsize
         minExposedTime = self.beamlineinfo["minExposedTime"]
 #        Dose = Dose *1e6
         fluxden=flux/BeamFWHM
