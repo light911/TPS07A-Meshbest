@@ -3,6 +3,8 @@ import time,signal,os
 from multiprocessing import Process, Queue, Manager
 import multiprocessing as mp
 import math
+
+from numpy.core.numeric import moveaxis
 import Config
 import logsetup
 import numpy as np
@@ -80,6 +82,8 @@ class adxv():
             self.process = Process(target=self.openadxv, args=(self.port,),name='ADXV')
             self.process.start()
             time.sleep(1)
+            command = ['moveadxv']
+            moveadxvP = subprocess.run(command)
         # /data/blctl/20211027_07A/154945/collect/001_0000_master.h5
         # /data/blctl/20211027_07A/154945/collect/001_0000_data_000001.h5
         datanum = math.ceil(N/1000)
@@ -112,11 +116,15 @@ class adxv():
         else:
             env={'ADXV_DISPLAY_PORT':'8101','DISPLAY':DISPLAY,'HOME':HOME,'PATH':PATH}
         # command = ['/data/program/ADXV/adxv','-socket']
-        command = ['adxv','-pixelsize', '0.075','-rings','-beam_center',str(self.beam_centerX),str(self.beam_centerY),'-wavelength', str(self.wavelength),'-distance',str(self.distance),'-overload',str(self.overload),'-socket']
-        
+        # command = ['adxv','-pixelsize', '0.075','-rings','-beam_center',str(self.beam_centerX),str(self.beam_centerY),'-wavelength', str(self.wavelength),'-distance',str(self.distance),'-overload',str(self.overload),'-socket']
+        command = ['adxv','-pixelsize', '0.075','-beam_center',str(self.beam_centerX),str(self.beam_centerY),'-wavelength', str(self.wavelength),'-distance',str(self.distance),'-overload',str(self.overload),'-socket']
+
         # command = ['ls','-l']
         adxvProcess = subprocess.run(command,env=env)
         # adxvProcess = subprocess.Popen(command,env=env,shell=True)
+        # command = ['moveadxv']
+        # time.sleep(0.5)
+        # moveadxvP = subprocess.run(command,env=env)
         print('done')
     
     def displayimage(self,port,path):
