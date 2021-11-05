@@ -97,11 +97,15 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.RasterPar['View1']['Textplotarray'] = None
         self.RasterPar['View1']['pos_text_array'] = []
         self.RasterPar['View1']['pos_circle_array'] = []
+        self.RasterPar['View1']['movingindex'] = -1
+        self.RasterPar['View1']['movingplot'] = False
 
         self.RasterPar['View2']['Textplotarray'] = None
         self.RasterPar['View2']['boxRectItemarray'] = None
         self.RasterPar['View2']['pos_text_array'] = []
         self.RasterPar['View2']['pos_circle_array'] = []
+        self.RasterPar['View2']['movingindex'] = -1
+        self.RasterPar['View2']['movingplot'] = False
         self.RasterRunstep=0
         self.RasterRuning = False
         
@@ -146,7 +150,10 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.collectparwindows = collectparui(self.Par,view='View3')
         self.collectparwindows1 = collectparui(self.Par,view='View1')
         self.collectparwindows2 = collectparui(self.Par,view='View2')
-        
+        self.collectparwindows1.Done.connect(self.aftercollectpardone1)
+        self.collectparwindows2.Done.connect(self.aftercollectpardone2)
+
+        self.Drawing=False
         self.logger.info(f'GUI PID = {self.pid}')
         self.adxv=adxv(self.Par)
         self.initGUI()
@@ -266,13 +273,28 @@ class MainUI(QMainWindow,Ui_MainWindow):
 
         self.collectAllpos_1.clicked.connect(self.collectAllpos_1_clicked)
         self.collectAllpos_2.clicked.connect(self.collectAllpos_2_clicked)
+
+        self.MovePos_1.clicked.connect(self.make_EditPos_1_uncheck)
+        self.EditPos_1.clicked.connect(self.make_MovePos_1_uncheck)
+        self.MovePos_2.clicked.connect(self.make_EditPos_2_uncheck)
+        self.EditPos_2.clicked.connect(self.make_MovePos_2_uncheck)
         pass        
+    def make_EditPos_1_uncheck(self):
+            self.EditPos_1.setChecked(False)
+    def make_MovePos_1_uncheck(self):
+            self.MovePos_1.setChecked(False)
+    def make_EditPos_2_uncheck(self):
+            self.EditPos_2.setChecked(False)
+    def make_MovePos_2_uncheck(self):
+            self.MovePos_2.setChecked(False)
     def collectAllpos_1_clicked(self):
         self.CollectdataSeq('View1')
         pass
     def collectAllpos_2_clicked(self):
         self.CollectdataSeq('View2')
         pass
+
+
     def DetailInfo1_clicked(self):
         self.collectparwindows1.show()
         self.collectparwindows1.beamlineinfo = self.Par
@@ -294,6 +316,14 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.collectparwindows2.sampleFlux = sampleFlux
         self.collectparwindows2.update()
         pass
+
+    def aftercollectpardone1(self):
+        self.plotBestpos(View="View1")
+        self.send_RasterInfo_to_meshbest()
+
+    def aftercollectpardone2(self):
+        self.plotBestpos(View="View2")
+        self.send_RasterInfo_to_meshbest()
     def setColor(self):
         self.Active.setStyleSheet('background-color: red')
         
@@ -309,7 +339,9 @@ class MainUI(QMainWindow,Ui_MainWindow):
             self.logger.debug(f'Raster Runing ,bypass')
             pass
         elif self.Par['StateCtl']['RasterDone'] :
-            if event.button() == 1:
+            iseditpos = self.EditPos_1.isChecked() or self.MovePos_1.isChecked()
+            if event.button() == 1 and not iseditpos:
+                #for move sample
                 self.logger.info(f'Click on view1 and want to move sample')
                 try:
                     if self.bluiceData['motor']['sample_x']['moving']:
@@ -326,7 +358,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     traceback.print_exc()
                     self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
                     self.logger.warning(f'Error:{e}')
-            elif event.button() == Qt.RightButton:#=2
+            elif event.button() == Qt.RightButton and not iseditpos:#=2
                 position = QPoint(event.pos().x(),event.pos().y())
                 mouseX=self.RasterView1.mapToScene(position).x()
                 mouseY=self.RasterView1.mapToScene(position).y()
@@ -344,6 +376,17 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 # path=f'/data/blctl/20211027_07A/154945/RasterScanview1_0000_master.h5'
                 path=f'{self.RootPath_2.text()}/RasterScanview1_0000_master.h5'
                 self.adxv.showimage(path,frame)
+                pass
+            elif self.MovePos_1.isChecked():
+                position = QPoint(event.pos().x(),event.pos().y())
+                self.movePosinCollectinfo(event,position,view='View1')
+                pass
+            elif self.EditPos_1.isChecked():
+                position = QPoint(event.pos().x(),event.pos().y())
+                if event.button() == 1 :
+                    self.addPosinCollectinfo(position,view='View1')
+                elif event.button() == 2 :
+                    self.delcollectpos(position,view='View1')
                 pass
 
         else:
@@ -389,6 +432,14 @@ class MainUI(QMainWindow,Ui_MainWindow):
             self.view2box.setRect(x,y,w,h)
             # print('DrawinRasterView1Move=============')
             # print(self.view1box.boundingRect(),self.view2box.boundingRect())
+        elif self.RasterPar['View1']['movingplot']:
+            position = QPoint(event.pos().x(),event.pos().y())
+            mouseX=self.RasterView1.mapToScene(position).x()
+            mouseY=self.RasterView1.mapToScene(position).y()
+            i = self.RasterPar['View1']['movingindex']
+            newrect = self.RasterPar['View1']['pos_circle_array'][i].rect()
+            newrect.moveCenter(QPoint(mouseX,mouseY))
+            self.RasterPar['View1']['pos_circle_array'][i].setRect(newrect)
         else:
             pass
             
@@ -441,7 +492,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         elif self.RasterRuning:
             pass
         elif self.Par['StateCtl']['RasterDone'] :
-            if event.button() == 1:
+            iseditpos = self.EditPos_2.isChecked() or self.MovePos_2.isChecked()
+            if event.button() == 1 and not iseditpos:
                 self.logger.info(f'Click on view1 and want to move sample')
                 try:
                     if self.bluiceData['motor']['sample_x']['moving']:
@@ -458,7 +510,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     traceback.print_exc()
                     self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
                     self.logger.warning(f'Error:{e}')
-            elif event.button() == Qt.RightButton:#=2
+            elif event.button() == Qt.RightButton and not iseditpos:#=2
                 position = QPoint(event.pos().x(),event.pos().y())
                 mouseX=self.RasterView2.mapToScene(position).x()
                 mouseY=self.RasterView2.mapToScene(position).y()
@@ -477,6 +529,16 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 path=f'{self.RootPath_2.text()}/RasterScanview2_0000_master.h5'
                 self.adxv.showimage(path,frame)
                 pass
+            elif self.MovePos_2.isChecked():
+                position = QPoint(event.pos().x(),event.pos().y())
+                self.movePosinCollectinfo(event,position,view='View2')
+                pass
+            elif self.EditPos_2.isChecked():
+                position = QPoint(event.pos().x(),event.pos().y())
+                if event.button() == 1 :
+                    self.addPosinCollectinfo(position,view='View2')
+                elif event.button() == 2 :
+                    self.delcollectpos(position,view='View2')
         else:
             if event.button() == 1:
                 self.view2box.setPen(QPen(QColor('red')))
@@ -517,6 +579,14 @@ class MainUI(QMainWindow,Ui_MainWindow):
             # h = self.view2box.boundingRect().height() #using view2 height
             h = self.view2box.rect().height() #using view2 height
             self.view1box.setRect(x,y,w,h)
+        elif self.RasterPar['View2']['movingplot']:
+            position = QPoint(event.pos().x(),event.pos().y())
+            mouseX=self.RasterView2.mapToScene(position).x()
+            mouseY=self.RasterView2.mapToScene(position).y()
+            i = self.RasterPar['View2']['movingindex']
+            newrect = self.RasterPar['View2']['pos_circle_array'][i].rect()
+            newrect.moveCenter(QPoint(mouseX,mouseY))
+            self.RasterPar['View2']['pos_circle_array'][i].setRect(newrect)
         else:
             pass
             
@@ -2101,7 +2171,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 self.logger.warning('Do not update!I am doing my job')
                 return
             if self.bluiceData['active']:
-                self.logger.info(f'I am active client,update Dtable only and XY')
+                self.logger.debug(f'I am active client,update Dtable only and XY')
                 #active only update Dtable
                 view1_data = self.Par['View1']
                 view2_data = self.Par['View2']
@@ -3302,7 +3372,166 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.RasterPar['View2']['box'] = QRectF(x2,y2,w2,h2)
         self.plotView12()
         self.send_RasterInfo_to_meshbest()
+    
+    def delcollectpos(self,position,view):
+        mouseX=self.RasterView1.mapToScene(position).x()
+        mouseY=self.RasterView1.mapToScene(position).y()
+        convert_pos = QPoint(mouseX,mouseY)
+        findindex = -1
+        for i,item in enumerate(self.RasterPar[view]['pos_circle_array']):
+            if item.contains(convert_pos):
+                findindex = i
+        print(i)
+        if findindex == -1:
+            pass
+        else:
+            del self.Par[view]['collectInfo'][findindex]
+            self.send_RasterInfo_to_meshbest()
+            self.plot_overlap_image(view)
+            self.logger.info(f'Del pos:{findindex} in {view}')
+        pass
+    def MousePos_Mapto_Raster(self,position,view='View1'):
+        RasterPar =  self.RasterPar[view]
+        if view =='View1':
+            ratio = self.getViewRatio(1)
+        else:
+            ratio = self.getViewRatio(2)
+        if view == 'View1':
+            RasterView = self.RasterView1
+        else:
+            RasterView = self.RasterView2
+        mouseX = RasterView.mapToScene(position).x()
+        mouseY = RasterView.mapToScene(position).y()
+        #position at full view
+        convert_posX = mouseX*ratio
+        convert_posY = mouseY*ratio
+        
+        #get box pos
+        boxX = RasterPar['box'].x()
+        boxY = RasterPar['box'].y()
+        
+        zoomx = RasterPar['zoom_scale_x']
+        zoomy = RasterPar['zoom_scale_y']
 
+        #diffpos
+        diffx = convert_posX - boxX + RasterPar['gridsizeX']/2/zoomx
+        diffy = convert_posY - boxY + RasterPar['gridsizeX']/2/zoomy
+
+
+        rasterX = diffx * zoomx 
+        rasterY = diffy * zoomy 
+        viewX = rasterX / RasterPar['gridsizeX'] 
+        viewY = rasterY / RasterPar['gridsizeY']
+
+        # self.logger.warning(f'{viewX=},{rasterX=},{diffx=},{convert_posX=},{boxX=},{ratio=},{zoomx=},{RasterPar["gridsizeX"]=}')
+        return viewX,viewY
+    def movePosinCollectinfo(self,event,position,view='View1'):
+        raster = self.RasterPar[view]
+        if view == 'View1':
+            RasterView = self.RasterView1
+        else:
+            RasterView = self.RasterView2
+        mouseX=RasterView.mapToScene(position).x()
+        mouseY=RasterView.mapToScene(position).y()
+        convert_pos = QPoint(mouseX,mouseY)
+        if event.button() == 1 :
+            if not raster['movingplot']:
+                findindex = -1
+                for i,item in enumerate(self.RasterPar[view]['pos_circle_array']):
+                    if item.contains(convert_pos):
+                        findindex = i
+                if findindex == -1:
+                    pass
+                else:
+                    raster['pos_circle_array'][findindex].setPen(QPen(QtCore.Qt.red))
+                    raster['movingindex'] = findindex
+                    raster['movingplot'] = True
+            else:
+                #end of move
+                raster['movingplot'] = False
+                i = raster['movingindex']
+                viewX ,viewY = self.MousePos_Mapto_Raster(position,view)
+                currentCollectlist = self.Par[view]['collectInfo']
+                currentCollectlist[i]['ViewX'] = viewX
+                currentCollectlist[i]['ViewY'] = viewY
+                self.Par[view]['collectInfo'] = currentCollectlist
+                self.logger.info(f'Set {i} new pos')
+                self.send_RasterInfo_to_meshbest()
+                self.plot_overlap_image(view)
+        else:
+            #cancel
+            raster['movingplot'] = False
+            self.plot_overlap_image(view)
+
+
+    def addPosinCollectinfo(self,position,view='View1'):
+        currentCollectlist = self.Par[view]['collectInfo']
+        i = len(currentCollectlist)
+        RasterPar =  self.RasterPar[view]
+        posdata={}
+        #,x,y,beamsize,socre
+        viewX ,viewY = self.MousePos_Mapto_Raster(position,view)
+
+       
+
+        posdata['ViewX'] = viewX
+        posdata['ViewY'] = viewY
+        BeamSize = self.CorrectBeamsize(1 * RasterPar['gridsizeY'])
+
+        CollectOrder = int(i+1)
+        CollectType = 0#todo collec
+        CollectDone = False
+        FileName = f'{i+1:03d}'
+        
+        FolderName = f'{self.RootPath_2.text()}/collect'
+        Distance = self.Distance.value()
+        Energy = self.bluiceData['motor']['energy']['pos']
+        TotalCollectRange = 10 #todo set a input?
+        StartPhi = RasterPar['gonio_phi'] - (TotalCollectRange /2)
+        EndPhi = RasterPar['gonio_phi'] + (TotalCollectRange /2)
+        Delta = 0.1 #todo set a input?
+        Atten = 0
+        ExpTime = 0.01
+        displaytext = "Atten-Time"
+        DoseSelect = 0
+        dose = 10
+        RoughtDose = 10
+        EstimateDose = 10
+        #get flux
+        currentBeamsize =  float(self.bluiceData['string']['currentBeamsize']['txt'])
+        currentAtten = self.bluiceData['motor']['attenuation']['pos']#float
+        sampleFlux = float(self.bluiceData['string']['sampleFlux']['txt'])
+        flux = self.collectparwindows.predict_flux(currentBeamsize,currentAtten,sampleFlux,BeamSize,self.Par)
+        
+        newHdose,newAdose,newAtten,newExptime,newTrange,newDelta,NewDistance,NewEnergy=\
+        self.collectparwindows.calDosePar(displaytext,DoseSelect,BeamSize,dose,RoughtDose,EstimateDose,Atten,ExpTime,TotalCollectRange,Delta,Distance,Energy,flux)
+        posdata['BeamSize'] = BeamSize
+        posdata['CollectOrder'] = CollectOrder
+        posdata['CollectType'] = CollectType
+        posdata['CollectDone'] = CollectDone
+        posdata['FileName'] = FileName
+        posdata['FolderName'] = FolderName
+        posdata['Distance'] = Distance
+        posdata['Energy'] = Energy
+        posdata['StartPhi'] = RasterPar['gonio_phi'] - (newTrange /2)
+        posdata['EndPhi'] = RasterPar['gonio_phi'] + (newTrange /2)
+        posdata['TotalCollectRange'] = newTrange
+        posdata['Delta'] = newDelta
+        posdata['ExpTime'] = newExptime
+        posdata['Atten'] = newAtten
+        posdata['RoughtDose']=newHdose
+        posdata['EstimateDose'] = newAdose
+        currentCollectlist.append(posdata)
+        self.Par[view]['collectInfo'] = currentCollectlist
+        if len(self.Par[view]['collectInfo'])>0:
+            if view=='View1':
+                self.collectAllpos_1.setEnabled(True)
+            else:
+                self.collectAllpos_2.setEnabled(True)
+        self.logger.info(f'Add pos:({viewX}),({viewY}) in {view}')
+        self.send_RasterInfo_to_meshbest()#also send par[view][collectInfo]
+        self.plot_overlap_image(view)
+        
     def create_collectinfo(self,view='View1'):
         
         RasterPar = self.RasterPar[view]
@@ -3338,7 +3567,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             Delta = 0.1 #todo set a input?
             Atten = 0
             ExpTime = 0.01
-            displaytext = "BeamSize"
+            displaytext = "Atten-Time"
             DoseSelect = 0
             dose = 10
             RoughtDose = 10
@@ -3702,6 +3931,21 @@ class MainUI(QMainWindow,Ui_MainWindow):
             start_angle = CurrentCollectinfo['StartPhi']
 
             attenuation = CurrentCollectinfo['Atten']
+            motorchecklist=['gonio_phi','sample_x','sample_y','sample_z','attenuation']
+            self.logger.debug(f'Checking {motorchecklist} moving state')
+            checkarray = []
+            posarray = []
+            _check=True
+            while _check:
+                for motor in motorchecklist:
+                    checkarray.append(not (self.bluiceData['motor'][motor]['moving']))
+                    posarray.append(self.bluiceData['motor'][motor]['pos'])
+                if all(checkarray):
+                    self.logger.debug('move done')
+                    _check=False
+                QApplication.processEvents()
+                time.sleep(0.2)
+                
 
             command = f'gtos_start_motor_move gonio_phi {start_angle}'
             # print(command)

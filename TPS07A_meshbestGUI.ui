@@ -1032,15 +1032,36 @@
              </widget>
             </item>
             <item>
-             <widget class="QSlider" name="horizontalSlider_3">
-              <property name="maximum">
-               <number>100</number>
+             <widget class="QPushButton" name="ClearAll_1">
+              <property name="text">
+               <string>Clear All</string>
               </property>
-              <property name="value">
-               <number>100</number>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="Delpos_1">
+              <property name="text">
+               <string>Del form list Pos.</string>
               </property>
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="EditPos_1">
+              <property name="text">
+               <string>Add/Del Pos.</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="MovePos_1">
+              <property name="text">
+               <string>Move Pos.</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
               </property>
              </widget>
             </item>
@@ -1198,15 +1219,36 @@
              </widget>
             </item>
             <item>
-             <widget class="QSlider" name="horizontalSlider_7">
-              <property name="maximum">
-               <number>100</number>
+             <widget class="QPushButton" name="ClearAll_2">
+              <property name="text">
+               <string>Clear All</string>
               </property>
-              <property name="value">
-               <number>100</number>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="Delpos_2">
+              <property name="text">
+               <string>Del form list Pos.</string>
               </property>
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="EditPos_2">
+              <property name="text">
+               <string>Add/Del Pos.</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="MovePos_2">
+              <property name="text">
+               <string>Move Pos.</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
               </property>
              </widget>
             </item>
