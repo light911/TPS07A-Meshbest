@@ -35,7 +35,8 @@ class BluiceClient(QThread):
         self.dhsname="ringstatus"
         self.user="blctl"
         self.passwd=""
-        self.hostname="gui07a1.nsrrc.org.tw :0.0"
+        # self.hostname="gui07a1.nsrrc.org.tw :0.0"
+        self.hostname="gui07a1.nsrrc.org.tw "
         self.base64passwd=""
         self.key=""
         # self.client = socket._socketobject
@@ -56,7 +57,11 @@ class BluiceClient(QThread):
                                          level = self.Par['Debuglevel'])
         
 #        manager = Manager()
-
+        # self.logger.info(f"{os.environ['DISPLAY']=}")
+        self.hostname =f"{self.hostname} :0.{self.pid}"
+        self.logger.info(f"{os.environ['DISPLAY']=}")
+        self.logger.info(f"{self.hostname =}")
+        
         self.info={}
         self.Qinfo={}
 #        self.MotorMoving=manager.dict()
@@ -146,7 +151,7 @@ class BluiceClient(QThread):
 
 #        print (f'DCSS answer:{ans}')
 #        print (f'len:{len(ans)}')
-        if ans[0:index].decode() == "stoc_send_client_type" :
+        if "stoc_send_client_type" in ans[0:index].decode() :
             self.logger.debug("dcss ans correct!")
             echo=loginsrt
         else:

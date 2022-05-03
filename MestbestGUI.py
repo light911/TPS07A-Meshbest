@@ -2965,6 +2965,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             self.logger.info(f'My bluice ID is {self.bluiceID}')
             self.setToPassive()
         elif command[0] == "stog_become_master":
+            pass#has bug??
             self.setToActive()
             # self.logger.warning(command)
         elif command[0] == "stog_become_slave":
