@@ -14,7 +14,7 @@ from PyQt5.QtGui import QPixmap,QPainter,QBrush,QPen,QColor,QFont
 from PyQt5.QtCore import QRect,QPoint,QRectF,QPointF,Qt
 from PyQt5.QtCore import QObject,QThread,pyqtSignal,pyqtSlot,QMutex,QMutexLocker
 
-from UI.GUI_Collectpar_tools import NormalApply,DoseApply,DoseRelateApply
+from UI.GUI_Collectpar_tools import NormalApply,DoseApply,DoseRelateApply,BoolApply
 from UI.UI_CollectPar import Ui_Dialog
 #from GUIMain_collectpar_tools_dose import DoseApply
 # qtCreatorFile = "/data/program/MeshBestGUI/UI/CollectPar.ui"  
@@ -42,6 +42,8 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
         self.DoseApply.DoseApplyDone.connect(self.afterDoseApplyDone)
         self.DoseRelateApply = DoseRelateApply()
         self.DoseRelateApply.DoseApplyDone.connect(self.afterDoseRelateApplyApplyDone)
+        self.BoolApply = BoolApply()
+        self.BoolApply.Done.connect(self.afterBoolApplyDone)
 #        self.AvailableBeamSizes=[50,30,20,10,5]
 #        self.Flux=[3.31E12,1.4E12,7.56E11,1.71E11,7.5E10]
         self.currentbeamsize=10
@@ -52,7 +54,7 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
 #        print self.beamlineinfo['Fulx']
         
     def initgui(self):
-        self.InfoTable.setColumnCount(11)
+        self.InfoTable.setColumnCount(12)
         self.InfoTable.setColumnWidth(0,40)
         self.InfoTable.setColumnWidth(1,40)
         self.InfoTable.setColumnWidth(2,70)
@@ -64,6 +66,7 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
         self.InfoTable.setColumnWidth(8,100)
         self.InfoTable.setColumnWidth(9,100)
         self.InfoTable.setColumnWidth(10,100)
+        self.InfoTable.setColumnWidth(11,100)
         item0=QtWidgets.QTableWidgetItem("X")
         item1=QtWidgets.QTableWidgetItem("Y")
         item2=QtWidgets.QTableWidgetItem("BeamSize")
@@ -74,7 +77,8 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
         item7=QtWidgets.QTableWidgetItem("Total collect range")
         item8=QtWidgets.QTableWidgetItem("Frame width")
         item9=QtWidgets.QTableWidgetItem("Distance")
-        item10=QtWidgets.QTableWidgetItem("Energy")
+        item10=QtWidgets.QTableWidgetItem("CollectDone")
+        item11=QtWidgets.QTableWidgetItem("Energy")
         
         self.InfoTable.setHorizontalHeaderItem(0,item0)
         self.InfoTable.setHorizontalHeaderItem(1,item1)
@@ -87,6 +91,7 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
         self.InfoTable.setHorizontalHeaderItem(8,item8)
         self.InfoTable.setHorizontalHeaderItem(9,item9)
         self.InfoTable.setHorizontalHeaderItem(10,item10)
+        self.InfoTable.setHorizontalHeaderItem(11,item11)
 
     def initGuiEvent(self):
 #        self.buttons={}
@@ -175,6 +180,8 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
                 self.DoseRelateApply.updateminValue(0.01)
             
             self.DoseRelateApply.show()
+        elif self.SelectedColumn == 10:
+            self.BoolApply.show()
         else:
             self.NormalApply.updateDefaultValue(float(self.InfoTable.item(self.SelectedRow[0], self.SelectedColumn).text()))
             self.NormalApply.updateTitle(self.InfoTable.horizontalHeaderItem(self.SelectedColumn).text())
@@ -190,7 +197,15 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
             self.InfoTable.setItem(row,self.SelectedColumn,additem)
             
         self.updateDosebyTableinfo()
-        
+    def afterBoolApplyDone(self,value):
+        if value == True:
+            updatevalue="True"
+        else:
+            updatevalue="False"
+        for row in self.SelectedRow :
+            additem = QTableWidgetItem(updatevalue)
+            self.InfoTable.setItem(row,self.SelectedColumn,additem)
+
     def afterDoseApplyDone(self,text,value):
         if self.SelectedColumn == 3:
             DoseSelect=0#for Hotlton cal
@@ -203,7 +218,7 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
         
         for row in self.SelectedRow :
             beamsize = self.CorrectBeamsize(float(self.InfoTable.item(row,2).text()))
-            Energy = float(self.InfoTable.item(row,10).text())
+            Energy = float(self.InfoTable.item(row,11).text())
             TotalCollectRange = float(self.InfoTable.item(row,7).text())
             Distance = float(self.InfoTable.item(row,9).text())
             Delta = float(self.InfoTable.item(row,8).text())
@@ -232,7 +247,7 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
             self.InfoTable.setItem(row,7,newTrangeitem)
             self.InfoTable.setItem(row,8,newDeltaitem)
             self.InfoTable.setItem(row,9,newDistanceitem)
-            self.InfoTable.setItem(row,10,newEnergyitem)
+            self.InfoTable.setItem(row,11,newEnergyitem)
 
 
     def afterDoseRelateApplyApplyDone(self,text,value):
@@ -272,7 +287,7 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
                 
                 print(self.SelectedColumn,mode,TotalCollectRange,Atten,ExpTime)
                 beamsize = self.CorrectBeamsize(float(self.InfoTable.item(row,2).text()))
-                Energy = float(self.InfoTable.item(row,10).text())               
+                Energy = float(self.InfoTable.item(row,11).text())               
                 Distance = float(self.InfoTable.item(row,9).text())
                 
                 RoughtDose = float(self.InfoTable.item(row,3).text())
@@ -296,7 +311,7 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
                 self.InfoTable.setItem(row,7,newTrangeitem)
                 self.InfoTable.setItem(row,8,newDeltaitem)
                 self.InfoTable.setItem(row,9,newDistanceitem)
-                self.InfoTable.setItem(row,10,newEnergyitem)
+                self.InfoTable.setItem(row,11,newEnergyitem)
                 
            
         elif text == "Don't keep Dose":
@@ -352,6 +367,7 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
                              item['TotalCollectRange'],\
                              item['Delta'],\
                              item['Distance'],\
+                             item['CollectDone'],\
                              item['Energy']
                              )
             row = row + 1
@@ -390,13 +406,17 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
             posdata['CollectType']=0
             
 
-            posdata['CollectDone']=self.CollectInfo[i]['CollectDone']
+            # posdata['CollectDone']=self.CollectInfo[i]['CollectDone']
+            if self.InfoTable.item(i,10).text() == 'True':
+                posdata['CollectDone']=True
+            else:
+                posdata['CollectDone']=False
             
             posdata['FileName']= self.CollectInfo[i]['FileName']
             posdata['FolderName']=self.CollectInfo[i]['FolderName']
             posdata['Distance']=float(self.InfoTable.item(i,9).text())
             posdata['BeamSize']=self.CorrectBeamsize(float(self.InfoTable.item(i,2).text()))
-            posdata['Energy']=float(self.InfoTable.item(i,10).text())
+            posdata['Energy']=float(self.InfoTable.item(i,11).text())
             posdata['TotalCollectRange']=float(self.InfoTable.item(i,7).text())
             
             phiView=(self.CollectInfo[i]['StartPhi']+self.CollectInfo[i]['EndPhi'])/2.0   
@@ -505,28 +525,52 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
         if FullFlux == 0:
             #no beam or something else
             #using default
-            if currentBeamsize >= 20:
+            if currentBeamsize >= 30:
                 FullFlux=par['Flux'][100]
             else:
-                FullFlux=par['Flux'][1]
+                FullFlux=par['Flux'][currentBeamsize]
             pass
         else:
             pass
         
-        if currentBeamsize >= 20 and Targetbeamsize >= 20:
-            # same
-            flux = FullFlux
-        elif currentBeamsize < 20 and Targetbeamsize >= 20:
-            # FullFlux is smaller
-            flux = FullFlux / par['Fluxfactor']
-        elif currentBeamsize < 20 and Targetbeamsize < 20:
-            flux = FullFlux
-        elif currentBeamsize > 20 and Targetbeamsize < 20:
-            flux = FullFlux * par['Fluxfactor']
+        if currentBeamsize >= 30:
+            #current factor at max
+            factor1 = par['Flux'][100]
         else:
-            #shoud not got to here
-                flux =FullFlux
-        # print(f'sampleFlux={sampleFlux}, predict_flux={flux},currentatten={currentAtten},tr={tr}')
+            factor1 = par['Flux'][currentBeamsize]
+
+        if Targetbeamsize >= 30:
+            #Targetbeamsize factor at max
+            factor2 = par['Flux'][100]
+        else:
+            factor2 = par['Flux'][Targetbeamsize]
+        
+        flux = FullFlux / factor1 * factor2
+        # if FullFlux == 0:
+        #     #no beam or something else
+        #     #using default
+        #     if currentBeamsize >= 20:
+        #         FullFlux=par['Flux'][100]
+        #     else:
+        #         FullFlux=par['Flux'][1]
+        #     pass
+        # else:
+        #     pass
+        
+        # if currentBeamsize >= 20 and Targetbeamsize >= 20:
+        #     # same
+        #     flux = FullFlux
+        # elif currentBeamsize < 20 and Targetbeamsize >= 20:
+        #     # FullFlux is smaller
+        #     flux = FullFlux / par['Fluxfactor']
+        # elif currentBeamsize < 20 and Targetbeamsize < 20:
+        #     flux = FullFlux
+        # elif currentBeamsize > 20 and Targetbeamsize < 20:
+        #     flux = FullFlux * par['Fluxfactor']
+        # else:
+        #     #shoud not got to here
+        #         flux =FullFlux
+        # # print(f'sampleFlux={sampleFlux}, predict_flux={flux},currentatten={currentAtten},tr={tr}')
         return flux
     def calkeepDoseRelatedPar(self,mode,beamsize,Hdose,Adose,Atten,ExposedTime,Trange,Framewidth,Distance,Energy,flux=None):
 #        print self.beamlineinfo['Flux']
@@ -623,7 +667,7 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
         
         for row in range(RowCount):
             beamsize = self.CorrectBeamsize(float(self.InfoTable.item(row,2).text()))
-            Energy = float(self.InfoTable.item(row,10).text())
+            Energy = float(self.InfoTable.item(row,11).text())
             TotalCollectRange = float(self.InfoTable.item(row,7).text())
             Distance = float(self.InfoTable.item(row,9).text())
             Delta = float(self.InfoTable.item(row,8).text())

@@ -7,6 +7,7 @@ Created on Fri Jul  3 16:31:21 2020
 """
 
 
+from xmlrpc.client import Boolean
 import PyQt5
 from PyQt5 import QtWidgets, uic, QtGui, QtCore
 
@@ -17,6 +18,7 @@ from PyQt5.QtCore import QObject,QThread,pyqtSignal,pyqtSlot,QMutex,QMutexLocker
 from UI.UI_NormalApply import Ui_Dialog as Ui_Dialog_NormalApply
 from UI.UI_DoseApply import Ui_Dialog as Ui_Dialog_DoseApply
 from UI.UI_DoseRelateApply import Ui_Dialog as Ui_Dialog_DoseRelateApply
+from UI.UI_BoolApply import Ui_Dialog as Ui_Dialog_BoolApply
 # qtCreatorFile = "/data/program/MeshBestGUI/UI/NormalApply.ui"  
 # #print qtCreatorFile
 # Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile) 
@@ -155,4 +157,42 @@ class DoseRelateApply(QtWidgets.QDialog, Ui_Dialog_DoseRelateApply,QThread):
              self.ConsiderOrder.insertItems(1,['Don\'t keep Dose','Keep Dose &Change Range by Beamsize'])
         else:
              self.ConsiderOrder.insertItems(1,['Don\'t keep Dose'])
-            
+
+class BoolApply(QtWidgets.QDialog, Ui_Dialog_BoolApply,QThread): 
+    Done = pyqtSignal(bool)
+    def __init__(self):
+        #reload init
+        QtWidgets.QMainWindow.__init__(self)
+        Ui_Dialog_NormalApply.__init__(self)
+        self.setupUi(self)
+#        self.title="item"
+        self.DefaultValue=False
+#        print type(self.CollectInfo)
+        
+        self.initgui()
+        self.initGuiEvent()
+        
+    def initgui(self):
+        pass
+    
+    def initGuiEvent(self):
+         self.buttonBox.button(QDialogButtonBox.Apply).clicked.connect(self.buttonBoxYesToAllClick)
+         self.buttonBox.button(QDialogButtonBox.Cancel).clicked.connect(self.buttonBoxCancelClick)
+         
+    def buttonBoxYesToAllClick(self):
+        #todo
+        if self.comboBox.currentText() == 'True':
+            value = True
+        else:
+            value = False
+        self.Done.emit(value)
+        self.close()
+        
+    def buttonBoxCancelClick(self):
+        self.close()
+    def updateDefaultValue(self,value):
+        self.doubleSpinBox.setValue(value)
+    def updateTitle(self,value):
+        self.label.setText(value)
+    def updateminValue(self,value):
+        self.doubleSpinBox.setMinimum(value)            

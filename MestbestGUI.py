@@ -14,8 +14,8 @@ import MeshbestClient
 from PyQt5 import QtWidgets,QtGui,QtCore
 # from PyQt5.QtCore import QRectF
 from PyQt5.QtCore import QLineF, QPointF, QRectF, Qt,QSizeF, QSize
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QApplication, QMainWindow,QGraphicsScene,QGraphicsItem,QGraphicsRectItem,QGraphicsTextItem
+from PyQt5.QtGui import QPixmap,QPainter,QPen
+from PyQt5.QtWidgets import QApplication, QMainWindow,QGraphicsScene,QGraphicsItem,QGraphicsRectItem,QGraphicsTextItem,QWidget
 from PyQt5.QtCore import QObject,QThread,pyqtSignal,pyqtSlot,QMutex,QMutexLocker,QEvent,QTimer,QPoint
 from PyQt5.QtGui import QPainter,QBrush,QPen,QColor,QFont,QCursor
 from pathlib import Path
@@ -139,6 +139,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         statectrl['AbletoCollect'] = False
         self.Par['StateCtl']=statectrl
 
+        self.timeformessageFromMeshbest=0
+
         home = str(Path.home())
         LOG_FILENAME = f'{home}/log/MebestGUI_pid{self.pid}.txt'
         logfolder = Path.home().joinpath("log")
@@ -161,12 +163,14 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.setBluice()
         time.sleep(1)
         self.setSampleimage()
+        self.setHutchimage()
         self.setupMeshbest(LOG_FILENAME)
         self.timer = QTimer()
         self.abort = False
         self.convertlist = variables.convertlist()
         self.initGuiEvent()
     def initGUI(self):
+        self.setWindowState(QtCore.Qt.WindowMaximized)#max windows once active
         # self.scene = graphicsScene(self)
         self.scene = QGraphicsScene()
         self.sampleQPixmap = self.scene.addPixmap(QtGui.QPixmap())
@@ -188,6 +192,16 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.SampleViedo.setToolTip('Active is needed')  
         # self.SampleViedo.setCursor(QCursor(QtCore.Qt.CrossCursor))
         
+        #htuch video
+        self.hutchvideo1scene = QGraphicsScene()
+        self.hutchvideoPixmap1 =self.hutchvideo1scene.addPixmap(QtGui.QPixmap())
+        self.hutchvideo1.setScene(self.hutchvideo1scene)
+        # self.hutchvideo1.ViewportAnchor(2)
+
+        self.hutchvideo2scene = QGraphicsScene()
+        self.hutchvideoPixmap2 =self.hutchvideo2scene.addPixmap(QtGui.QPixmap())
+        self.hutchvideo2.setScene(self.hutchvideo2scene)
+
         self.Rasterscene1 = QGraphicsScene()
         self.Rasterscene2 = QGraphicsScene()
         self.init_scence_item_in_view12()
@@ -260,6 +274,9 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.Overlap_Select_1.currentIndexChanged.connect(self.Overlap_Select_1_value_change)
         self.Overlap_Select_2.currentIndexChanged.connect(self.Overlap_Select_2_value_change)
         
+        self.RotationValue.valueChanged.connect(self.info_client_update_ui)
+        self.selectROI.currentIndexChanged.connect(self.info_client_update_ui)
+        self.select2scan.currentIndexChanged.connect(self.info_client_update_ui)
         
         self.List_number_1.valueChanged.connect(self.List_number_1_value_change)
         self.List_number_2.valueChanged.connect(self.List_number_2_value_change)
@@ -270,6 +287,9 @@ class MainUI(QMainWindow,Ui_MainWindow):
 
         self.DetailInfo1.clicked.connect(self.DetailInfo1_clicked)
         self.DetailInfo2.clicked.connect(self.DetailInfo2_clicked)
+
+        self.ClearAll_1.clicked.connect(self.ClearAll_1_clicked)
+        self.ClearAll_2.clicked.connect(self.ClearAll_2_clicked)
 
         self.collectAllpos_1.clicked.connect(self.collectAllpos_1_clicked)
         self.collectAllpos_2.clicked.connect(self.collectAllpos_2_clicked)
@@ -294,6 +314,12 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.CollectdataSeq('View2')
         pass
 
+    def ClearAll_1_clicked(self):
+        self.clearcollectpos('View1')
+        pass
+    def ClearAll_2_clicked(self):
+        self.clearcollectpos('View2')
+        pass
 
     def DetailInfo1_clicked(self):
         self.collectparwindows1.show()
@@ -318,12 +344,16 @@ class MainUI(QMainWindow,Ui_MainWindow):
         pass
 
     def aftercollectpardone1(self):
-        self.plotBestpos(View="View1")
-        self.send_RasterInfo_to_meshbest()
+        # self.plotBestpos(View="View1")
+        updatestr = f'plotBestpos_View1'
+        self.send_RasterInfo_to_meshbest(updatestr)
+        # self.send_RasterInfo_to_meshbest()
 
     def aftercollectpardone2(self):
-        self.plotBestpos(View="View2")
-        self.send_RasterInfo_to_meshbest()
+        # self.plotBestpos(View="View2")
+        updatestr = f'plotBestpos_View1'
+        self.send_RasterInfo_to_meshbest(updatestr)
+        # self.send_RasterInfo_to_meshbest()
     def setColor(self):
         self.Active.setStyleSheet('background-color: red')
         
@@ -478,9 +508,10 @@ class MainUI(QMainWindow,Ui_MainWindow):
             w = self.view2box.rect().width() * ratio
             h = self.view2box.rect().height() * ratio
             self.RasterPar['View2']['box'] = QRectF(x,y,w,h)
-            self.plotbox()
+            # self.plotbox()
             self.DrawinRasterView1=False
-            self.send_RasterInfo_to_meshbest()
+            self.send_RasterInfo_to_meshbest('plotbox')
+
         else:
              pass
              
@@ -527,7 +558,10 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 frame = self.convertXYtoFrame(findx,findy,view1=False)
                 # path=f'/data/blctl/20211027_07A/154945/RasterScanview1_0000_master.h5'
                 path=f'{self.RootPath_2.text()}/RasterScanview2_0000_master.h5'
-                self.adxv.showimage(path,frame)
+                try:
+                    self.adxv.showimage(path,frame)
+                except:
+                    pass
                 pass
             elif self.MovePos_2.isChecked():
                 position = QPoint(event.pos().x(),event.pos().y())
@@ -620,9 +654,9 @@ class MainUI(QMainWindow,Ui_MainWindow):
             w = self.view1box.rect().width() * ratio
             h = self.view1box.rect().height() * ratio
             self.RasterPar['View1']['box'] = QRectF(x,y,w,h)
-            self.plotbox()
+            # self.plotbox()
             self.DrawinRasterView2=False
-            self.send_RasterInfo_to_meshbest()
+            self.send_RasterInfo_to_meshbest('plotbox')
         else:
             pass
     def getfolderforraster(self):
@@ -730,7 +764,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         
         self.plotView12(True)
         # self.logger.warning(f'Full RasterPar = {self.RasterPar}')
-        self.send_RasterInfo_to_meshbest()
+        self.send_RasterInfo_to_meshbest('passvie')
         # self.timer.timeout.connect(self.waitMotorStopUpdate)
         # self.timer.start(100)
         # self.timeractive = True
@@ -1088,6 +1122,20 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.SampleImageServer = webimage.image(self.Par)
         self.SampleImageServer.updateimage.connect(self.updateimage)
         self.SampleImageServer.start()
+
+    def setHutchimage(self):
+        self.Hutchimage1_Server = webimage.image(self.Par)
+        self.Hutchimage1_Server.ip = '10.7.1.105'
+        self.Hutchimage1_Server.port = 80
+        self.Hutchimage1_Server.path = '/snap'
+        self.Hutchimage1_Server.updateimage.connect(self.updateHutchimage1)
+        self.Hutchimage1_Server.start()
+        self.Hutchimage2_Server = webimage.image(self.Par)
+        self.Hutchimage2_Server.ip = '10.7.1.106'
+        self.Hutchimage2_Server.port = 80
+        self.Hutchimage2_Server.path = '/snap'
+        self.Hutchimage2_Server.updateimage.connect(self.updateHutchimage2)
+        self.Hutchimage2_Server.start()
     
     def updateUI(self):
        for motor in  self.bluiceData['motor']:
@@ -1264,7 +1312,46 @@ class MainUI(QMainWindow,Ui_MainWindow):
         #     newimage = self.RasterView2QPixmap_ori.scaled(TargetImageSize,QtCore.Qt.KeepAspectRatio)
         #     self.RasterView2QPixmap.setPixmap(newimage)
         # pass
-    
+    def updateHutchimage1(self,image):
+        # oriImageSize=image.size()
+        TargetImageSize = self.hutchvideo1.viewport().size()
+        # old size?
+        
+        scale = image.size().width()/TargetImageSize.width()
+        # if self.hutchvideo1_scale.value() == 0:
+        #     newscale = 1
+        # else:
+        newscale = 1+ self.hutchvideo1_scale.value()/100*scale
+
+        newimage = image.scaled(TargetImageSize*newscale,QtCore.Qt.KeepAspectRatio)
+        if self.hutchvideoPixmap1.pixmap().size().width() != newimage.size().width():
+            self.hutchvideo1scene.setSceneRect(0,0,newimage.size().width(),newimage.size().height())
+        # newimage = image
+        
+        # newimage = image.scaled(TargetImageSize,QtCore.Qt.KeepAspectRatioByExpanding)
+        # newimage = image.scaled(TargetImageSize,QtCore.Qt.IgnoreAspectRatio)
+        
+        # self.sampleQPixmapSize = newimage.size()
+        self.hutchvideoPixmap1.setPixmap(newimage)
+        # print(self.hutchvideo1scene.sceneRect())
+
+    def updateHutchimage2(self,image):
+        # oriImageSize=image.size()
+        
+        TargetImageSize = self.hutchvideo2.viewport().size()
+        scale = image.size().width()/TargetImageSize.width()
+        newscale = 1+ self.hutchvideo2_scale.value()/100*scale
+        newimage = image.scaled(TargetImageSize*newscale,QtCore.Qt.KeepAspectRatio)
+        # newimage = image.scaled(TargetImageSize,QtCore.Qt.KeepAspectRatioByExpanding)
+        # newimage = image.scaled(TargetImageSize,QtCore.Qt.IgnoreAspectRatio)
+        if self.hutchvideoPixmap2.pixmap().size().width() != newimage.size().width():
+            self.hutchvideo2scene.setSceneRect(0,0,newimage.size().width(),newimage.size().height())
+        else:
+            pass
+            # print(self.hutchvideo2.geometry())
+        # self.sampleQPixmapSize = newimage.size()
+        self.hutchvideoPixmap2.setPixmap(newimage)
+
     def RasterView1Resize(self,event):
         # print('****************')
         # print(event.oldSize())
@@ -1307,8 +1394,11 @@ class MainUI(QMainWindow,Ui_MainWindow):
             if Newone:
                 pass
             else:
-                self.plotdozor(True,'score','View1')
-                self.plotdozor(True,'score','View2')
+                # self.plotdozor(True,'score','View1')
+                # self.plotdozor(True,'score','View2')
+                self.plot_overlap_image('View1')                     
+                self.plot_overlap_image('View2') 
+                pass
         pass
         # print((self.RasterView1QPixmap_ori.width()/self.RasterView1QPixmap.boundingRect().width()))
     def getViewRatio(self,view=1)    :
@@ -1414,6 +1504,31 @@ class MainUI(QMainWindow,Ui_MainWindow):
             if Newone:
                 self.clear_dozor_plot()
                 self.initScoreArray('View1')
+                #clear txt item
+                # try:
+                #     for a in self.RasterPar['View1']['Textplotarray'] :
+                #         for b in a :
+                #             self.RasterPar['View1'].removeItem(b)                       
+                # except:
+                #     pass
+                #creat empty txt item in view?
+                array = self.RasterPar['View1']['scoreArray']
+                txtformat = '1.0f'
+                myfont = QFont()
+                myfont.setBold(False)
+                myfont.setPointSize(10)
+                self.RasterPar['View1']['Textplotarray']=[[0]*numofYbox1 for i in range(numofXbox1)]
+                for x,item in enumerate(array):
+                    for y,item2 in enumerate(item):
+                        x0,y0,xc,yc=self.plottool_getpixel(x,y,ratio,True)
+                        temp = self.Rasterscene1.addText(f'{item2:{txtformat}}',myfont)
+                        temp.setPos(xc-temp.boundingRect().width()/2,yc-temp.boundingRect().height()/2)
+                        # temp.setDefaultTextColor(QColor(0, 0, 0, 0))                
+                        temp.setDefaultTextColor(QColor('white'))
+                        temp.setVisible(False)
+                        temp.setZValue(99)
+                        self.RasterPar['View1']['Textplotarray'][x][y] = temp
+
             # print(f'{beamsizeX=},{camscaleX=},{ratio=}')
             w = gridsizeX / camscaleX / ratio
             h = gridsizeY / camscaleY / ratio
@@ -1482,6 +1597,30 @@ class MainUI(QMainWindow,Ui_MainWindow):
             self.RasterPar['View2']['boxRectItemarray']=[[0]*numofYbox2 for i in range(numofXbox2)]
             if Newone:
                 self.initScoreArray('View2')
+                # try:
+                #     for a in self.RasterPar['View2']['Textplotarray'] :
+                #         for b in a :
+                #             self.RasterPar['View2'].removeItem(b)                       
+                # except:
+                #     pass
+                #creat empty txt item in view?
+                array = self.RasterPar['View2']['scoreArray']
+                txtformat = '1.0f'
+                myfont = QFont()
+                myfont.setBold(False)
+                myfont.setPointSize(10)
+                self.RasterPar['View2']['Textplotarray']=[[0]*numofYbox2 for i in range(numofXbox2)]
+                for x,item in enumerate(array):
+                    for y,item2 in enumerate(item):
+                        x0,y0,xc,yc=self.plottool_getpixel(x,y,ratio,True)
+                        temp = self.Rasterscene2.addText(f'{item2:{txtformat}}',myfont)
+                        temp.setPos(xc-temp.boundingRect().width()/2,yc-temp.boundingRect().height()/2)
+                        # temp.setDefaultTextColor(QColor(0, 0, 0, 0))
+                        temp.setDefaultTextColor(QColor('white'))
+                        temp.setVisible(False)
+                        temp.setZValue(99)
+                        self.RasterPar['View2']['Textplotarray'][x][y] = temp
+
             # self.RasterPar['View1']['boxitemsize'] = [[0]*numofXbox1]*numofYbox1
             
             w = gridsizeX / camscaleX / ratio
@@ -1559,7 +1698,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         
         self.StartRaster.setEnabled(False)
         self.Raster.setEnabled(False)
-        self.clear_dozor_plot()
+        # self.clear_dozor_plot()
         self.RasterRuning = True
         self.RasterRunstep=0
         self.Par['StateCtl']['RasterDone'] = False
@@ -1596,6 +1735,9 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 self.skipview = True
             else:
                 self.skipview = False
+            if self.select2scan.currentText() == "Disable":
+                self.skipview = True
+
             parlist = self.calRasterParDetector(view1=False)
             arm='armview'
             # self.skipview = True
@@ -1672,41 +1814,44 @@ class MainUI(QMainWindow,Ui_MainWindow):
             QApplication.processEvents()
             time.sleep(0.2)
             
+        if self.select2scan.currentText() == "Disable" and self.RasterRunstep == 2:
+            #skip view2 move
+            self.StartRasterclicked_done()
+        else:
+            attenuation = self.Attenuation.value()
+            samplex = par['sample_x']
+            sampley = par['sample_y']
+            samplez = par['sample_z']
+            angle = par['gonio_phi']
+            zoomx = par['zoom_scale_x']
+            zoomy = par['zoom_scale_y']
+            centerX = par['box'].center().x()
+            CenterY = par['box'].center().y()
+            samplez,sampley,samplex = self.calXYZbaseonCAMCenter(centerX,CenterY,angle,zoomx,zoomy,samplex,sampley,samplez)    
         
-        attenuation = self.Attenuation.value()
-        samplex = par['sample_x']
-        sampley = par['sample_y']
-        samplez = par['sample_z']
-        angle = par['gonio_phi']
-        zoomx = par['zoom_scale_x']
-        zoomy = par['zoom_scale_y']
-        centerX = par['box'].center().x()
-        CenterY = par['box'].center().y()
-        samplez,sampley,samplex = self.calXYZbaseonCAMCenter(centerX,CenterY,angle,zoomx,zoomy,samplex,sampley,samplez)    
-        
-        command = f'gtos_start_motor_move gonio_phi {angle}'
-        # print(command)
-        self.Qinfo["sendQ"].put(command)
-        command = f'gtos_start_motor_move sample_x {samplex}'
-        # print(command)
-        self.Qinfo["sendQ"].put(command)
-        command = f'gtos_start_motor_move sample_y {sampley}'
-        # print(command)
-        self.Qinfo["sendQ"].put(command)
-        command = f'gtos_start_motor_move sample_z {samplez}'
-        # print(command)
-        self.Qinfo["sendQ"].put(command)
-        command = f'gtos_start_motor_move attenuation {attenuation}'
-        # print(command)
-        self.Qinfo["sendQ"].put(command)
+            command = f'gtos_start_motor_move gonio_phi {angle}'
+            # print(command)
+            self.Qinfo["sendQ"].put(command)
+            command = f'gtos_start_motor_move sample_x {samplex}'
+            # print(command)
+            self.Qinfo["sendQ"].put(command)
+            command = f'gtos_start_motor_move sample_y {sampley}'
+            # print(command)
+            self.Qinfo["sendQ"].put(command)
+            command = f'gtos_start_motor_move sample_z {samplez}'
+            # print(command)
+            self.Qinfo["sendQ"].put(command)
+            command = f'gtos_start_motor_move attenuation {attenuation}'
+            # print(command)
+            self.Qinfo["sendQ"].put(command)
 
-        motorchecklist=['gonio_phi','sample_x','sample_y','sample_z','attenuation']
-        motorposchecklist=[angle,samplex,sampley,samplez,attenuation]
-        # motorchecklist=['sample_x','sample_y','sample_z']
-        # motorposchecklist=[samplex,sampley,samplez]
-        self.logger.info(f'wait {motorchecklist} goto {motorposchecklist}')
-        # self.timer.singleShot(100,partial(self.waitMotorInPosUpdate,motorchecklist,motorposchecklist,callback))
-        self.timer.singleShot(200, partial(self.waitMotorStopUpdate_v2,motorchecklist,callback))
+            motorchecklist=['gonio_phi','sample_x','sample_y','sample_z','attenuation']
+            motorposchecklist=[angle,samplex,sampley,samplez,attenuation]
+            # motorchecklist=['sample_x','sample_y','sample_z']
+            # motorposchecklist=[samplex,sampley,samplez]
+            self.logger.info(f'wait {motorchecklist} goto {motorposchecklist}')
+            # self.timer.singleShot(100,partial(self.waitMotorInPosUpdate,motorchecklist,motorposchecklist,callback))
+            self.timer.singleShot(200, partial(self.waitMotorStopUpdate_v2,motorchecklist,callback))
         
     def TriMD3Raster(self):
         
@@ -1887,7 +2032,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         exposureTime = self.ExpouseValue.value()
         oscillationStart = par['gonio_phi']
         
-        detosc =  float(0)
+        detosc =  float(self.RotationValue.value())
         TotalFrames = int(par['numofX']*par['numofY'] ) #1
         # distance = self.bluiceData['motor']['detector_z']['pos']
         distance = self.Distance.value()
@@ -1906,7 +2051,10 @@ class MainUI(QMainWindow,Ui_MainWindow):
         beamsize = self.selectBeamsize.currentText() # 50
         
         atten = self.bluiceData['motor']['attenuation']['pos'] #0
-        roi = 1
+        if self.selectROI.currentText() == "Enable":
+            roi = 1
+        else:
+            roi = 0
         numofX = par['numofX']
         numofY = par['numofY'] 
         #  sscanf(commandBuffer.textInBuffe
@@ -1922,6 +2070,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         table={100:80,90:70,80:60,70:50,60:40,50:30,40:20,30:10,20:5,10:1,5:1}
         return table[gridsize]
     def calRasterPar(self,view1=True):
+        #current not  use
         # startRasterScanEx
         # double omega_range,
         # double line_range, ver?
@@ -1961,11 +2110,12 @@ class MainUI(QMainWindow,Ui_MainWindow):
         #
         
         #todo
-        omega_range = 0
+        # self.RotationValue.value()
+        omega_range = self.RotationValue.value()*par['numofY'] 
         
         line_range = (par['numofY']* par['gridsizeY'])/1000*-1
         total_uturn_range = ((par['numofX']-1) * par['gridsizeX'])/1000
-        start_omega = par['gonio_phi']
+        start_omega = par['gonio_phi'] - omega_range/2
         # start_y = par['sample_z'] + (par['zoom_scale_y']*detY_pixel)/1000
         start_z = par['align_z']
         # start_cx = par['sample_y'] + (detX_pixel*par['zoom_scale_x'] * math.sin(par['gonio_phi']/180*math.pi))/1000 #1000 for um to mm 
@@ -2019,7 +2169,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
 
         
         #todo
-        ScanRange = 0
+        ScanRange = self.RotationValue.value()*par['numofY']
         #start ar edge of y box
         y_range = abs((par['numofY']* par['gridsizeY'])/1000)
         #start at center of x box
@@ -2140,7 +2290,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             # dozorresult['score']=dozorscore
             # dozorresult['res']=dozorres
             # dozorresult['frame']=frame
-            self.logger.debug(f'dozor result {json.dumps(command[1], indent=4)}')
+            # self.logger.debug(f'dozor result {json.dumps(command[1], indent=4)}')
             if command[1]['view'] == 1:
                 view1=True
                 view = 'View1'
@@ -2158,18 +2308,45 @@ class MainUI(QMainWindow,Ui_MainWindow):
             self.Par[view]['resArray'][x][y] = float(command[1]['res'])
             self.Par[view]['spotsArray'][x][y] = float(command[1]['spots'])
             
-            self.plotdozor_update(x,y,True,'score',view)
+            if (time.time()-self.timeformessageFromMeshbest)>0.1:
+                self.timeformessageFromMeshbest=time.time()
+                self.plotdozor_update(x,y,True,'score',view)
+                #try full update?not work....
+                # self.plotdozor(True,'score',view,1)
+                
+                #will not update all point
+            else:
+                # self.plotdozor_update(x,y,True,'score',view)
+                #not update gui
+                #may lack last one?
+                #put in temp update list?
+                pass
             # self.logger.warning(f'data:{self.RasterPar[view]["scoreArray"]}')
             
         elif command[0] == 'updatePar':
+            # try:
+            #     self.logger.warning(f"test: {command[1]['View1'].keys()}")
+            #     self.logger.warning(f"test: {command[1]['View1']['jpg'][:5]}")
+            # except:
+            #     pass
+            #server tell client to update, maybe come from active clinet or server itself
+            
+
+            #from here will updated all par
+
             # temp = copy.deepcopy(command[1])
             
             # temp['View1'].pop('jpg', None)
             # temp['View2'].pop('jpg', None)
             # self.logger.info(f'got updatePar :{temp}======')
-            if self.Par['StateCtl']['reciveserverupdate'] == False:
-                self.logger.warning('Do not update!I am doing my job')
-                return
+            # try:
+            #     if self.Par['StateCtl']['reciveserverupdate'] == False:
+            #         self.logger.warning('Do not update!I am doing my job')
+            #         return
+            # except Exception as e:
+            #     traceback.print_exc()
+            #     self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
+            #     self.logger.warning(f'Error:{e}')
             if self.bluiceData['active']:
                 self.logger.debug(f'I am active client,update Dtable only and XY')
                 #active only update Dtable
@@ -2188,6 +2365,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 view2_data['numofY'] = command[1]['View2']['numofY']
                 ui_par_data = self.Par['UI_par']
                 StateCtl_data = self.Par['StateCtl']
+                # view1_collectInfo = 
                 # self.logger.info(f'Test: view1_data Ztable {view1_data["Ztable"]}')
             else:
                 self.logger.info(f'I am inactive client,update all')
@@ -2241,8 +2419,40 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 self.collectAllpos_1.setEnabled(False)
                 self.collectAllpos_2.setEnabled(False)
                 pass
-            
+
+            # full update
+            # self.logger.warning(f'{self.Par=}')
             self.full_update(self.Par)
+            #replot
+            try:
+                #this area define special update
+                if len(command) >= 3:
+                    self.logger.warning(f'updatetype : {command[2]=}')
+                    if command[2] == 'passvie' and self.bluiceData['active']:
+                        #server only ask update passive one
+                        return
+                    elif command[2] == "plotBestpos_View1":
+                        self.plotBestpos('View1')
+                        return
+                    elif command[2] == "plotBestpos_View2":
+                        self.plotBestpos('View2')
+                        return
+                    elif command[2] == "plotbox":
+                        self.plotbox()
+                        return
+                    elif command[2] == "plotView12":
+                        self.plotView12()
+                        return
+                    else:
+                        self.plotView12(False)#false not clear sozor array  
+                else:
+                    self.plotView12(False)#false not clear sozor array
+            except Exception as e:
+                traceback.print_exc()
+                self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
+                self.logger.warning(f'Error : {e}')
+                self.plotView12(False)#false not clear sozor array  
+                pass
             
         elif command[0] == 'notify_ui_update':
             if command[1] == 'meshbetjob':
@@ -2404,15 +2614,20 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 hasitem2 = False
         except:
             hasitem2 = False
-
+        # self.logger.warning(f'{hasitem2=}')
         try:
             if hasitem2:
                 for x,item in enumerate(self.RasterPar[view]['Textplotarray']):
                         for y,item2 in enumerate(item):
+                            # self.logger.warning(f'{ClearText=}')
                             if ClearText:
-                                item2.setDefaultTextColor(QColor(0,0,0,0))
+                                # item2.setDefaultTextColor(QColor(0,0,0,0))
+                                item2.setVisible(False)
+                                pass
                             else:
-                                item2.setDefaultTextColor(QColor('white'))
+                                # item2.setDefaultTextColor(QColor('white'))
+                                item2.setVisible(True)
+                                pass
         except Exception as e:
             traceback.print_exc()
             self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
@@ -2460,33 +2675,54 @@ class MainUI(QMainWindow,Ui_MainWindow):
         #     pass
         numofXbox = par['numofX']
         numofYbox = par['numofY']
-        myfont = QFont()
-        myfont.setBold(False)
-        myfont.setPointSize(10)
-        ratio = self.getViewRatio(r)
-        x0,y0,xc,yc=self.plottool_getpixel(x,y,ratio,view1)
-        
-        # text = str(array[x][y])
-        temp = Rasterscene.addText(datatext)
-        # temp.setHtml(f'<div style="background:#ff8800;">{datatext}</p>')
-        # temp.setPen(QPen(QColor('yellow')))
-        temp.setFont(myfont)
         smallbox = par['boxRectItemarray'][0][0]
-        if temp.boundingRect().width()>smallbox.boundingRect().width():
-            resizeR = smallbox.boundingRect().width()/temp.boundingRect().width()
-            myfont.setPointSize(10*resizeR)
+        if smallbox.boundingRect().width() <= 1:
+            # box too small(small than xx)
+            #not plot text
+            print(f'{smallbox.boundingRect().width()=}')
+            pass
+        else:
+            # print('here')
+            # qpen = QPen()
+            # qpen.setColor(QColor('white'))
+            # qp=QPainter.setPen(qpen)
+            
+            myfont = QFont()
+            myfont.setBold(False)
+            myfont.setPointSize(10)
+            
+            ratio = self.getViewRatio(r)
+            x0,y0,xc,yc=self.plottool_getpixel(x,y,ratio,view1)
+            # temp = Rasterscene.addText(datatext)
+            temp = self.RasterPar[view]['Textplotarray'][x][y]
+            # temp.paint(qp)
+            temp.setPlainText(datatext)
             temp.setFont(myfont)
             
-        temp.setPos(xc-temp.boundingRect().width()/2,yc-temp.boundingRect().height()/2)
-        if text:
-            temp.setDefaultTextColor(QColor('white'))
-        else:
-            temp.setDefaultTextColor(QColor(0,0,0,0))
-        
-        pos = (xc-temp.boundingRect().width()/2,yc-temp.boundingRect().height()/2)
-        self.logger.debug(f'x={x},y={y},pos={pos}')                
-        self.RasterPar[view]['Textplotarray'][x][y] = temp
-        temp.setOpacity(Opacity)
+            if temp.boundingRect().width()>smallbox.boundingRect().width():
+                resizeR = smallbox.boundingRect().width()/temp.boundingRect().width()
+                myfont.setPointSize(int(10*resizeR))
+                temp.setFont(myfont)
+            
+            temp.setPos(xc-temp.boundingRect().width()/2,yc-temp.boundingRect().height()/2)
+            # if text:
+            #     # temp.setDefaultTextColor(QColor('white'))
+            #     # qpen = QPen()
+            #     # qpen.setColor(QColor('white'))
+            #     # qp=QPainter()
+            #     # qp.setPen(qpen)
+            #     # temp.paint(qp,QtWidgets.QStyleOptionGraphicsItem(),QWidget())
+            #     # temp.update(temp.boundingRect())
+            #     pass
+            # else:
+                # temp.setDefaultTextColor(QColor(0,0,0,0))
+            
+            pos = (xc-temp.boundingRect().width()/2,yc-temp.boundingRect().height()/2)
+            # self.logger.debug(f'x={x},y={y},pos={pos}')                
+            # self.RasterPar[view]['Textplotarray'][x][y] = temp
+            temp.setVisible(True)
+            temp.setOpacity(Opacity)
+            
         self.DrawColoronBox(array,view,Opacity)
             
             # self.RasterPar[view]['boxRectItemarray'][x][y].setBrush(QColor(Color))
@@ -2598,6 +2834,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 smallbox = par['boxRectItemarray'][0][0]
             except IndexError:
                 # smallbox = QGraphicsRectItem()
+                print('error here')
                 return
             
                 
@@ -2651,6 +2888,10 @@ class MainUI(QMainWindow,Ui_MainWindow):
         bigbox = par['box']
         startx = bigbox.x() / ratio
         starty = bigbox.y() / ratio
+        # print(f'{gridsizeX=},{camscaleX=},{ratio=}')
+        if not camscaleX:#no old par
+            camscaleX=1
+            camscaleY=1
         w = gridsizeX / camscaleX / ratio
         h = gridsizeY / camscaleY / ratio
         
@@ -2945,6 +3186,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             pass
         elif command[0] == "stoh_abort_all":
             self.abort = True
+            self.collectPause = True
             self.timer.singleShot(500,self.restAbort)
         else:
             self.logger.info(f'Bluice Emit : {command}')
@@ -3087,65 +3329,67 @@ class MainUI(QMainWindow,Ui_MainWindow):
     def full_update(self,par):
         # self.logger.warning(f'full_update')
         uiparlists, uiindexlists, uitextlists= variables.ui_par_lists()
+        # self.logger.warning(f"update UI_par current setting ={self.Par['UI_par']}")
         for item in uiparlists:
             newitem = getattr(self,item)
-            if self.Par['UI_par'][item]:
+            if self.Par['UI_par'][item] is not None:
                 newitem.setValue(self.Par['UI_par'][item])
+                self.logger.info(f"update uiparlists {item} with value {self.Par['UI_par'][item]}")
                 
         for item in uiindexlists:
             newitem = getattr(self,item)
-            if self.Par['UI_par'][item]:
+            
+            if self.Par['UI_par'][item] is not None:
                 newitem.setCurrentIndex(self.Par['UI_par'][item])
+                self.logger.info(f"update uiindexlists {item} with value {self.Par['UI_par'][item]}")
         for item in uitextlists:
             newitem = getattr(self,item)
-            if self.Par['UI_par'][item]:
+            if self.Par['UI_par'][item] is not None:
                 newitem.setText(self.Par['UI_par'][item])
+                self.logger.info(f"update uitextlists {item} with value {self.Par['UI_par'][item]}")
         #update par to RasterPar
+
         try :
             for view in ["View1","View2"]:
                 for name in self.convertlist:
                     self.RasterPar[view][name] =  self.Par[view][name]
-                # self.RasterPar[view]['gonio_phi'] = self.Par[view]['gonio_phi']
-                # self.RasterPar[view]['sample_x'] = self.Par[view]['sample_x']
-                # self.RasterPar[view]['sample_y']= self.Par[view]['sample_y']
-                # self.RasterPar[view]['sample_z']=self.Par[view]['sample_z']
-                # self.RasterPar[view]['align_z']=self.Par[view]['align_z']
-                # self.RasterPar[view]['zoom']=self.Par[view]['zoom']
-                # self.RasterPar[view]['zoom_scale_x']=self.Par[view]['zoom_scale_x']
-                # self.RasterPar[view]['zoom_scale_y']=self.Par[view]['zoom_scale_y']
-                # self.RasterPar[view]['numofX']=self.Par[view]['numofX']
-                # self.RasterPar[view]['numofY']=self.Par[view]['numofY']
-                # self.RasterPar[view]['gridsizeX']=self.Par[view]['gridsizeX']
-                # self.RasterPar[view]['gridsizeY']=self.Par[view]['gridsizeY']
-                # self.RasterPar[view]['scoreArray']=self.Par[view]['scoreArray']
-                # self.RasterPar[view]['resArray']=self.Par[view]['resArray']
-                # self.RasterPar[view]['spotsArray']=self.Par[view]['spotsArray']
                 x,y,w,h =self.Par[view]['box']
                 self.RasterPar[view]['box'] = QRectF(x,y,w,h)
         except Exception as e:
             traceback.print_exc()
-            self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
+            self.logger.warning(f'Catch Unexpected error:{sys.exc_info()[0]}')
             self.logger.warning(f'Error : {e}')
+            
             pass
         # self.logger.warning(f'{self.Par}')
-        if self.Par['View1']['jpg']:
+        
+        try :
             
-            jpg = self.Par['View1']['jpg']
-
-            tempq = QPixmap()
-            tempq.loadFromData(jpg,format='jpg')
+            if self.Par['View1']['jpg']:
+                jpg = self.Par['View1']['jpg']
+                tempq = QPixmap()
+                tempq.loadFromData(jpg,format='jpg')
+                self.RasterView1QPixmap_ori = tempq
+        except Exception as e:
+            traceback.print_exc()
+            self.logger.warning(f'Catch Unexpected error:{sys.exc_info()[0]}')
+            self.logger.warning(f'Error : {e}')
+            pass
         
-            self.RasterView1QPixmap_ori = tempq
+        try:
+            if self.Par['View2']['jpg']:
+                jpg = self.Par['View2']['jpg']
+                tempq = QPixmap()
+                tempq.loadFromData(jpg,format='jpg')
+                self.RasterView2QPixmap_ori = tempq
+        except Exception as e:
+            traceback.print_exc()
+            self.logger.warning(f'Catch Unexpected error:{sys.exc_info()[0]}')
+            self.logger.warning(f'Error : {e}')
+            pass
         
-        if self.Par['View2']['jpg']:
-            jpg = self.Par['View2']['jpg']
-            tempq = QPixmap()
-            tempq.loadFromData(jpg,format='jpg')
-            self.RasterView2QPixmap_ori = tempq
-
-        self.plotView12(False)   
-        self.plot_overlap_image('View1')                     
-        self.plot_overlap_image('View2') 
+        # self.plot_overlap_image('View1')                     
+        # self.plot_overlap_image('View2') 
         
     def Overlap_Select_1_value_change (self):
         if self.bluiceData['active']:
@@ -3159,13 +3403,13 @@ class MainUI(QMainWindow,Ui_MainWindow):
     def List_number_1_value_change (self):
         if self.bluiceData['active']:
             self.create_collectinfo('View1')
-            self.plot_overlap_image("View1")
+            # self.plot_overlap_image("View1")
             self.update_ui_par_to_meshbest()
             
     def List_number_2_value_change (self):
         if self.bluiceData['active']:
             self.create_collectinfo('View2')
-            self.plot_overlap_image("View2")
+            # self.plot_overlap_image("View2")
             self.update_ui_par_to_meshbest()
             
     def view1_opacity_value_change (self):
@@ -3184,7 +3428,10 @@ class MainUI(QMainWindow,Ui_MainWindow):
     def view2_opacity_mouseReleaseEvent(self,event):
          if self.bluiceData['active']:
             self.plot_overlap_image("View2")
-            self.update_ui_par_to_meshbest()        
+            self.update_ui_par_to_meshbest()       
+    def info_client_update_ui(self) :
+        if self.bluiceData['active']:
+            self.update_ui_par_to_meshbest()
     def debug_Debugclicked(self): 
         print('Par=================Start')
         # print(self.bluiceData['motor'])
@@ -3370,9 +3617,17 @@ class MainUI(QMainWindow,Ui_MainWindow):
 
         self.RasterPar['View1']['box'] = QRectF(x1,y1,w1,h1)
         self.RasterPar['View2']['box'] = QRectF(x2,y2,w2,h2)
-        self.plotView12()
-        self.send_RasterInfo_to_meshbest()
-    
+        # self.plotView12()
+        # self.send_RasterInfo_to_meshbest()
+        self.send_RasterInfo_to_meshbest('plotView12')
+    def clearcollectpos(self,view):
+        self.Par[view]['collectInfo']=[]
+        # self.send_RasterInfo_to_meshbest()
+        # self.plot_overlap_image(view)
+        updatestr = f'plotBestpos_{view}'
+        self.send_RasterInfo_to_meshbest(updatestr)#ask client plot plotBestpos_View1 or 2
+        pass
+
     def delcollectpos(self,position,view):
         mouseX=self.RasterView1.mapToScene(position).x()
         mouseY=self.RasterView1.mapToScene(position).y()
@@ -3456,12 +3711,16 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 currentCollectlist[i]['ViewY'] = viewY
                 self.Par[view]['collectInfo'] = currentCollectlist
                 self.logger.info(f'Set {i} new pos')
-                self.send_RasterInfo_to_meshbest()
-                self.plot_overlap_image(view)
+                # self.send_RasterInfo_to_meshbest(False)
+                # # self.plot_overlap_image(view)
+                # self.plotBestpos(view)
+                updatestr = f'plotBestpos_{view}'
+                self.send_RasterInfo_to_meshbest(updatestr)
         else:
             #cancel
             raster['movingplot'] = False
-            self.plot_overlap_image(view)
+            # self.plot_overlap_image(view)
+            self.plotBestpos(view)
 
 
     def addPosinCollectinfo(self,position,view='View1'):
@@ -3529,8 +3788,10 @@ class MainUI(QMainWindow,Ui_MainWindow):
             else:
                 self.collectAllpos_2.setEnabled(True)
         self.logger.info(f'Add pos:({viewX}),({viewY}) in {view}')
-        self.send_RasterInfo_to_meshbest()#also send par[view][collectInfo]
-        self.plot_overlap_image(view)
+        updatestr = f'plotBestpos_{view}'
+        self.send_RasterInfo_to_meshbest(updatestr)#ask client plot plotBestpos_View1 or 2
+        # self.plot_overlap_image(view)#too heavy
+        # self.plotBestpos(view)#will replot by after send message to server
         
     def create_collectinfo(self,view='View1'):
         
@@ -3608,7 +3869,10 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 self.collectAllpos_1.setEnabled(True)
             else:
                 self.collectAllpos_2.setEnabled(True)
-        self.send_RasterInfo_to_meshbest()#also send par[view][collectInfo]
+        # self.send_RasterInfo_to_meshbest(False)#also send par[view][collectInfo]
+        updatestr = f'plotBestpos_{view}'
+        self.send_RasterInfo_to_meshbest(updatestr)
+        # self.plotBestpos(view)
         
         #todo update table?
     def predict_flux(self,currentBeamsize,currentAtten,sampleFlux,Targetbeamsize,par):
@@ -3624,28 +3888,42 @@ class MainUI(QMainWindow,Ui_MainWindow):
         if FullFlux == 0:
             #no beam or something else
             #using default
-            if currentBeamsize >= 20:
+            if currentBeamsize >= 30:
                 FullFlux=par['Flux'][100]
             else:
-                FullFlux=par['Flux'][1]
+                FullFlux=par['Flux'][currentBeamsize]
             pass
         else:
             pass
+        
+        if currentBeamsize >= 30:
+            #current factor at max
+            factor1 = par['Flux'][100]
+        else:
+            factor1 = par['Flux'][currentBeamsize]
 
-        if currentBeamsize >= 20 and Targetbeamsize >= 20:
-            # same
-            flux = FullFlux
-        elif currentBeamsize < 20 and Targetbeamsize >= 20:
-            # FullFlux is smaller
-            flux = FullFlux / par['Fluxfactor']
-        elif currentBeamsize < 20 and Targetbeamsize < 20:
-            flux = FullFlux
-        elif currentBeamsize > 20 and Targetbeamsize < 20:
-            flux = FullFlux * par['Fluxfactor']
+        if Targetbeamsize >= 30:
+            #Targetbeamsize factor at max
+            factor2 = par['Flux'][100]
         else:
-            #shoud not got to here
-                flux =FullFlux
+            factor2 = par['Flux'][Targetbeamsize]
+        
+        flux = FullFlux / factor1 * factor2
+        # if currentBeamsize >= 30 and Targetbeamsize >= 30:
+        #     # same
+        #     flux = FullFlux
+        # elif currentBeamsize >= 30 and Targetbeamsize <= 20:
+        #     # FullFlux is smaller
+        #     flux = FullFlux / par['Fluxfactor']
+        # elif currentBeamsize < 20 and Targetbeamsize < 20:
+        #     flux = FullFlux
+        # elif currentBeamsize > 20 and Targetbeamsize < 20:
+        #     flux = FullFlux * par['Fluxfactor']
+        # else:
+        #     #shoud not got to here
+        #         flux =FullFlux
         return flux
+    
     def CalRasterDose(self):
         try:
             currentBeamsize =  float(self.bluiceData['string']['currentBeamsize']['txt'])
@@ -3662,14 +3940,18 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 exposure_time = self.ExpouseValue.value()
             setatten=self.Attenuation.value()
             wave = 12398.0/self.bluiceData['motor']['energy']['pos']
+            # if TargetBeamSize == 1:
+            #     beamXsize = 5#beam size in hor direct,fwhm=2
+            # elif TargetBeamSize == 5:
+            #     beamXsize = TargetBeamSize/2.35*6# 6 sigma
+            # elif TargetBeamSize == 10:
+            #     beamXsize = TargetBeamSize/2.35*6# 6 sigma
+            # else:
+            #     beamXsize = TargetBeamSize+10#10umbigger
             if TargetBeamSize == 1:
-                beamXsize = 5#beam size in hor direct,fwhm=2
-            elif TargetBeamSize == 5:
-                beamXsize = TargetBeamSize/2.35*6# 6 sigma
-            elif TargetBeamSize == 10:
-                beamXsize = TargetBeamSize/2.35*6# 6 sigma
+                beamXsize = 2#beam size in hor direct,fwhm=2
             else:
-                beamXsize = TargetBeamSize+10#10umbigger
+                beamXsize = TargetBeamSize
 
             beamYsize = float(self.selectGridsize.currentText())#gridsize in ver
             beamarea = beamXsize *beamYsize
@@ -3677,7 +3959,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
             # print(setatten,dose,flux,exposure_time,self.bluiceData['motor']['energy']['pos'])
             self.rasterdose.setValue(dose)
         except Exception as e:
-            self.logger.info(f'Error:{e}')
+            self.logger.info(f'Catch Error:{e}')
+            self.logger.info(traceback.format_exc())
 
     def CorrectBeamsize(self,beamsize):
         AvailableBeamSizes = self.Par['AvailableBeamSizes']
@@ -3738,10 +4021,14 @@ class MainUI(QMainWindow,Ui_MainWindow):
             newCircle,newText=self.CircleItem(x,y,width,height,Text=str(i+1),Ccolor="goldenrod",Tcolor="white")
             
             if posdata['CollectDone'] == True :
-                newCircle.setBrush(QColor('gray'))
-                newCircle.setPen(QPen(QColor('gray'),1))
+                newCircle.setBrush(QColor('green'))
+                newCircle.setPen(QPen(QColor('green'),1))
                 newCircle.setOpacity(0.7)
-            newCircle,newText=self.CircleItem(x,y,width,height,Text=str(i+1),Ccolor="goldenrod",Tcolor="white")
+            elif posdata['CollectDone'] == None :
+                newCircle.setBrush(QColor('red'))
+                newCircle.setPen(QPen(QColor('red'),1))
+                newCircle.setOpacity(0.7)
+            # newCircle,newText=self.CircleItem(x,y,width,height,Text=str(i+1),Ccolor="goldenrod",Tcolor="white")
             Viewscene.addItem(newCircle)
             Viewscene.addItem(newText)
             circleItems.append(newCircle)
@@ -3775,7 +4062,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         try:
             ans =[]
             for item in BestPositions:
-                if item[3] > 10:
+                # if item[3] > 10:
+                if item[3] > 0.1:
                     ans.append(item)
         except:
             ans = []
@@ -3814,7 +4102,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
 
     def closeEvent(self, event):
         self.quit("","")
-    def send_RasterInfo_to_meshbest(self)  :
+    def send_RasterInfo_to_meshbest(self,updatetype='all')  :
         par = variables.Raster_to_Meshbest_par(self.RasterPar, self.Par)
         # par =  copy.deepcopy(self.Par)
         # for view in ["View1","View2"]:
@@ -3829,7 +4117,13 @@ class MainUI(QMainWindow,Ui_MainWindow):
         
         # self.logger.warning(f'Send to meshbest server:{par}')
         self.Par.update(par)
-        self.meshbest.sendCommandToMeshbest(('Update_par',par))
+        #if updatetype == all
+        try:
+            self.logger.critical(f"Send par out : {par['View1'].keys()}")
+            self.logger.critical(f"Send par out : {par['View1']['jpg'][:5]}")
+        except:
+            pass
+        self.meshbest.sendCommandToMeshbest(('Update_par',par,updatetype))
         
     def update_ui_par_to_meshbest(self):
         uiparlists,uiindexlists,uitextlists= variables.ui_par_lists()
@@ -3971,6 +4265,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             callbackarg = (view,CurrentCollectinfo,CurrentCollectindex)
             self.logger.warning(f'wating {motorchecklist} ')
             self.timer.singleShot(200, partial(self.waitMotorStopUpdate_v2,motorchecklist,callback,callbackarg))           
+            
             return True
 
     def CollectAction_collect(self,view,CurrentCollectinfo,CurrentCollectindex):
@@ -3994,7 +4289,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         callbackarg = (view,CurrentCollectindex)
         self.timer.singleShot(100, partial(self.waitOperationDone
                                             ,oplist,callback,callbackarg))
-
+        self.makecollectred(CurrentCollectindex,view)
         
     def after_collectdone(self,view,CurrentCollectindex):
         #make something to do after collect one run
@@ -4005,10 +4300,11 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.Par[view]['collectInfo'].insert(CurrentCollectindex,temp)
         #update display
         #todo update GUI_collecrpar.py
-
-        
-        #go for next check pause?
-        self.CollectAction(view)
+        #update to meshbest server
+        self.update_All_par_to_meshbest()
+        #go for next check pause? or check abort?
+        if not self.collectPause:
+            self.CollectAction(view)
 
     def findNeedCollectInfo(self,view) :
         CollectInfo = self.Par[view]['collectInfo']

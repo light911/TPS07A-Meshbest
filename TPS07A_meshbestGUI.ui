@@ -552,8 +552,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1070</width>
-             <height>72</height>
+             <width>86</width>
+             <height>70</height>
             </rect>
            </property>
            <attribute name="label">
@@ -601,10 +601,23 @@
              <enum>QLayout::SetMinimumSize</enum>
             </property>
             <item>
-             <layout class="QGridLayout" name="gridLayout_10">
+             <layout class="QGridLayout" name="gridLayout_10" columnstretch="5,10,10,10,10,5,5,5,0">
               <property name="sizeConstraint">
                <enum>QLayout::SetDefaultConstraint</enum>
               </property>
+              <item row="0" column="5">
+               <widget class="QLabel" name="label_16">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Rotation</string>
+                </property>
+               </widget>
+              </item>
               <item row="0" column="0">
                <widget class="QLabel" name="label_14">
                 <property name="sizePolicy">
@@ -673,7 +686,7 @@
                 </property>
                </widget>
               </item>
-              <item row="1" column="5">
+              <item row="1" column="8">
                <widget class="QDoubleSpinBox" name="rasterdose">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -704,7 +717,7 @@
                 </property>
                </widget>
               </item>
-              <item row="0" column="5">
+              <item row="0" column="8">
                <widget class="QLabel" name="label_15">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -833,19 +846,6 @@
                 </property>
                </widget>
               </item>
-              <item row="0" column="4">
-               <widget class="QLabel" name="label_16">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>Beamsize</string>
-                </property>
-               </widget>
-              </item>
               <item row="1" column="4">
                <widget class="QComboBox" name="selectBeamsize">
                 <property name="sizePolicy">
@@ -921,6 +921,125 @@
                 <item>
                  <property name="text">
                   <string>1</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="1" column="6">
+               <widget class="QComboBox" name="selectROI">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="currentText">
+                 <string>Enable</string>
+                </property>
+                <property name="currentIndex">
+                 <number>0</number>
+                </property>
+                <property name="maxVisibleItems">
+                 <number>11</number>
+                </property>
+                <item>
+                 <property name="text">
+                  <string>Enable</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Disable</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="0" column="4">
+               <widget class="QLabel" name="label_17">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Beamsize</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="5">
+               <widget class="QDoubleSpinBox" name="RotationValue">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="decimals">
+                 <number>3</number>
+                </property>
+                <property name="maximum">
+                 <double>10.000000000000000</double>
+                </property>
+                <property name="singleStep">
+                 <double>0.100000000000000</double>
+                </property>
+                <property name="value">
+                 <double>0.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="6">
+               <widget class="QLabel" name="label_18">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>ROI</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="7">
+               <widget class="QLabel" name="label_26">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Scan 2 view</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="7">
+               <widget class="QComboBox" name="select2scan">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="currentText">
+                 <string>Enable</string>
+                </property>
+                <property name="currentIndex">
+                 <number>0</number>
+                </property>
+                <property name="maxVisibleItems">
+                 <number>11</number>
+                </property>
+                <item>
+                 <property name="text">
+                  <string>Enable</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Disable</string>
                  </property>
                 </item>
                </widget>
@@ -1305,7 +1424,7 @@
         <item row="2" column="0">
          <widget class="QLabel" name="label_3">
           <property name="text">
-           <string>Diffraction</string>
+           <string>Hutch video</string>
           </property>
          </widget>
         </item>
@@ -1326,14 +1445,69 @@
          </spacer>
         </item>
         <item row="3" column="0">
-         <layout class="QVBoxLayout" name="verticalLayout_6" stretch="100,0">
+         <layout class="QVBoxLayout" name="verticalLayout_6" stretch="100,0,100,0,0">
           <item>
-           <widget class="QGraphicsView" name="graphicsView_5"/>
+           <widget class="QGraphicsView" name="hutchvideo1">
+            <property name="sizeAdjustPolicy">
+             <enum>QAbstractScrollArea::AdjustIgnored</enum>
+            </property>
+            <property name="dragMode">
+             <enum>QGraphicsView::ScrollHandDrag</enum>
+            </property>
+            <property name="transformationAnchor">
+             <enum>QGraphicsView::NoAnchor</enum>
+            </property>
+            <property name="resizeAnchor">
+             <enum>QGraphicsView::NoAnchor</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="hutchvideo1_scale">
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGraphicsView" name="hutchvideo2">
+            <property name="dragMode">
+             <enum>QGraphicsView::ScrollHandDrag</enum>
+            </property>
+            <property name="transformationAnchor">
+             <enum>QGraphicsView::NoAnchor</enum>
+            </property>
+            <property name="resizeAnchor">
+             <enum>QGraphicsView::NoAnchor</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="hutchvideo2_scale">
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
           </item>
           <item>
            <layout class="QGridLayout" name="gridLayout_13">
             <item row="0" column="0">
              <widget class="QTabWidget" name="tabWidget_2">
+              <property name="currentIndex">
+               <number>1</number>
+              </property>
               <widget class="QWidget" name="tab_5">
                <attribute name="title">
                 <string>Tab 1</string>

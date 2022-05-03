@@ -51,7 +51,10 @@ def getloger2(logname='Main',LOG_FILENAME=None,level = 'INFO'):
     if LOG_FILENAME == None:
         home = str(Path.home())
         LOG_FILENAME = f'{home}/log/log.txt'
-
+    #creat folder if not exit
+    log_floder = Path(LOG_FILENAME).parent
+    if not log_floder.exists():
+        log_floder.mkdir()
     
     logger=logging.getLogger(logname)
     fotmatterstr = '%(asctime)s - %(name)s - %(levelname)s -%(funcName)s - %(message)s'

@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'CollectPar.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -39,7 +37,7 @@ class Ui_Dialog(object):
         self.verticalLayout.addWidget(self.Strategy)
         self.InfoTable = QtWidgets.QTableWidget(self.layoutWidget)
         self.InfoTable.setShowGrid(True)
-        self.InfoTable.setColumnCount(11)
+        self.InfoTable.setColumnCount(12)
         self.InfoTable.setObjectName("InfoTable")
         self.InfoTable.setRowCount(3)
         item = QtWidgets.QTableWidgetItem()
@@ -70,6 +68,8 @@ class Ui_Dialog(object):
         self.InfoTable.setHorizontalHeaderItem(9, item)
         item = QtWidgets.QTableWidgetItem()
         self.InfoTable.setHorizontalHeaderItem(10, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.InfoTable.setHorizontalHeaderItem(11, item)
         self.InfoTable.horizontalHeader().setVisible(True)
         self.InfoTable.horizontalHeader().setCascadingSectionResizes(True)
         self.InfoTable.horizontalHeader().setDefaultSectionSize(100)
@@ -124,5 +124,8 @@ class Ui_Dialog(object):
         item = self.InfoTable.horizontalHeaderItem(9)
         item.setText(_translate("Dialog", "Distance"))
         item = self.InfoTable.horizontalHeaderItem(10)
+        item.setText(_translate("Dialog", "CollectDone"))
+        item = self.InfoTable.horizontalHeaderItem(11)
         item.setText(_translate("Dialog", "Energy"))
         self.ApplytoAll.setText(_translate("Dialog", "Apply a value to selected item"))
+

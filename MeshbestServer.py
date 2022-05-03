@@ -68,6 +68,7 @@ class MestbestSever():
         self.numofdataView1 = 0
         self.numofdataView2 = 0
         self.meshbesturl ='http://10.7.1.107:8082/job'
+        # self.meshbesturl ='http://10.7.1.108:8082/job'
         #
         self.convertlist = variables.convertlist()
         pass
@@ -231,27 +232,42 @@ class MestbestSever():
                 self.removeIDinClientsInfo(cid)
         
         self.logger.debug(f'send message to {len(self.clientsQ)} client : ')
+        recordmessage =True
         for Q,cid in zip(self.clientsQ,self.clientidlist):
             # pass
             try:
                 # message = message + ()
                 Q.put(message)
                 if message[0] == 'updatePar':
-                    tempdict = message[1]
-                    del tempdict['View1']['jpg']
-                    del tempdict['View2']['jpg']
-                    self.logger.debug(f'send message {tempdict}to ID {cid} client')
+                    self.logger.debug(f'send message to ID {cid} client')
+                    if recordmessage:
+                        keylist = message[1].keys()
+                        for item in keylist:
+                            if item == 'View1' or item == 'View2':
+                                keylist2 = message[1][item].keys()
+                                for item2 in keylist2:
+                                    if item2 == 'jpg':
+                                        self.logger.debug(f"Par {item}-{item2}= {message[1][item][item2][:5]}")
+                                    else:
+                                        self.logger.debug(f"Par {item}-{item2}= {message[1][item][item2]}")        
+                            else:
+                                self.logger.debug(f"Par {item}= {message[1][item]}")
+                    recordmessage = False
+
                 else:
-                    self.logger.warning(f'send message {message }to ID {cid} client')
+                    self.logger.warning(f'send message {message}to ID {cid} client')
             except EOFError:
                 removelist.append(cid)
                 self.logger.warning(f'sending Queue has EOFError,id = {cid}')
             except BrokenPipeError:
                 removelist.append(cid)
                 self.logger.warning(f'sending Queue has BrokenPipeErrorid = {cid}')
-            except:
+            except Exception as e:
                 removelist.append(cid)
+                traceback.print_exc()
                 self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
+                self.logger.warning(f'Error : {e}')
+                self.logger.warning(f'add remove client ID to list: {cid}')
         if removelist:
             self.logger.warning(f'remove client {removelist} ')
             for cid in removelist:
@@ -308,25 +324,28 @@ class MestbestSever():
          View1_data['Dtable'] = Dtable_1
          View1_data['Ztable'] = Ztable_1
          
+
          View2_data['spotsArray'] = spotsArray_2
          View2_data['resArray'] = resArray_2
          View2_data['scoreArray'] = scoreArray_2
          View2_data['Dtable'] = Dtable_2
          View2_data['Ztable'] = Ztable_2
          
+         
          #update rest thing
          self.Par['View1'] = View1_data
          self.Par['View2'] = View2_data
          self.Par['UI_par'] = rasterpar['UI_par']
          self.Par['StateCtl'] = rasterpar['StateCtl']
-         temp = copy.deepcopy(self.Par)
-         del temp['View1']['jpg']
-         del temp['View2']['jpg']
-         self.logger.debug(f'after update par from Client: {temp}')
-         return 
+        #  temp = copy.deepcopy(self.Par)
+        #  del temp['View1']['jpg']
+        #  del temp['View2']['jpg']
+        #  self.logger.debug(f'after update par from Client: {temp}')
+         return self.Par
     
     def Monitor(self,ServerQ,ZMQQ,meshbestjobQ):       
         self.logger.info(f'Start Monitor')
+        #ServerQ get message from client
         while True:
             #check command
             try:
@@ -364,13 +383,17 @@ class MestbestSever():
                         self.initScoreArray(numofXbox,numofYbox,view)
                         ZMQQ.put(command)
                      elif command[0] == "Update_par":
-                        temp = copy.deepcopy(command[1])
-                        del temp['View1']['jpg']
-                        del temp['View2']['jpg']
-                        self.logger.info(f'Update_par form client:{temp}')
+                        # temp = copy.deepcopy(command[1])
+                        # del temp['View1']['jpg']
+                        # del temp['View2']['jpg']
+                        # self.logger.debug(f'Update_par form client:{temp}')
+                        self.logger.debug(f'Update_par form client:{command[1]}')
                         self.RasterInfo_to_meshbest(command[1])
                         par = copy.deepcopy(self.Par)
-                        self.sendtoAllClient(('updatePar',par))
+                        if len(command)==3:
+                            self.sendtoAllClient(('updatePar',par,command[2]))
+                        else:
+                            self.sendtoAllClient(('updatePar',par))
                      elif command[0] == "Clear_scoreArray":
                         self.Par[view]['scoreArray'] = numpy.zeros((numofXbox, numofYbox))
                         self.Par[view]['scoreArray'][:] = numpy.nan
@@ -381,7 +404,6 @@ class MestbestSever():
                         par = copy.deepcopy(self.Par)
                         self.sendtoAllClient(('updatePar',par))
                      elif command[0] == "Direct_Update_par":
-                         
                         self.logger.info(f'Direct_Update_par')
                         par = copy.deepcopy(self.Par)
                         self.sendtoAllClient(('updatePar',par))
@@ -414,7 +436,7 @@ class MestbestSever():
                         temp['resArray'][x][y] = float(command[1]['res'])
                         temp['spotsArray'][x][y] = float(command[1]['spots'])
                         self.Par[view] = temp
-                        self.logger.debug(f'after update index ={frame} x={x} y ={y}, pararray = {self.Par[view]["scoreArray"]}')
+                        # self.logger.debug(f'after update index ={frame} x={x} y ={y}, pararray = {self.Par[view]["scoreArray"]}')
                      elif command[0] == "EndOfSeries":
                         self.logger.info(f'EndOfSeries')
                         # All job done
@@ -425,10 +447,14 @@ class MestbestSever():
             except IOError:
                 break
             except Exception as e:
+                traceback.print_exc()
+                self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
                 self.logger.warning(f'Error : {e}')
+                self.logger.warning(f'Error with command: {command}')
     def ZMQ_monitor(self,ZMQQ,ServerQ,meshbestjobQ,job_queue):
          os.nice(-19)#high priority
-         fw = stream2cbf.Stream2Cbf("temp", "/home/meshbesttemp")
+        #  fw = stream2cbf.Stream2Cbf("temp", "/home/meshbesttemp")
+         fw = stream2cbf.Stream2Cbf("temp", "/mnt/data_buffer/")
          fw.register_observer(self)
          # folder = fw.path
          self.logger.info(f'CBF file will write to  {fw.path} with filename {fw.basename}')
@@ -562,6 +588,7 @@ class MestbestSever():
                              sid = 102#view2
                         
                          # response = requests.post(self.meshbesturl , json=alldata) 
+                         check_data_starttime=time.time()
                          meshbestjobQ.put(('check_data',sid,header))
                          pass
                      elif command[0] == "check_data":
@@ -579,31 +606,49 @@ class MestbestSever():
                          
                          exceptNum = int(header['appendix']['raster_X']) * int(header['appendix']['raster_Y'])
                          if currentnum == exceptNum:
-                             self.logger.info(f'job done! we got {currentnum} data')
+                             self.logger.info(f'job done! we got {currentnum} data,time pass after collect done = {time.time()-check_data_starttime}')
                              
                              meshbestjobQ.put(('startjob',sid,header))
                              
                          else:
                              # time.sleep(0.02)
-                             meshbestjobQ.put(('check_data',sid,header))
+                             
                              if command[1] == 101:
-                                 if self.numofdataView1 != currentnum:
-                                     a=[]
-                                     for i in self.meshPositionsdata_1:
-                                         a.append(i['index'])
-                                     b = [x for x in range(exceptNum)]
-                                     miss = set(a) ^ set(b)
-                                     self.logger.info(f'SID ={sid} we got {currentnum} data,except {exceptNum}, we miss {miss}')
-                                 self.numofdataView1 = currentnum
+                                if self.numofdataView1 != currentnum:
+                                    a=[]
+                                    for i in self.meshPositionsdata_1:
+                                        a.append(i['index'])
+                                    b = [x for x in range(exceptNum)]
+                                    miss = set(a) ^ set(b)
+                                    self.logger.info(f'SID ={sid} we got {currentnum} data,except {exceptNum}, we miss {miss}')
+                                    latsnewdatatime1 = time.time()
+                                    meshbestjobQ.put(('check_data',sid,header))
+                                else:
+                                    #nothing change but still lack data
+                                    if (time.time()-latsnewdatatime1) > 10:
+                                        self.logger.info(f'Timeout for viwe1 check data,10 sec no new data coming')
+                                    else:
+                                        meshbestjobQ.put(('check_data',sid,header))
+                            
+                                self.numofdataView1 = currentnum
                              else:
-                                 if self.numofdataView2 != currentnum:
-                                     a=[]
-                                     for i in self.meshPositionsdata_2:
-                                         a.append(i['index'])
-                                     b = [x for x in range(exceptNum)]
-                                     miss = set(a) ^ set(b)
-                                     self.logger.info(f'SID ={sid} we got {currentnum} data,except {exceptNum}, we miss {miss}')
-                                 self.numofdataView2 = currentnum
+                                if self.numofdataView2 != currentnum:
+                                    a=[]
+                                    for i in self.meshPositionsdata_2:
+                                        a.append(i['index'])
+                                    b = [x for x in range(exceptNum)]
+                                    miss = set(a) ^ set(b)
+                                    self.logger.info(f'SID ={sid} we got {currentnum} data,except {exceptNum}, we miss {miss}')
+                                    latsnewdatatime2 = time.time()
+                                    meshbestjobQ.put(('check_data',sid,header))
+                                else:
+                                    #nothing change but still lack data
+                                    if (time.time()-latsnewdatatime2) > 10:
+                                        self.logger.info(f'Timeout for viwe2 check data,10 sec no new data coming')
+                                    else:
+                                        meshbestjobQ.put(('check_data',sid,header))
+                                
+                                self.numofdataView2 = currentnum
                      elif command[0] == "startjob":
                          self.logger.info(f'startjob {sid}')
                          sid = command[1]
@@ -709,7 +754,7 @@ class MestbestSever():
                             
                             self.logger.debug(f'sid {sid} state =  {my_sid_ans["State"]},check again,time pass= {timepass}')
                             time.sleep(0.1)
-                            if timepass > 120:
+                            if timepass > 300:
                                 self.logger.warning(f'sid {sid} state =  {my_sid_ans["State"]},Timeout!,time pass= {timepass}')
                                 pass
                             else:
@@ -927,8 +972,11 @@ class MestbestSever():
         temp['spotsArray'][:] = numpy.nan
         self.Par[view] = temp
         self.logger.debug(f' init array {numofXbox},{numofYbox}')
-        del temp['View1']['jpg']
-        del temp['View2']['jpg']
+        try:
+            del temp['View1']['jpg']
+            del temp['View2']['jpg']
+        except:
+            pass
         self.logger.debug(f'After init should :{view}={temp}')
     def recursive_chown(self,path,uid,gid):
         for dirpath, dirnames, filenames in os.walk(path):

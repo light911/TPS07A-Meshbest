@@ -25,8 +25,9 @@ class image(QThread):
         self._stop = False
         self.ip = '10.7.1.4'
         self.port = 6001
-        self.path = '/jpg.cgi?stream=MD3Image'
-        self.highrespath = '/jpg.cgi?stream=MD3Image'
+        # self.path = '/jpg.cgi?stream=MD3Image'
+        self.path = '/image1.cgi?stream=MD3Image'
+        self.highrespath = '/image1.cgi?stream=MD3Image'
         self.updateinterval = 0.1 #sec
         
     def run(self):

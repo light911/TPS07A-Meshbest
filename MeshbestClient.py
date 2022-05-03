@@ -32,7 +32,7 @@ class MestbestClient(QThread):
         par['Debuglevel'] = "INFO"
         self.Par.update(par)
         self.logger = logsetup.getloger2('MestbestClient',LOG_FILENAME,level = self.Par['Debuglevel'])
-        self.ServerQIP = '10.7.1.107'
+        self.ServerQIP = '10.7.1.108'
         self.ServerQPort = 6534
         
         self.ClientQ = Queue()
@@ -82,6 +82,8 @@ class MestbestClient(QThread):
         
     def Monitor(self,ClientQ,MainQ):       
         self.logger.info(f'Start Monitor:{ClientQ}')
+        #ClientQ message from server
+        #MainQ is this client send message to GUI(by EMIT)
         while True:
             #check command
             try:
@@ -92,10 +94,11 @@ class MestbestClient(QThread):
                     if command == "exit" :
                         # sys.exit()
                         break
-                elif isinstance(command,tuple) :                    
+                elif isinstance(command,tuple) :
+                    #get command from GUI and send it to server?                    
                     MainQ.put(command)
                     self.logger.debug(f'Get Q: {command[0]}')
-                    if command[0] == "YourID" :
+                    if command[0] == "YourID" and self.ClientID == -1:
                         self.ClientID = command[1]
                         self.logger.info(f'Assigned ID : {command[1]}')
                         pass

@@ -45,7 +45,7 @@ class Stream2Cbf(FileWriter):
         self.logger = logsetup.getloger2('FileWriter',LOG_FILENAME='./log/FileWriter.txt',level = self.Par['Debuglevel'])
         self._observers=[]
         self.timer=0
-        self.dozor_par={"spot_level":8,"spot_size":3}
+        self.dozor_par={"spot_level":5.5,"spot_size":3}
         # self.process = Pool(100)
         # self.header = {}
         # self.temp=True
@@ -313,7 +313,7 @@ class Stream2Cbf(FileWriter):
         start_time = time.time()   
         txt=""
         txt = txt + "nx " + str(metadata['x_pixels_in_detector']) +"\n"
-        txt = txt + "ny " + str(metadata['x_pixels_in_detector']) +"\n"
+        txt = txt + "ny " + str(metadata['y_pixels_in_detector']) +"\n"
         txt = txt + "orgx " + str(metadata['beam_center_x']) + "\n"
         txt = txt + "orgy " + str(metadata['beam_center_y']) + "\n"
         txt = txt + "detector_distance " + str(metadata['detector_distance']*1000) + "\n"
@@ -325,7 +325,7 @@ class Stream2Cbf(FileWriter):
         txt = txt + "number_images " + "1" + "\n"
         txt = txt + "name_template_image " + str(path) + "\n"
         txt = txt + "pixel " + str(metadata['x_pixel_size']*1000) + "\n"
-        txt = txt + "pixel_min 0\n"
+        txt = txt + "pixel_min 1\n"
         txt = txt + "pixel_max " + str(metadata['countrate_correction_count_cutoff']) +"\n"
         txt = txt + f"{spot_level}\n"#higher less spot default 5.5
         txt = txt + "fraction_polarization 0.99\n"

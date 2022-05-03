@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'DoseApply.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -79,3 +77,4 @@ class Ui_Dialog(object):
         self.ConsiderOrder.setItemText(1, _translate("Dialog", "Atten-Time"))
         self.ConsiderOrder.setItemText(2, _translate("Dialog", "TotalRange"))
         self.doubleSpinBox.setSuffix(_translate("Dialog", "Mgy"))
+
