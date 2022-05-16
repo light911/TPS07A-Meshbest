@@ -5,8 +5,8 @@ Created on Fri Jul  9 10:37:32 2021
 
 @author: blctl
 """
-import argparse,sys,os,signal,math,time,traceback,getpass
-from re import X
+import argparse,sys,os,signal,math,time,traceback,getpass,re
+
 from functools import partial
 import beamlineinfo
 import logsetup
@@ -14,8 +14,8 @@ import MeshbestClient
 from PyQt5 import QtWidgets,QtGui,QtCore
 # from PyQt5.QtCore import QRectF
 from PyQt5.QtCore import QLineF, QPointF, QRectF, Qt,QSizeF, QSize
-from PyQt5.QtGui import QPixmap,QPainter,QPen
-from PyQt5.QtWidgets import QApplication, QMainWindow,QGraphicsScene,QGraphicsItem,QGraphicsRectItem,QGraphicsTextItem,QWidget
+from PyQt5.QtGui import QPixmap,QPainter,QPen,QImage
+from PyQt5.QtWidgets import QApplication, QMainWindow,QGraphicsScene,QGraphicsItem,QGraphicsRectItem,QGraphicsTextItem,QWidget,QMessageBox
 from PyQt5.QtCore import QObject,QThread,pyqtSignal,pyqtSlot,QMutex,QMutexLocker,QEvent,QTimer,QPoint
 from PyQt5.QtGui import QPainter,QBrush,QPen,QColor,QFont,QCursor
 from pathlib import Path
@@ -155,6 +155,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.collectparwindows1.Done.connect(self.aftercollectpardone1)
         self.collectparwindows2.Done.connect(self.aftercollectpardone2)
 
+        # self.updatelistfor1 = True
+        # self.updatelistfor2 = True
         self.Drawing=False
         self.logger.info(f'GUI PID = {self.pid}')
         self.adxv=adxv(self.Par)
@@ -169,6 +171,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.abort = False
         self.convertlist = variables.convertlist()
         self.initGuiEvent()
+        # self.checkRootFolder()
     def initGUI(self):
         self.setWindowState(QtCore.Qt.WindowMaximized)#max windows once active
         # self.scene = graphicsScene(self)
@@ -207,12 +210,13 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.init_scence_item_in_view12()
         self.RasterStarted = False
         #set root path
-        if self.beamline == "TPS07A":
-            beamline = "07A/"
-        else:
-            beamline = "07A/"
-        path = f"/data/{self.user}/"+datetime.now().strftime("%Y%m%d_")+beamline
-        self.RootPath.setText(path)
+        if self.RootPath == "":
+            if self.beamline == "TPS07A":
+                beamline = "07A/"
+            else:
+                beamline = "07A/"
+            path = f"/data/{self.user}/"+datetime.now().strftime("%Y%m%d_")+beamline
+            self.RootPath.setText(path)
         # self.RootPathforRaster = self.RootPath.text()
         # print(self.RootPath.text())
         self.collectAllpos_1.setEnabled(False)
@@ -298,7 +302,66 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.EditPos_1.clicked.connect(self.make_MovePos_1_uncheck)
         self.MovePos_2.clicked.connect(self.make_EditPos_2_uncheck)
         self.EditPos_2.clicked.connect(self.make_MovePos_2_uncheck)
+
+        self.updatelist_1.currentIndexChanged.connect(self.updatelist_1_update)
+        self.updatelist_2.currentIndexChanged.connect(self.updatelist_2_update)
+
+        self.RootPath.textChanged.connect(self.checkRootFolder)
+        self.GetDefalutFolder.clicked.connect(self.GetDefalutFolder_clicked)
+        self.Abort.clicked.connect(self.Abort_clicked)
+
+        self.Focus_neg_l.clicked.connect(self.Focus_neg_l_clicked)
+        self.Focus_neg_s.clicked.connect(self.Focus_neg_s_clicked)
+        self.Focus_pos_s.clicked.connect(self.Focus_pos_s_clicked)
+        self.Focus_pos_l.clicked.connect(self.Focus_pos_l_clicked)
+        
+        
+        
         pass        
+    def checkRootFolder(self,updateUI=True):
+        if self.bluiceData['active']:
+            currenttxt = self.RootPath.text()
+            if currenttxt == None:
+                self.GetDefalutFolder_clicked("Default path is not set!\n")
+                return
+            ans = re.match("/data/(.*)/(........)_07A/(.*)",currenttxt)
+            print(ans)
+            if ans:
+                if ans[1] != str(self.user):
+                    self.logger.critical(f"The user in default path is not same with current user name!")
+                    self.GetDefalutFolder_clicked("The user in default path is not same with current user name!\n")
+                    return
+                else:
+                    pass
+            else:
+                self.logger.critical(f"The format of default path is not accepted!")
+                self.GetDefalutFolder_clicked("The format of default path is not accepted!\n")
+                return
+            if updateUI:
+                self.update_ui_par_to_meshbest()
+            pass
+    def GetDefalutFolder_clicked(self,addtext = None):
+        # QtGui.QMessageBox.critical
+        
+        self.GetDefalutFolder.setChecked(False)
+        #set root path
+        if self.beamline == "TPS07A":
+            beamline = "07A/"
+        else:
+            beamline = "07A/"
+        path = f"/data/{self.user}/"+datetime.now().strftime("%Y%m%d_")+beamline
+        txt = f"Program want to change default folder!\nFrom\t{self.RootPath.text()}\t\nTo\t{path}\t\n"
+        if addtext:
+            txt =  f"{addtext}\n"+ txt
+        mesbox = QMessageBox.question(self,"Change Data Folder",txt,QMessageBox.No,QMessageBox.Yes,)
+        # print(mesbox)
+        if mesbox == QMessageBox.No:
+            pass
+        elif mesbox ==QMessageBox.Yes:
+            self.RootPath.setText(path)
+        self.update_ui_par_to_meshbest()
+
+        
     def make_EditPos_1_uncheck(self):
             self.EditPos_1.setChecked(False)
     def make_MovePos_1_uncheck(self):
@@ -307,6 +370,27 @@ class MainUI(QMainWindow,Ui_MainWindow):
             self.EditPos_2.setChecked(False)
     def make_MovePos_2_uncheck(self):
             self.MovePos_2.setChecked(False)
+    def updatelist_1_update(self):
+        # print(f'{self.updatelist_1.isChecked()=}')
+        # if self.updatelist_1.isChecked():
+        #     self.updatelistfor1 = False
+        #     self.updatelist_1.setStyleSheet('background-color: red')
+        # else:#default
+        #     self.updatelistfor1 = True
+        #     self.updatelist_1.setStyleSheet("")
+        if self.bluiceData['active']:
+            self.update_ui_par_to_meshbest()
+    def updatelist_2_update(self):
+        # print(f'{self.updatelist_2.isChecked()=}')
+        # if self.updatelist_2.isChecked():
+        #     self.updatelistfor2 = False
+        #     self.updatelist_2.setStyleSheet('background-color: red')
+        # else:#default
+        #     self.updatelistfor2 = True
+        #     self.updatelist_2.setStyleSheet("")
+        if self.bluiceData['active']:
+            self.update_ui_par_to_meshbest()
+
     def collectAllpos_1_clicked(self):
         self.CollectdataSeq('View1')
         pass
@@ -405,7 +489,12 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 frame = self.convertXYtoFrame(findx,findy,view1=True)
                 # path=f'/data/blctl/20211027_07A/154945/RasterScanview1_0000_master.h5'
                 path=f'{self.RootPath_2.text()}/RasterScanview1_0000_master.h5'
-                self.adxv.showimage(path,frame)
+                try :
+                    self.adxv.showimage(path,frame)
+                except Exception as e:
+                    traceback.print_exc()
+                    self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
+                    self.logger.warning(f'Error : {e}')
                 pass
             elif self.MovePos_1.isChecked():
                 position = QPoint(event.pos().x(),event.pos().y())
@@ -560,8 +649,10 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 path=f'{self.RootPath_2.text()}/RasterScanview2_0000_master.h5'
                 try:
                     self.adxv.showimage(path,frame)
-                except:
-                    pass
+                except Exception as e:
+                    traceback.print_exc()
+                    self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
+                    self.logger.warning(f'Error : {e}')
                 pass
             elif self.MovePos_2.isChecked():
                 position = QPoint(event.pos().x(),event.pos().y())
@@ -669,6 +760,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         return new_path
 
     def Rasterclicked(self):
+        #this is get new image and has new setup
         # self.RootPathforRaster = self.getfolderforraster()
         self.RootPath_2.setText(self.getfolderforraster())
         self.clear_Raster_scence_item()
@@ -1139,129 +1231,171 @@ class MainUI(QMainWindow,Ui_MainWindow):
     
     def updateUI(self):
        for motor in  self.bluiceData['motor']:
-           if motor == 'camera_zoom':
-               # self.logger.info(f'camera_zoom==={self.bluiceData["motor"][motor]["pos"]}')
-               if self.bluiceData['motor'][motor]['pos'] == 1:
-                   # self.logger.info(f'Zoom1')
-                   self.Zoom1.setStyleSheet('background-color: lightgreen')
-                   self.Zoom2.setStyleSheet('')
-                   self.Zoom3.setStyleSheet('')
-                   self.Zoom4.setStyleSheet('')   
-                   self.Zoom1.setEnabled(False)
-                   self.Zoom2.setEnabled(True)
-                   self.Zoom3.setEnabled(True)
-                   self.Zoom4.setEnabled(True)
-               elif self.bluiceData['motor'][motor]['pos'] == 2:
-                   self.Zoom1.setStyleSheet('')
-                   self.Zoom2.setStyleSheet('background-color: lightgreen')
-                   self.Zoom3.setStyleSheet('')
-                   self.Zoom4.setStyleSheet('') 
-                   self.Zoom1.setEnabled(True)
-                   self.Zoom2.setEnabled(False)
-                   self.Zoom3.setEnabled(True)
-                   self.Zoom4.setEnabled(True)
-               elif self.bluiceData['motor'][motor]['pos'] == 3:
-                   self.Zoom1.setStyleSheet('')
-                   self.Zoom2.setStyleSheet('')
-                   self.Zoom3.setStyleSheet('background-color: lightgreen')
-                   self.Zoom4.setStyleSheet('')   
-                   self.Zoom1.setEnabled(True)
-                   self.Zoom2.setEnabled(True)
-                   self.Zoom3.setEnabled(False)
-                   self.Zoom4.setEnabled(True)
-               elif self.bluiceData['motor'][motor]['pos'] == 4:
-                   self.Zoom1.setStyleSheet('')
-                   self.Zoom2.setStyleSheet('')
-                   self.Zoom3.setStyleSheet('')
-                   self.Zoom4.setStyleSheet('background-color: lightgreen') 
-                   self.Zoom1.setEnabled(True)
-                   self.Zoom2.setEnabled(True)
-                   self.Zoom3.setEnabled(True)
-                   self.Zoom4.setEnabled(False)
-               else:
-                   pass
-           if motor == 'change_mode':
-                      # [ 0] Centring
-                      # [ 1] BeamLocation
-                      # [ 2] DataCollection
-                      # [ 3] Transfer
-                      # [ 4] Unknown
-               if self.bluiceData['motor'][motor]['pos'] == 0 :
-                   self.Centermode.setStyleSheet('background-color: lightgreen')
-                   self.Transfermode.setStyleSheet('')
-                   self.Centermode.setEnabled(False)
-                   self.Transfermode.setEnabled(True)
-               elif self.bluiceData['motor'][motor]['pos'] == 1 :
-                   self.Centermode.setStyleSheet('')
-                   self.Transfermode.setStyleSheet('')
-                   self.Centermode.setEnabled(True)
-                   self.Transfermode.setEnabled(True)
-               elif self.bluiceData['motor'][motor]['pos'] == 2 :
-                   self.Centermode.setStyleSheet('')
-                   self.Transfermode.setStyleSheet('')
-                   self.Centermode.setEnabled(True)
-                   self.Transfermode.setEnabled(True)
-               elif self.bluiceData['motor'][motor]['pos'] == 3 :
-                   self.Centermode.setStyleSheet('')
-                   self.Transfermode.setStyleSheet('background-color: lightgreen')
-                   self.Centermode.setEnabled(True)
-                   self.Transfermode.setEnabled(False)
-               else :
-                   self.Centermode.setStyleSheet('')
-                   self.Transfermode.setStyleSheet('')
-                   self.Centermode.setEnabled(False)
-                   self.Transfermode.setEnabled(False)
-           if motor == 'gonio_phi':
-               setstate = not self.bluiceData['motor']['gonio_phi']['moving']
-               # print(self.bluiceData['motor']['gonio_phi']['moving'])
-               # print(setstate)
-               self.neg_10deg.setEnabled(setstate)
-               self.neg_90deg.setEnabled(setstate)
-               self.pos_10deg.setEnabled(setstate)
-               self.pos_90deg.setEnabled(setstate)
-                   
-           else:
-               pass
+            if motor == 'camera_zoom':
+                # self.logger.info(f'camera_zoom==={self.bluiceData["motor"][motor]["pos"]}')
+                if self.bluiceData['motor'][motor]['pos'] == 1:
+                    # self.logger.info(f'Zoom1')
+                    self.Zoom1.setStyleSheet('background-color: lightgreen')
+                    self.Zoom2.setStyleSheet('')
+                    self.Zoom3.setStyleSheet('')
+                    self.Zoom4.setStyleSheet('')   
+                    self.Zoom1.setEnabled(False)
+                    self.Zoom2.setEnabled(True)
+                    self.Zoom3.setEnabled(True)
+                    self.Zoom4.setEnabled(True)
+                elif self.bluiceData['motor'][motor]['pos'] == 2:
+                    self.Zoom1.setStyleSheet('')
+                    self.Zoom2.setStyleSheet('background-color: lightgreen')
+                    self.Zoom3.setStyleSheet('')
+                    self.Zoom4.setStyleSheet('') 
+                    self.Zoom1.setEnabled(True)
+                    self.Zoom2.setEnabled(False)
+                    self.Zoom3.setEnabled(True)
+                    self.Zoom4.setEnabled(True)
+                elif self.bluiceData['motor'][motor]['pos'] == 3:
+                    self.Zoom1.setStyleSheet('')
+                    self.Zoom2.setStyleSheet('')
+                    self.Zoom3.setStyleSheet('background-color: lightgreen')
+                    self.Zoom4.setStyleSheet('')   
+                    self.Zoom1.setEnabled(True)
+                    self.Zoom2.setEnabled(True)
+                    self.Zoom3.setEnabled(False)
+                    self.Zoom4.setEnabled(True)
+                elif self.bluiceData['motor'][motor]['pos'] == 4:
+                    self.Zoom1.setStyleSheet('')
+                    self.Zoom2.setStyleSheet('')
+                    self.Zoom3.setStyleSheet('')
+                    self.Zoom4.setStyleSheet('background-color: lightgreen') 
+                    self.Zoom1.setEnabled(True)
+                    self.Zoom2.setEnabled(True)
+                    self.Zoom3.setEnabled(True)
+                    self.Zoom4.setEnabled(False)
+                else:
+                    pass
+            if motor == 'change_mode':
+                        # [ 0] Centring
+                        # [ 1] BeamLocation
+                        # [ 2] DataCollection
+                        # [ 3] Transfer
+                        # [ 4] Unknown
+                if self.bluiceData['motor'][motor]['pos'] == 0 :
+                    self.Centermode.setStyleSheet('background-color: lightgreen')
+                    self.Transfermode.setStyleSheet('')
+                    self.Centermode.setEnabled(False)
+                    self.Transfermode.setEnabled(True)
+                elif self.bluiceData['motor'][motor]['pos'] == 1 :
+                    self.Centermode.setStyleSheet('')
+                    self.Transfermode.setStyleSheet('')
+                    self.Centermode.setEnabled(True)
+                    self.Transfermode.setEnabled(True)
+                elif self.bluiceData['motor'][motor]['pos'] == 2 :
+                    self.Centermode.setStyleSheet('')
+                    self.Transfermode.setStyleSheet('')
+                    self.Centermode.setEnabled(True)
+                    self.Transfermode.setEnabled(True)
+                elif self.bluiceData['motor'][motor]['pos'] == 3 :
+                    self.Centermode.setStyleSheet('')
+                    self.Transfermode.setStyleSheet('background-color: lightgreen')
+                    self.Centermode.setEnabled(True)
+                    self.Transfermode.setEnabled(False)
+                else :
+                    self.Centermode.setStyleSheet('')
+                    self.Transfermode.setStyleSheet('')
+                    self.Centermode.setEnabled(False)
+                    self.Transfermode.setEnabled(False)
+            if motor == 'gonio_phi':
+                setstate = not self.bluiceData['motor']['gonio_phi']['moving']
+                # print(self.bluiceData['motor']['gonio_phi']['moving'])
+                # print(setstate)
+                self.neg_10deg.setEnabled(setstate)
+                self.neg_90deg.setEnabled(setstate)
+                self.pos_10deg.setEnabled(setstate)
+                self.pos_90deg.setEnabled(setstate)
+                # self.Focus_neg_l.setEnabled(setstate)
+                # self.Focus_neg_s.setEnabled(setstate)
+                # self.Focus_pos_s.setEnabled(setstate)
+                # self.Focus_pos_l.setEnabled(setstate)
+            elif motor == 'CentringTableFocus':
+                setstate = not self.bluiceData['motor']['CentringTableFocus']['moving']
+                self.Focus_neg_l.setEnabled(setstate)
+                self.Focus_neg_s.setEnabled(setstate)
+                self.Focus_pos_s.setEnabled(setstate)
+                self.Focus_pos_l.setEnabled(setstate)
+                pass
+            else:
+                pass
     
        if not self.bluiceData['active']:
-           self.Zoom1.setEnabled(False)
-           self.Zoom2.setEnabled(False)
-           self.Zoom3.setEnabled(False)
-           self.Zoom4.setEnabled(False)
-           self.Centermode.setEnabled(False)
-           self.Transfermode.setEnabled(False)
-           self.neg_10deg.setEnabled(False)
-           self.neg_90deg.setEnabled(False)
-           self.pos_10deg.setEnabled(False)
-           self.pos_90deg.setEnabled(False)
-           self.Autocenter.setEnabled(False)
-           self.Raster.setEnabled(False)
-           self.StartRaster.setEnabled(False)
-           
-           uiparlists,uiindexlists,uitextlists= variables.ui_par_lists()
-           for item in uiparlists:
-               uiitem = getattr(self,item)
-               uiitem.setEnabled(False)
-           for item in uiindexlists:
-               uiitem = getattr(self,item)
-               uiitem.setEnabled(False)
-           for item in uitextlists:
-               uiitem = getattr(self,item)
-               uiitem.setEnabled(False)
+            self.Zoom1.setEnabled(False)
+            self.Zoom2.setEnabled(False)
+            self.Zoom3.setEnabled(False)
+            self.Zoom4.setEnabled(False)
+            self.Centermode.setEnabled(False)
+            self.Transfermode.setEnabled(False)
+            self.neg_10deg.setEnabled(False)
+            self.neg_90deg.setEnabled(False)
+            self.pos_10deg.setEnabled(False)
+            self.pos_90deg.setEnabled(False)
+            self.Autocenter.setEnabled(False)
+            self.Raster.setEnabled(False)
+            self.StartRaster.setEnabled(False)
+            self.Focus_neg_l.setEnabled(False)
+            self.Focus_neg_s.setEnabled(False)
+            self.Focus_pos_s.setEnabled(False)
+            self.Focus_pos_l.setEnabled(False)
+            self.DetailInfo1.setEnabled(False)
+            self.DetailInfo2.setEnabled(False)
+
+            self.ClearAll_1.setEnabled(False)
+            self.EditPos_1.setEnabled(False)
+            self.MovePos_1.setEnabled(False)
+
+            self.ClearAll_2.setEnabled(False)
+            self.EditPos_2.setEnabled(False)
+            self.MovePos_2.setEnabled(False)
+            self.GetDefalutFolder.setEnabled(False)
+
+            uiparlists,uiindexlists,uitextlists,uicheckablelist = variables.ui_par_lists()
+            for item in uiparlists:
+                uiitem = getattr(self,item)
+                uiitem.setEnabled(False)
+            for item in uiindexlists:
+                uiitem = getattr(self,item)
+                uiitem.setEnabled(False)
+            for item in uitextlists:
+                uiitem = getattr(self,item)
+                uiitem.setEnabled(False)
+            for item in uicheckablelist:
+                uiitem = getattr(self,item)
+                uiitem.setEnabled(False)
+
        else:
+            self.DetailInfo1.setEnabled(True)
+            self.DetailInfo2.setEnabled(True)
+            self.ClearAll_1.setEnabled(True)
+            self.EditPos_1.setEnabled(True)
+            self.MovePos_1.setEnabled(True)
+
+            self.ClearAll_2.setEnabled(True)
+            self.EditPos_2.setEnabled(True)
+            self.MovePos_2.setEnabled(True)
+            self.GetDefalutFolder.setEnabled(True)
            # self.Raster.setEnabled(True)
            # self.StartRaster.setEnabled(True)
-           uiparlists,uiindexlists,uitextlists= variables.ui_par_lists()
-           for item in uiparlists:
+            uiparlists,uiindexlists,uitextlists,uicheckablelist = variables.ui_par_lists()
+            for item in uiparlists:
                uiitem = getattr(self,item)
                uiitem.setEnabled(True)
-           for item in uiindexlists:
+            for item in uiindexlists:
                uiitem = getattr(self,item)
                uiitem.setEnabled(True)
-           for item in uitextlists:
+            for item in uitextlists:
                uiitem = getattr(self,item)
                uiitem.setEnabled(True)
-           pass
+            for item in uicheckablelist:
+               uiitem = getattr(self,item)
+               uiitem.setEnabled(True)
+            pass
        self.reposition_view_cross()
                     
     def updateimage(self,image):
@@ -1688,6 +1822,19 @@ class MainUI(QMainWindow,Ui_MainWindow):
         pass
     def StartRasterclicked(self):
         self.logger.info(f'Button Start Raster clicked')
+        path=f'{self.RootPath_2.text()}/StartRasterclickedPar.txt'
+        with open(path,'w') as f:
+            f.write(f"UI_par:{self.Par['UI_par']}\n")
+            writeitem = ['box','collectInfo','GridX','GridY','gonio_phi','sample_x','sample_y',\
+                'sample_z','align_z','zoom','zoom_scale_x','zoom_scale_y','numofX','numofY',\
+                'gridsizeX','gridsizeY']
+            for view in ['View1','View2']:
+                f.write(f"{view}:===\n")
+                for key, value in self.Par[view].items(): 
+                    if str(key) in writeitem: 
+                        f.write(f'{key}:{value}\n')
+            
+
         self.Qinfo["sendQ"].put('gtos_set_string system_status {Start Rastering...} black #d0d000')
         self.Par['StateCtl']['AbletoStartRaster'] = False
         self.Overlap_Select_1.setCurrentIndex(2)
@@ -2126,7 +2273,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         
         
         
-        if self.ExpousetimeType.currentText() == "Exposed time":
+        if self.ExpousetimeType.currentText() == "Exposure time":
             exposure_time = self.ExpouseValue.value()
         elif self.ExpousetimeType.currentText() == "Rate":
             exposure_time = 1 / self.ExpouseValue.value()
@@ -2339,14 +2486,14 @@ class MainUI(QMainWindow,Ui_MainWindow):
             # temp['View1'].pop('jpg', None)
             # temp['View2'].pop('jpg', None)
             # self.logger.info(f'got updatePar :{temp}======')
-            # try:
-            #     if self.Par['StateCtl']['reciveserverupdate'] == False:
-            #         self.logger.warning('Do not update!I am doing my job')
-            #         return
-            # except Exception as e:
-            #     traceback.print_exc()
-            #     self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
-            #     self.logger.warning(f'Error:{e}')
+            try:
+                if self.Par['StateCtl']['reciveserverupdate'] == False and self.bluiceData['active']:
+                    self.logger.warning('Do not update!I am doing my job')
+                    return
+            except Exception as e:
+                traceback.print_exc()
+                self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
+                self.logger.warning(f'Error:{e}')
             if self.bluiceData['active']:
                 self.logger.debug(f'I am active client,update Dtable only and XY')
                 #active only update Dtable
@@ -2458,26 +2605,28 @@ class MainUI(QMainWindow,Ui_MainWindow):
             if command[1] == 'meshbetjob':
                 sid = command[2]
                 if sid == 101:
-                    #view1 update
-                    self.Overlap_Select_1.setCurrentIndex(6)#Crystal Map with Dozor score
-                    self.plot_overlap_image('View1') #make sure it update
-                    listnum1=len(self.RasterPar['View1']['BestPositions'])      
-                    self.List_number_1.setValue(listnum1)
-                    #creat collect info
-                    self.create_collectinfo('View1')
-                    #plot position
-                    self.plotBestpos('View1')
-                    pass
+                    if self.updatelist_1.currentIndex() == 0:#meshbest
+                        #view1 update
+                        self.Overlap_Select_1.setCurrentIndex(6)#Crystal Map with Dozor score
+                        self.plot_overlap_image('View1') #make sure it update
+                        listnum1=len(self.RasterPar['View1']['BestPositions'])      
+                        self.List_number_1.setValue(listnum1)
+                        #creat collect info
+                        self.create_collectinfo('View1')
+                        #plot position
+                        self.plotBestpos('View1')
+                        pass
                 else:
-                    #view2 update
-                    self.Overlap_Select_2.setCurrentIndex(6)#Crystal Map with Dozor score
-                    self.plot_overlap_image('View2') #make sure it update
-                    listnum2=len(self.RasterPar['View2']['BestPositions'])
-                    self.List_number_2.setValue(listnum2)    
-                    #creat collect info
-                    self.create_collectinfo('View2')
-                    #plot position
-                    self.plotBestpos('View2')
+                    if self.updatelist_2.currentIndex() == 0:
+                        #view2 update
+                        self.Overlap_Select_2.setCurrentIndex(6)#Crystal Map with Dozor score
+                        self.plot_overlap_image('View2') #make sure it update
+                        listnum2=len(self.RasterPar['View2']['BestPositions'])
+                        self.List_number_2.setValue(listnum2)    
+                        #creat collect info
+                        self.create_collectinfo('View2')
+                        #plot position
+                        self.plotBestpos('View2')
 
                     pass
                 
@@ -3185,10 +3334,30 @@ class MainUI(QMainWindow,Ui_MainWindow):
         elif command[0] == "stog_device_permission_bit":
             #['stog_device_permission_bit', 'injectState', '{0', '1', '1', '1', '1}', '{0', '1', '1', '1', '1}'] 
             pass
-        elif command[0] == "stoh_abort_all":
+        elif command[0] == "stoh_abort_all":#gui will not recive this
             self.abort = True
             self.collectPause = True
             self.timer.singleShot(500,self.restAbort)
+        elif command[0] == "stog_note":
+            # ['stog_note', 'Warning', 'Raster', 'Scan', 'has', 'problem:', "'Raster", "Scan',", "'8',", "'2022-05-05", "08:47:16.995',", "'2022-05-05", "08:47:26.98',", "'null',", "'Cannot", 'move', 'to', 'position:', "Omega=220.9999',", "'-1'", ''] 
+            if command[1] == 'Warning' and command[2] == 'Raster':
+                txtlist = command[3:]
+                txt =command[2]#start with raster and add space in rest str
+                for item in txtlist:
+                    txt = f'{txt} {item}'
+                txt += f'\n\nmaybe need to increase Exposure time'
+                mesbox = QMessageBox.warning(self,"Warning from DCSS",txt,QMessageBox.Ok)
+                #move md3 make state to ready
+                pos =self.bluiceData['motor']['gonio_phi']['pos']
+                command = f'gtos_start_motor_move gonio_phi {pos}'
+                self.Qinfo["sendQ"].put(command)
+                self.StartRaster.setEnabled(True)
+                self.Par['StateCtl']['AbletoStartRaster'] = True
+                self.update_ui_par_to_meshbest()
+                self.Par['StateCtl']['reciveserverupdate'] = True
+            else:
+                self.logger.info(f'Bluice Emit : {command}')
+            pass
         else:
             self.logger.info(f'Bluice Emit : {command}')
         self.updateUI()
@@ -3235,7 +3404,10 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     bagc =  ans[2]
                 self.LastInfo.setText(state)
                 self.LastInfo.setStyleSheet(f'color: {textc};background-color: {bagc}')
-
+                if state == "Abort!":
+                    self.abort=True
+                    self.collectPause = True
+                    self.timer.singleShot(500,self.restAbort)
                 # print(f'state = {state},color for text ={textc}, color for background = {bagc}')
 
             # print(name,value)
@@ -3289,6 +3461,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.viwe2_move_up.setEnabled(True)
         self.viwe2_move_left.setEnabled(True)
         self.viwe2_move_right.setEnabled(True)
+        self.checkRootFolder()
                     
     def setToPassive(self):
         self.Active.setText("Passive")
@@ -3329,7 +3502,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             
     def full_update(self,par):
         # self.logger.warning(f'full_update')
-        uiparlists, uiindexlists, uitextlists= variables.ui_par_lists()
+        uiparlists, uiindexlists, uitextlists,uicheckablelists = variables.ui_par_lists()
         # self.logger.warning(f"update UI_par current setting ={self.Par['UI_par']}")
         for item in uiparlists:
             newitem = getattr(self,item)
@@ -3344,12 +3517,27 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 newitem.setCurrentIndex(self.Par['UI_par'][item])
                 self.logger.info(f"update uiindexlists {item} with value {self.Par['UI_par'][item]}")
         for item in uitextlists:
+            if self.bluiceData['active'] and item == 'RootPath':
+                #id active do not update rootpath avoid update loop
+                pass
+            else:#update item
+                newitem = getattr(self,item)
+                if self.Par['UI_par'][item] is not None:
+                    newitem.setText(self.Par['UI_par'][item])
+                    self.logger.info(f"update uitextlists {item} with value {self.Par['UI_par'][item]}")
+        
+        for item in uicheckablelists:
             newitem = getattr(self,item)
             if self.Par['UI_par'][item] is not None:
-                newitem.setText(self.Par['UI_par'][item])
-                self.logger.info(f"update uitextlists {item} with value {self.Par['UI_par'][item]}")
-        #update par to RasterPar
+                newitem.setChecked(self.Par['UI_par'][item])
+                self.logger.info(f"update uicheckablelists {item} with value {self.Par['UI_par'][item]}")
+        
+        #update checkedable button color
+        # if not self.bluiceData['active']:
+        #     self.updatelist_1_update()
+        #     self.updatelist_2_update()
 
+        #update par to RasterPar
         try :
             for view in ["View1","View2"]:
                 for name in self.convertlist:
@@ -3390,8 +3578,36 @@ class MainUI(QMainWindow,Ui_MainWindow):
             pass
         
         # self.plot_overlap_image('View1')                     
-        # self.plot_overlap_image('View2') 
-        
+        # self.plot_overlap_image('View2')
+    def Focus_neg_l_clicked(self):
+        newpos = self.bluiceData['motor']['CentringTableFocus']['pos'] - 0.05
+        # gtos_start_motor_move motorName destination
+        command = f'gtos_start_motor_move CentringTableFocus {newpos}'
+        self.Qinfo["sendQ"].put(command)
+        pass
+    def Focus_neg_s_clicked(self):
+        newpos = self.bluiceData['motor']['CentringTableFocus']['pos'] - 0.005
+        # gtos_start_motor_move motorName destination
+        command = f'gtos_start_motor_move CentringTableFocus {newpos}'
+        self.Qinfo["sendQ"].put(command)
+        pass
+    def Focus_pos_s_clicked(self):
+        newpos = self.bluiceData['motor']['CentringTableFocus']['pos'] + 0.005
+        # gtos_start_motor_move motorName destination
+        command = f'gtos_start_motor_move CentringTableFocus {newpos}'
+        self.Qinfo["sendQ"].put(command)
+        pass
+    def Focus_pos_l_clicked(self):
+        newpos = self.bluiceData['motor']['CentringTableFocus']['pos'] + 0.05
+        # gtos_start_motor_move motorName destination
+        command = f'gtos_start_motor_move CentringTableFocus {newpos}'
+        self.Qinfo["sendQ"].put(command)
+        pass
+
+    def Abort_clicked(self):
+        command = f'gtos_abort_all soft'
+        self.Qinfo["sendQ"].put(command)
+        pass
     def Overlap_Select_1_value_change (self):
         if self.bluiceData['active']:
             self.plot_overlap_image("View1")
@@ -3800,82 +4016,87 @@ class MainUI(QMainWindow,Ui_MainWindow):
         par = self.Par[view]
         if view=='View1':
             numlist = self.List_number_1.value()    
+            updatetype = self.updatelist_1.currentIndex()
         elif view == 'View2':
             numlist = self.List_number_2.value()
+            updatetype = self.updatelist_2.currentIndex()
         elif view == 'View3':#todo for viwe12
-            numlist = self.List_number_1.value()    
+            numlist = self.List_number_1.value()
+            updatetype = self.updatelist_1.currentIndex()    
             pass
-        
-        collectlist=list()
-        
-        for i,item in enumerate(RasterPar['BestPositions']):
-            posdata={}
-            #,x,y,beamsize,socre
-            posdata['ViewX'] = item[0]
-            posdata['ViewY'] = item[1]
-            BeamSize = self.CorrectBeamsize(item[2] * RasterPar['gridsizeY'])
+        if updatetype == 0:
+            collectlist=list()           
+            for i,item in enumerate(RasterPar['BestPositions']):
+                posdata={}
+                #,x,y,beamsize,socre
+                posdata['ViewX'] = item[0]
+                posdata['ViewY'] = item[1]
+                BeamSize = self.CorrectBeamsize(item[2] * RasterPar['gridsizeY'])
 
-            CollectOrder = int(i+1)
-            CollectType = 0#todo collec
-            CollectDone = False
-            FileName = f'{i+1:03d}'
-            
-            FolderName = f'{self.RootPath_2.text()}/collect'
-            Distance = self.Distance.value()
-            Energy = self.bluiceData['motor']['energy']['pos']
-            TotalCollectRange = 10 #todo set a input?
-            StartPhi = RasterPar['gonio_phi'] - (TotalCollectRange /2)
-            EndPhi = RasterPar['gonio_phi'] + (TotalCollectRange /2)
-            Delta = 0.1 #todo set a input?
-            Atten = 0
-            ExpTime = 0.01
-            displaytext = "Atten-Time"
-            DoseSelect = 0
-            dose = 10
-            RoughtDose = 10
-            EstimateDose = 10
-            #get flux
-            currentBeamsize =  float(self.bluiceData['string']['currentBeamsize']['txt'])
-            currentAtten = self.bluiceData['motor']['attenuation']['pos']#float
-            sampleFlux = float(self.bluiceData['string']['sampleFlux']['txt'])
-            flux = self.collectparwindows.predict_flux(currentBeamsize,currentAtten,sampleFlux,BeamSize,self.Par)
-            
-            newHdose,newAdose,newAtten,newExptime,newTrange,newDelta,NewDistance,NewEnergy=\
-            self.collectparwindows.calDosePar(displaytext,DoseSelect,BeamSize,dose,RoughtDose,EstimateDose,Atten,ExpTime,TotalCollectRange,Delta,Distance,Energy,flux)
-            posdata['BeamSize'] = BeamSize
-            posdata['CollectOrder'] = CollectOrder
-            posdata['CollectType'] = CollectType
-            posdata['CollectDone'] = CollectDone
-            posdata['FileName'] = FileName
-            posdata['FolderName'] = FolderName
-            posdata['Distance'] = Distance
-            posdata['Energy'] = Energy
-            posdata['StartPhi'] = RasterPar['gonio_phi'] - (newTrange /2)
-            posdata['EndPhi'] = RasterPar['gonio_phi'] + (newTrange /2)
-            posdata['TotalCollectRange'] = newTrange
-            posdata['Delta'] = newDelta
-            posdata['ExpTime'] = newExptime
-            posdata['Atten'] = newAtten
-            posdata['RoughtDose']=newHdose
-            posdata['EstimateDose'] = newAdose
-            # self.logger.warning(f'{posdata["StartPhi"]},{posdata["EndPhi"]},{newTrange}')
-            if i >=numlist:
-                pass
-            else:
-                collectlist.append(posdata)
-        self.logger.warning(f'View = {view}, len collectlist={len(collectlist)}')
-        self.Par[view]['collectInfo'] = collectlist
-        if len(self.Par[view]['collectInfo'])>0:
-            if view=='View1':
-                self.collectAllpos_1.setEnabled(True)
-            else:
-                self.collectAllpos_2.setEnabled(True)
-        # self.send_RasterInfo_to_meshbest(False)#also send par[view][collectInfo]
-        updatestr = f'plotBestpos_{view}'
-        self.send_RasterInfo_to_meshbest(updatestr)
-        # self.plotBestpos(view)
-        
-        #todo update table?
+                CollectOrder = int(i+1)
+                CollectType = 0#todo collec
+                CollectDone = False
+                FileName = f'{i+1:03d}'
+                
+                FolderName = f'{self.RootPath_2.text()}/collect'
+                Distance = self.Distance.value()
+                Energy = self.bluiceData['motor']['energy']['pos']
+                TotalCollectRange = 10 #todo set a input?
+                StartPhi = RasterPar['gonio_phi'] - (TotalCollectRange /2)
+                EndPhi = RasterPar['gonio_phi'] + (TotalCollectRange /2)
+                Delta = 0.1 #todo set a input?
+                Atten = 0
+                ExpTime = 0.01
+                displaytext = "Atten-Time"
+                DoseSelect = 0
+                dose = 10
+                RoughtDose = 10
+                EstimateDose = 10
+                #get flux
+                currentBeamsize =  float(self.bluiceData['string']['currentBeamsize']['txt'])
+                currentAtten = self.bluiceData['motor']['attenuation']['pos']#float
+                sampleFlux = float(self.bluiceData['string']['sampleFlux']['txt'])
+                flux = self.collectparwindows.predict_flux(currentBeamsize,currentAtten,sampleFlux,BeamSize,self.Par)
+                
+                newHdose,newAdose,newAtten,newExptime,newTrange,newDelta,NewDistance,NewEnergy=\
+                self.collectparwindows.calDosePar(displaytext,DoseSelect,BeamSize,dose,RoughtDose,EstimateDose,Atten,ExpTime,TotalCollectRange,Delta,Distance,Energy,flux)
+                posdata['BeamSize'] = BeamSize
+                posdata['CollectOrder'] = CollectOrder
+                posdata['CollectType'] = CollectType
+                posdata['CollectDone'] = CollectDone
+                posdata['FileName'] = FileName
+                posdata['FolderName'] = FolderName
+                posdata['Distance'] = Distance
+                posdata['Energy'] = Energy
+                posdata['StartPhi'] = RasterPar['gonio_phi'] - (newTrange /2)
+                posdata['EndPhi'] = RasterPar['gonio_phi'] + (newTrange /2)
+                posdata['TotalCollectRange'] = newTrange
+                posdata['Delta'] = newDelta
+                posdata['ExpTime'] = newExptime
+                posdata['Atten'] = newAtten
+                posdata['RoughtDose']=newHdose
+                posdata['EstimateDose'] = newAdose
+                # self.logger.warning(f'{posdata["StartPhi"]},{posdata["EndPhi"]},{newTrange}')
+                if i >=numlist:
+                    pass
+                else:
+                    collectlist.append(posdata)
+            self.logger.warning(f'View = {view}, len collectlist={len(collectlist)}')
+            self.Par[view]['collectInfo'] = collectlist
+            if len(self.Par[view]['collectInfo'])>0:
+                if view=='View1':
+                    self.collectAllpos_1.setEnabled(True)
+                else:
+                    self.collectAllpos_2.setEnabled(True)
+            # self.send_RasterInfo_to_meshbest(False)#also send par[view][collectInfo]
+            updatestr = f'plotBestpos_{view}'
+            self.send_RasterInfo_to_meshbest(updatestr)
+            # self.plotBestpos(view)
+        elif updatetype == 1:#manual
+            pass    
+        elif updatetype == 2:#peak
+            #todo
+            pass
     def predict_flux(self,currentBeamsize,currentAtten,sampleFlux,Targetbeamsize,par):
         # currentBeamsize =  float(self.bluiceData['string']['currentBeamsize'])
         # currentAtten = self.bluiceData['motor']['attenuation']#float
@@ -4119,15 +4340,15 @@ class MainUI(QMainWindow,Ui_MainWindow):
         # self.logger.warning(f'Send to meshbest server:{par}')
         self.Par.update(par)
         #if updatetype == all
-        try:
-            self.logger.critical(f"Send par out : {par['View1'].keys()}")
-            self.logger.critical(f"Send par out : {par['View1']['jpg'][:5]}")
-        except:
-            pass
+        # try:
+        #     self.logger.critical(f"Send par out : {par['View1'].keys()}")
+        #     self.logger.critical(f"Send par out : {par['View1']['jpg'][:5]}")
+        # except:
+        #     pass
         self.meshbest.sendCommandToMeshbest(('Update_par',par,updatetype))
         
     def update_ui_par_to_meshbest(self):
-        uiparlists,uiindexlists,uitextlists= variables.ui_par_lists()
+        uiparlists,uiindexlists,uitextlists,uicheckablelists= variables.ui_par_lists()
         
         for item in uiparlists:
             newitem = getattr(self,item)
@@ -4144,12 +4365,17 @@ class MainUI(QMainWindow,Ui_MainWindow):
             # print(f'Name:{item}, value={newitem.currentIndex()}')
             self.Par['UI_par'][item] = newitem.text()
         
+        for item in uicheckablelists:
+            newitem = getattr(self,item)
+            # print(f'Name:{item}, value={newitem.currentIndex()}')
+            self.Par['UI_par'][item] = newitem.isChecked()
+
         # par = copy.deepcopy(self.Par)
         par = variables.Raster_to_Meshbest_par(self.RasterPar, self.Par)
         self.meshbest.sendCommandToMeshbest(('Update_par',par))
     def update_All_par_to_meshbest(self):
         # TODO
-        uiparlists,uiindexlists,uitextlists= variables.ui_par_lists()
+        uiparlists,uiindexlists,uitextlists ,uicheckablelists= variables.ui_par_lists()
         
         for item in uiparlists:
             newitem = getattr(self,item)
@@ -4164,6 +4390,10 @@ class MainUI(QMainWindow,Ui_MainWindow):
         for item in uitextlists:
             newitem = getattr(self,item)
             self.Par['UI_par'][item] = newitem.text()
+
+        for item in uicheckablelists:
+            newitem = getattr(self,item)
+            self.Par['UI_par'][item] = newitem.isChecked()
         # par = copy.deepcopy(self.Par)
         par = variables.Raster_to_Meshbest_par(self.RasterPar, self.Par)
         self.meshbest.sendCommandToMeshbest(('Update_par',par))
@@ -4336,8 +4566,41 @@ class MainUI(QMainWindow,Ui_MainWindow):
             Circle.setOpacity(0.7)
 
     def saveImageforCollect(self):
+        #save par self.RasterView1QPixmap_ori.save(path,'jpg')
+        path=f'{self.RootPath_2.text()}/RasterPar.txt'
+        with open(path,'w') as f:
+            f.write(str(self.Par))
+
+        path=f'{self.RootPath_2.text()}/UI_collectPar.txt'
+        with open(path,'w') as f:
+            f.write(f"UI_par:{self.Par['UI_par']}\n")
+            writeitem = ['box','collectInfo','GridX','GridY','gonio_phi','sample_x','sample_y',\
+                'sample_z','align_z','zoom','zoom_scale_x','zoom_scale_y','numofX','numofY',\
+                'gridsizeX','gridsizeY']
+            for view in ['View1','View2']:
+                f.write(f"{view}:===\n")
+                for key, value in self.Par[view].items(): 
+                    if str(key) in writeitem: 
+                        f.write(f'{key}:{value}\n')
+            
+        
+        self._save_current_image('collectview')
+        # sys.exit()    
         #todo
         pass
+    def _save_current_image(self,filename):
+        path=f'{self.RootPath_2.text()}/{filename}1.jpg'
+        rect = self.RasterView1.sceneRect()
+        rectf=QRectF(rect)        
+        image = QImage(rectf.width(),rectf.height(), QImage.Format_ARGB32_Premultiplied)
+        
+        painter = QPainter(image)
+        self.Rasterscene1.render(painter, QRectF(image.rect()),rectf)
+        image.save(path)
+        path=f'{self.RootPath_2.text()}/{filename}2.jpg'
+        self.Rasterscene2.render(painter, QRectF(image.rect()),rectf)
+        image.save(path)
+        painter.end()
     def showforreadycollect(self,show):
         #todo
         if self.bluiceData['active']:
@@ -4454,7 +4717,24 @@ class CrossItem(QGraphicsItem):
     #     return (self.sizex/2,self.sizey/2)
     def getoffset(self):
         return (self.sizex/2,self.sizey/2)
-    
+
+# class changefolderbox(QMessageBox):
+#     def __init__(self, parent=None):
+#         super().__init__(parent)
+
+#         self.setWindowTitle("HELLO!")
+
+#         QBtn = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+
+#         self.buttonBox = QDialogButtonBox(QBtn)
+#         self.buttonBox.accepted.connect(self.accept)
+#         self.buttonBox.rejected.connect(self.reject)
+
+#         self.layout = QVBoxLayout()
+#         message = QLabel("Something happened, is that OK?")
+#         self.layout.addWidget(message)
+#         self.layout.addWidget(self.buttonBox)
+#         self.setLayout(self.layout)        
 # class waitMotorStop(QThread):
 #     AllStopAt = pyqtSignal(list)
 #     def __init__(self,bluiceData,*args):

@@ -32,7 +32,7 @@ class MestbestClient(QThread):
         par['Debuglevel'] = "INFO"
         self.Par.update(par)
         self.logger = logsetup.getloger2('MestbestClient',LOG_FILENAME,level = self.Par['Debuglevel'])
-        self.ServerQIP = '10.7.1.108'
+        self.ServerQIP = '10.7.1.107'
         self.ServerQPort = 6534
         
         self.ClientQ = Queue()

@@ -69,7 +69,8 @@ class MestbestSever():
         self.numofdataView2 = 0
         self.meshbesturl ='http://10.7.1.107:8082/job'
         # self.meshbesturl ='http://10.7.1.108:8082/job'
-        #
+        self.tempcbffolder = "/home/meshbesttemp"
+        # self.tempcbffolder = "/mnt/data_buffer/"
         self.convertlist = variables.convertlist()
         pass
         self.logger.debug(f'Init Par {self.Par}')
@@ -240,19 +241,25 @@ class MestbestSever():
                 Q.put(message)
                 if message[0] == 'updatePar':
                     self.logger.debug(f'send message to ID {cid} client')
-                    if recordmessage:
-                        keylist = message[1].keys()
-                        for item in keylist:
-                            if item == 'View1' or item == 'View2':
-                                keylist2 = message[1][item].keys()
-                                for item2 in keylist2:
-                                    if item2 == 'jpg':
-                                        self.logger.debug(f"Par {item}-{item2}= {message[1][item][item2][:5]}")
-                                    else:
-                                        self.logger.debug(f"Par {item}-{item2}= {message[1][item][item2]}")        
-                            else:
-                                self.logger.debug(f"Par {item}= {message[1][item]}")
-                    recordmessage = False
+                    try:
+                        if recordmessage:
+                            keylist = message[1].keys()
+                            for item in keylist:
+                                if item == 'View1' or item == 'View2':
+                                    keylist2 = message[1][item].keys()
+                                    for item2 in keylist2:
+                                        if item2 == 'jpg':
+                                            self.logger.debug(f"Par {item}-{item2}= {message[1][item][item2][:5]}")
+                                        else:
+                                            self.logger.debug(f"Par {item}-{item2}= {message[1][item][item2]}")        
+                                else:
+                                    self.logger.debug(f"Par {item}= {message[1][item]}")
+                    except Exception as e:
+                        traceback.print_exc()
+                        self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
+                        self.logger.warning(f'Error : {e}')
+                        recordmessage = False
+                    
 
                 else:
                     self.logger.warning(f'send message {message}to ID {cid} client')
@@ -453,8 +460,8 @@ class MestbestSever():
                 self.logger.warning(f'Error with command: {command}')
     def ZMQ_monitor(self,ZMQQ,ServerQ,meshbestjobQ,job_queue):
          os.nice(-19)#high priority
-        #  fw = stream2cbf.Stream2Cbf("temp", "/home/meshbesttemp")
-         fw = stream2cbf.Stream2Cbf("temp", "/mnt/data_buffer/")
+         fw = stream2cbf.Stream2Cbf("temp", self.tempcbffolder)
+        #  fw = stream2cbf.Stream2Cbf("temp", "/mnt/data_buffer/")
          fw.register_observer(self)
          # folder = fw.path
          self.logger.info(f'CBF file will write to  {fw.path} with filename {fw.basename}')
