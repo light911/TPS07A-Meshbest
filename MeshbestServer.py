@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from importlib.metadata import PathDistribution
+from queue import Empty
 import logsetup
 import time,signal,sys,os,copy,traceback
 from multiprocessing.managers import BaseManager
@@ -15,7 +17,10 @@ from Eiger.DEigerStream import ZMQStream
 from Eiger.fileWriter import stream2cbf
 import variables
 import importlib
-import DozorPar
+import DozorPar,pathlib
+from HDFtool import readframe
+import cbf
+
 # from ldapclient import ladpcleint #not use any more
 
 #https://stackoverflow.com/questions/29788809/python-how-to-pass-an-autoproxy-object
@@ -46,7 +51,7 @@ class MestbestSever():
         self.Par['StateCtl']=statectrl
         
         self.MangerPort = 6534
-        self.logger = logsetup.getloger2('MestbestServer',LOG_FILENAME='./log/MesrbestServerLog.txt',level = self.Par['Debuglevel'])
+        self.logger = logsetup.getloger2('MestbestServer',LOG_FILENAME='./log/MesrbestServerLog.txt',level = self.Par['Debuglevel'],bypassdb=True)
         self.ServerQ = self.m.Queue()
         # self.processQ = self.m.Queue()
         self.ZMQQ = self.m.Queue()
@@ -249,9 +254,11 @@ class MestbestSever():
                                     keylist2 = message[1][item].keys()
                                     for item2 in keylist2:
                                         if item2 == 'jpg':
-                                            self.logger.debug(f"Par {item}-{item2}= {message[1][item][item2][:5]}")
+                                            # self.logger.debug(f"Par {item}-{item2}= {message[1][item][item2][:5]}")
+                                            pass
                                         else:
-                                            self.logger.debug(f"Par {item}-{item2}= {message[1][item][item2]}")        
+                                            pass
+                                            # self.logger.debug(f"Par {item}-{item2}= {message[1][item][item2]}")        
                                 else:
                                     self.logger.debug(f"Par {item}= {message[1][item]}")
                     except Exception as e:
@@ -394,7 +401,8 @@ class MestbestSever():
                         # del temp['View1']['jpg']
                         # del temp['View2']['jpg']
                         # self.logger.debug(f'Update_par form client:{temp}')
-                        self.logger.debug(f'Update_par form client:{command[1]}')
+                        self.logger.debug(f'Update_par form client')
+                        # self.logger.debug(f'Update_par form client:{command[1]}')
                         self.RasterInfo_to_meshbest(command[1])
                         par = copy.deepcopy(self.Par)
                         if len(command)==3:
@@ -470,34 +478,42 @@ class MestbestSever():
             frames = stream.receive() # get ZMQ frames
             if frames: # decode frames using the filewriter
                    fw.decodeFrames(frames,ServerQ,meshbestjobQ,job_queue)
-                
-            try:
-                command = ZMQQ.get(block=False)
-                if isinstance(command,str):
-                    self.logger.info(f'command is srt')
-                    if command == "exit" :
-                        self.logger.critical(f'close ZMQ stream')
-                        stream.close()
-                        # ZMQQ.close()
-                        # sys.exit()
-                        break
-                elif isinstance(command,tuple) :
-                     self.logger.info(f'command is tuple')
-                     if command[0] == "armview" :
-                         # [17, 'RasterScanViwe1', '/data/blctl/20210727_07A/', 'blctl', 'gonio_phi', 0.1, 119.999802, 0.0, 15, 625.99884, 7.874044121870488e-05, 0.0, -0.997409, 'no', 0, 1, 50.0, 0.0, 1, 3, 5]
-                         # [runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY]
-                         self.logger.info(f'update filename to {command[1][1]}')
-                         fw.basename = command[1][1]
-                         self.logger.info(f'CBF file will write to  {fw.path} with filename {fw.basename}')
-                         #reload dozor par
-                         importlib.reload(DozorPar)
-                         fw.dozor_par=DozorPar.DozorPar
-                         self.logger.info(f'update dozor par = {DozorPar.DozorPar}')
-                         pass
-                else:
+            else:#only there is no frames we got new command   
+                try:
+                    command = ZMQQ.get(block=False)
+                    if isinstance(command,str):
+                        self.logger.info(f'command is srt')
+                        if command == "exit" :
+                            self.logger.critical(f'close ZMQ stream')
+                            stream.close()
+                            # ZMQQ.close()
+                            # sys.exit()
+                            break
+                    elif isinstance(command,tuple) :
+                        self.logger.info(f'command is tuple')
+                        if command[0] == "armview" :
+                            # [17, 'RasterScanViwe1', '/data/blctl/20210727_07A/', 'blctl', 'gonio_phi', 0.1, 119.999802, 0.0, 15, 625.99884, 7.874044121870488e-05, 0.0, -0.997409, 'no', 0, 1, 50.0, 0.0, 1, 3, 5]
+                            # [runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY]
+                            self.logger.info(f'update filename to {command[1][1]}')
+                            fw.basename = command[1][1]
+                            self.logger.info(f'CBF file will write to  {fw.path} with filename {fw.basename}')
+                            #reload dozor par
+                            importlib.reload(DozorPar)
+                            fw.dozor_par=DozorPar.DozorPar
+                            self.logger.info(f'update dozor par = {DozorPar.DozorPar}')
+                            pass
+                        elif command[0] == 'rundozr':
+                            pass
+                            metadata = command[1]
+                            frame = command[2] - 1
+                            importlib.reload(DozorPar)
+                            dozor_par = DozorPar.DozorPar
+                            p1 = Process(target=self.__decodeImage2__,args=(frames,ServerQ,metadata,meshbestjobQ,info,header,job_queue,dozor_par,))
+                            p1.start()
+                    else:
+                        pass
+                except:
                     pass
-            except:
-                pass
 
     def notify(self, observable, *args, **kwargs):          
         
@@ -513,10 +529,11 @@ class MestbestSever():
         
     def meshbetjob(self,ServerQ,meshbestjobQ):       
         self.logger.info(f'Start meshbetjob Monitor')
+        os.nice(-10) #high pri
         while True:
             #check command
             try:
-                command = meshbestjobQ.get(block=True)
+                command = meshbestjobQ.get(block=False)
                 # self.logger.info(f'Get Q: {command}')
                 if isinstance(command,str):
                     # self.logger.info(f'command is srt')
@@ -525,7 +542,7 @@ class MestbestSever():
                         # sys.exit()
                         break
                 elif isinstance(command,tuple) :
-                     # self.logger.info(f'command is tuple')
+                    #  self.logger.info(f'meshbetjob command is {command[0]}')
                      if command[0] == "regID" :
                          pass
                      elif command[0] == 'updateuser':
@@ -574,7 +591,7 @@ class MestbestSever():
                          else:
                              self.meshPositionsdata_2.append(signleframedata)
                          
-                         self.logger.debug(f'update view:{dozorresult["view"]} frame:{index}')
+                         self.logger.info(f'update view:{dozorresult["view"]} frame:{index},note:frame may be need+1,File name = {signleframedata["Filename"]}')
                      elif command[0] == "EndOfSeries":
                          # All job done
                          # self.sendtoAllClient(tuple(temp))
@@ -618,7 +635,7 @@ class MestbestSever():
                              meshbestjobQ.put(('startjob',sid,header))
                              
                          else:
-                             # time.sleep(0.02)
+                             time.sleep(0.02)
                              
                              if command[1] == 101:
                                 if self.numofdataView1 != currentnum:
@@ -634,6 +651,7 @@ class MestbestSever():
                                     #nothing change but still lack data
                                     if (time.time()-latsnewdatatime1) > 10:
                                         self.logger.info(f'Timeout for viwe1 check data,10 sec no new data coming')
+                                        # meshbestjobQ.put(('recover_data',sid,header))
                                     else:
                                         meshbestjobQ.put(('check_data',sid,header))
                             
@@ -652,10 +670,64 @@ class MestbestSever():
                                     #nothing change but still lack data
                                     if (time.time()-latsnewdatatime2) > 10:
                                         self.logger.info(f'Timeout for viwe2 check data,10 sec no new data coming')
+                                        #meshbestjobQ.put(('recover_data',sid,header))
                                     else:
                                         meshbestjobQ.put(('check_data',sid,header))
                                 
                                 self.numofdataView2 = currentnum
+                     elif command[0] == "recover_data":
+                        sid = command[1]
+                        header = command[2]
+                        if command[1] == 101:
+                            meshPositionsdata = self.meshPositionsdata_1
+                            pass
+                        else:
+                            meshPositionsdata = self.meshPositionsdata_2
+                            pass
+                        exceptNum = int(header['appendix']['raster_X']) * int(header['appendix']['raster_Y'])
+                        a=[]
+                        for i in meshPositionsdata:
+                            a.append(i['index'])
+                        b = [x for x in range(exceptNum)]
+                        miss = set(a) ^ set(b)
+                        self.logger.info(f'SID ={sid} Try to recover image from h5, we miss {miss}')
+                        dir = header['appendix']['directory']#/data/blctl/20220923_07A/125136
+                        filename = header['appendix']['filename']#RasterScanview2_0000
+                        h5path= pathlib.Path(f'{dir}/{filename}/_master.h5')
+                        #todo
+                        #make sure data has downlaod to raid??
+
+                        #write to tempfolder
+                        try:
+                            alldata = readframe(h5path,miss)
+                            
+                            for data,frame in zip(alldata,miss):
+                                # cbfpath = h5path.parent / f'{h5path.stem}_{frame:05d}.cbf'
+                                cbfpath = f'{self.tempcbffolder}/{filename}_{frame:05d}.cbf' 
+                                #this is for dozor which only take 32bit image
+                                if data.dtype != "uint32" :
+                                    if data.dtype == "uint16":
+                                        maxV=65535
+                                    elif data.dtype == "uint8":
+                                        maxV=255
+                                    else:
+                                        maxV=4294967295
+                                    data = data.astype('uint32')
+                                    data = numpy.where(data==maxV,4294967295,data)
+                                self.logger.info(f'recover {cbfpath}')
+
+                                cbf.write(cbfpath,data)
+                        except Exception as e:
+                            traceback.print_exc()
+                            self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
+                            self.logger.warning(f'Error : {e}')
+                            pass
+                        #dozor(self,path,metadata,dozor_par,):
+                        #rundozr , header,frame #frame start with 1 maybe need -1 in dozor
+
+
+                        
+                        pass
                      elif command[0] == "startjob":
                          self.logger.info(f'startjob {sid}')
                          sid = command[1]
@@ -742,7 +814,8 @@ class MestbestSever():
                                 json.dump(ans, outfile, sort_keys=True, indent=4, ensure_ascii=False)
                             self.recursive_chown(self.Par["UI_par"]["RootPath_2"],self.uid,self.gid)
 
-                            self.logger.info(f'Ready to updatepar self.Par=  {self.Par} ')
+                            self.logger.debug(f'Ready to updatepar')
+                            # self.logger.debug(f'Ready to updatepar self.Par=  {self.Par} ')
                             # self.logger.info(f'Dtable={Dtable},Ztable={Ztable},BestPositions={BestPositions}')    
                             ServerQ.put(('Direct_Update_par','meshbetjob',sid))
                             ServerQ.put(('notify_ui_update','meshbetjob',sid))
@@ -775,6 +848,8 @@ class MestbestSever():
                              # meshbestjobQ.put(('check_state',alldata['sessionid']))
                 else:
                     pass
+            except Empty:
+                pass
             except Exception as e: 
                 traceback.print_exc()
                 self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
@@ -979,12 +1054,12 @@ class MestbestSever():
         temp['spotsArray'][:] = numpy.nan
         self.Par[view] = temp
         self.logger.debug(f' init array {numofXbox},{numofYbox}')
-        try:
-            del temp['View1']['jpg']
-            del temp['View2']['jpg']
-        except:
-            pass
-        self.logger.debug(f'After init should :{view}={temp}')
+        # try:
+        #     del temp['View1']['jpg']
+        #     del temp['View2']['jpg']
+        # except:
+        #     pass
+        # self.logger.debug(f'After init should :{view}={temp}')
     def recursive_chown(self,path,uid,gid):
         for dirpath, dirnames, filenames in os.walk(path):
             os.chown(dirpath,uid,gid)

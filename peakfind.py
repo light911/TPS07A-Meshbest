@@ -48,9 +48,10 @@ def select_subset(array:numpy.ndarray,centerCoord,distance):
     pt = numpy.array(centerCoord).reshape(-1,1,1)
     # print(pt)
     elems =  numpy.abs(idxMat-pt).sum(axis=0) <= distance   
+    # elems =  numpy.sqrt(numpy.square(numpy.abs(idxMat-pt)).sum(axis=0)) <= distance*numpy.sqrt(2)
     return elems
 
-def detect_peaks_1(image:numpy.ndarray,threshold:float=1,distance:int=1,maxnum:int=200):
+def detect_peaks_1(image:numpy.ndarray,threshold:float=1,distance:int=1,maxnum:int=1):
     t0=time.time()
     # max = numpy.amax(image)
     # print(max)
@@ -137,6 +138,7 @@ def plot(array2D):
     
     detected_peaks = detect_peaks(array2D)
     peaks,detected_peaks_1,debug = detect_peaks_1(array2D)
+    print(peaks)
     plt.subplot(1,4,(1))
     plt.imshow(array2D)
     plt.subplot(1,4,(2) )

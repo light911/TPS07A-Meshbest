@@ -75,7 +75,7 @@ class FileWriter():
         """
         if self.__verbose__:
             print("[*] decode image")
-
+        # print(info["encoding"] )
         # header = json.loads(frames[0].bytes) # header dict
         # info = json.loads(frames[1].bytes) # info dict
 

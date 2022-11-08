@@ -36,7 +36,7 @@ import multiprocessing as mp
 from UI.GUI_Collectpar import collectparui
 from adxv import adxv
 from pathlib import Path
-
+from peakfind import detect_peaks_1
 
 # import faulthandler
 # faulthandler.enable()
@@ -288,6 +288,12 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.view2_opacity.valueChanged.connect(self.view2_opacity_value_change)
         self.view1_opacity.mouseReleaseEvent = self.view1_opacity_mouseReleaseEvent
         self.view2_opacity.mouseReleaseEvent = self.view2_opacity_mouseReleaseEvent
+        self.Threshold_1.valueChanged.connect(self.List_number_1_value_change)
+        self.Threshold_2.valueChanged.connect(self.List_number_2_value_change)
+        self.Min_peak_distance_1.valueChanged.connect(self.List_number_1_value_change)
+        self.Min_peak_distance_2.valueChanged.connect(self.List_number_2_value_change)
+        
+
 
         self.DetailInfo1.clicked.connect(self.DetailInfo1_clicked)
         self.DetailInfo2.clicked.connect(self.DetailInfo2_clicked)
@@ -324,7 +330,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             if currenttxt == None:
                 self.GetDefalutFolder_clicked("Default path is not set!\n")
                 return
-            ans = re.match("/data/(.*)/(........)_07A/(.*)",currenttxt)
+            ans = re.match("/data/(.*)/(........)_07A(.*)/(.*)",currenttxt)
             print(ans)
             if ans:
                 if ans[1] != str(self.user):
@@ -379,7 +385,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         #     self.updatelistfor1 = True
         #     self.updatelist_1.setStyleSheet("")
         if self.bluiceData['active']:
-            self.update_ui_par_to_meshbest()
+            self.create_collectinfo('View1')
+            self.update_ui_par_to_meshbest('plotBestpos_View1')
     def updatelist_2_update(self):
         # print(f'{self.updatelist_2.isChecked()=}')
         # if self.updatelist_2.isChecked():
@@ -389,7 +396,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         #     self.updatelistfor2 = True
         #     self.updatelist_2.setStyleSheet("")
         if self.bluiceData['active']:
-            self.update_ui_par_to_meshbest()
+            self.create_collectinfo('View2')
+            self.update_ui_par_to_meshbest('plotBestpos_View2')
 
     def collectAllpos_1_clicked(self):
         self.CollectdataSeq('View1')
@@ -1866,7 +1874,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
     
     def ArmDetectorandMeshbest(self):
         # this not work
-        self.logger.info(f'{self.RasterPar["View2"]["box"]}, so .....{self.RasterPar["View2"]["box"] == QRectF(0,0,0,0)}')
+        # self.logger.info(f'{self.RasterPar["View2"]["box"]}, so .....{self.RasterPar["View2"]["box"] == QRectF(0,0,0,0)}')
         self.Qinfo["sendQ"].put('gtos_set_string system_status {Wait for Detector setup(Raster)} black #d0d000')
         if self.RasterRunstep ==0:
             view=1
@@ -2329,7 +2337,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         
         
         
-        if self.ExpousetimeType.currentText() == "Exposed time":
+        if self.ExpousetimeType.currentText() == "Exposure time":
             exposure_time = self.ExpouseValue.value()
         elif self.ExpousetimeType.currentText() == "Rate":
             exposure_time = 1 / self.ExpouseValue.value()
@@ -2590,6 +2598,11 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     elif command[2] == "plotView12":
                         self.plotView12()
                         return
+                    elif command[2] == "UI_update":
+                        if self.bluiceData['active']:
+                            pass
+                        else:
+                            self.plotView12(False)
                     else:
                         self.plotView12(False)#false not clear sozor array  
                 else:
@@ -3381,6 +3394,12 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     flux =0
                 self.beamlineflux.setText(f'{flux:.3e} phs/sec')
                 self.CalRasterDose()
+            elif name == 'timeToNextInjSec':
+                self.timetoinj.setText(f'{float(value[0]):.1f} sec')
+                if float(value[0])<=10:
+                    self.timetoinj.setStyleSheet(f'color: red')
+                else:
+                    self.timetoinj.setStyleSheet(f'color: green')
             elif name == 'tps_state':
                 if value[0]=='Beams':
                     self.TPSStateText.setText('Open')
@@ -3611,22 +3630,26 @@ class MainUI(QMainWindow,Ui_MainWindow):
     def Overlap_Select_1_value_change (self):
         if self.bluiceData['active']:
             self.plot_overlap_image("View1")
-            self.update_ui_par_to_meshbest()
+            self.update_ui_par_to_meshbest('UI_update')#active one not replot
     def Overlap_Select_2_value_change (self):
         if self.bluiceData['active']:
             self.plot_overlap_image("View2")
-            self.update_ui_par_to_meshbest()
+            self.update_ui_par_to_meshbest('UI_update')#active one not replot
     
     def List_number_1_value_change (self):
         if self.bluiceData['active']:
             self.create_collectinfo('View1')
             # self.plot_overlap_image("View1")
-            self.update_ui_par_to_meshbest()
+            self.update_ui_par_to_meshbest('plotBestpos_View1')
             
     def List_number_2_value_change (self):
         if self.bluiceData['active']:
             self.create_collectinfo('View2')
             # self.plot_overlap_image("View2")
+            self.update_ui_par_to_meshbest('plotBestpos_View2')
+
+    def active_updateui_par (self):
+        if self.bluiceData['active']:
             self.update_ui_par_to_meshbest()
             
     def view1_opacity_value_change (self):
@@ -3858,6 +3881,9 @@ class MainUI(QMainWindow,Ui_MainWindow):
             pass
         else:
             del self.Par[view]['collectInfo'][findindex]
+            #modify filename in collectInfo after del a file
+            for i,item in enumerate(self.Par[view]['collectInfo']):
+                self.Par[view]['collectInfo'][i]['FileName'] = f'{i+1:03d}'
             self.send_RasterInfo_to_meshbest()
             self.plot_overlap_image(view)
             self.logger.info(f'Del pos:{findindex} in {view}')
@@ -4017,12 +4043,21 @@ class MainUI(QMainWindow,Ui_MainWindow):
         if view=='View1':
             numlist = self.List_number_1.value()    
             updatetype = self.updatelist_1.currentIndex()
+            select =  self.Overlap_Select_1
+            Threshold = self.Threshold_1.value() 
+            Min_peak_distance = self.Min_peak_distance_1.value()
         elif view == 'View2':
             numlist = self.List_number_2.value()
             updatetype = self.updatelist_2.currentIndex()
+            select =  self.Overlap_Select_2
+            Threshold = self.Threshold_2.value() 
+            Min_peak_distance = self.Min_peak_distance_2.value()
         elif view == 'View3':#todo for viwe12
             numlist = self.List_number_1.value()
             updatetype = self.updatelist_1.currentIndex()    
+            select =  self.Overlap_Select_1
+            Threshold = self.Threshold_1.value()
+            Min_peak_distance = self.Min_peak_distance_1.value()
             pass
         if updatetype == 0:
             collectlist=list()           
@@ -4096,6 +4131,82 @@ class MainUI(QMainWindow,Ui_MainWindow):
             pass    
         elif updatetype == 2:#peak
             #todo
+            collectlist=list()
+            if not select.currentIndex() in [2,3]:
+                self.logger.warning(f'currentselect index = {select.currentIndex()},not in 2 or 3 ')
+                return
+            elif select.currentIndex() == 2:
+                table = RasterPar['scoreArray']
+            elif select.currentIndex() == 3:
+                table = RasterPar['spotsArray']
+            else:
+                return
+            peaks,a,b = detect_peaks_1(table,Threshold,Min_peak_distance,numlist)
+            for i,item in enumerate(peaks):
+                posdata={}
+                #,x,y,beamsize,socre
+                posdata['ViewX'] = item[0]+1
+                posdata['ViewY'] = item[1]+1
+                BeamSize = self.CorrectBeamsize(1 * RasterPar['gridsizeY'])
+
+                CollectOrder = int(i+1)
+                CollectType = 0#todo collec
+                CollectDone = False
+                FileName = f'{i+1:03d}'
+                
+                FolderName = f'{self.RootPath_2.text()}/collect'
+                Distance = self.Distance.value()
+                Energy = self.bluiceData['motor']['energy']['pos']
+                TotalCollectRange = 10 #todo set a input?
+                StartPhi = RasterPar['gonio_phi'] - (TotalCollectRange /2)
+                EndPhi = RasterPar['gonio_phi'] + (TotalCollectRange /2)
+                Delta = 0.1 #todo set a input?
+                Atten = 0
+                ExpTime = 0.01
+                displaytext = "Atten-Time"
+                DoseSelect = 0
+                dose = 10
+                RoughtDose = 10
+                EstimateDose = 10
+                #get flux
+                currentBeamsize =  float(self.bluiceData['string']['currentBeamsize']['txt'])
+                currentAtten = self.bluiceData['motor']['attenuation']['pos']#float
+                sampleFlux = float(self.bluiceData['string']['sampleFlux']['txt'])
+                flux = self.collectparwindows.predict_flux(currentBeamsize,currentAtten,sampleFlux,BeamSize,self.Par)
+                
+                newHdose,newAdose,newAtten,newExptime,newTrange,newDelta,NewDistance,NewEnergy=\
+                self.collectparwindows.calDosePar(displaytext,DoseSelect,BeamSize,dose,RoughtDose,EstimateDose,Atten,ExpTime,TotalCollectRange,Delta,Distance,Energy,flux)
+                posdata['BeamSize'] = BeamSize
+                posdata['CollectOrder'] = CollectOrder
+                posdata['CollectType'] = CollectType
+                posdata['CollectDone'] = CollectDone
+                posdata['FileName'] = FileName
+                posdata['FolderName'] = FolderName
+                posdata['Distance'] = Distance
+                posdata['Energy'] = Energy
+                posdata['StartPhi'] = RasterPar['gonio_phi'] - (newTrange /2)
+                posdata['EndPhi'] = RasterPar['gonio_phi'] + (newTrange /2)
+                posdata['TotalCollectRange'] = newTrange
+                posdata['Delta'] = newDelta
+                posdata['ExpTime'] = newExptime
+                posdata['Atten'] = newAtten
+                posdata['RoughtDose']=newHdose
+                posdata['EstimateDose'] = newAdose
+                # self.logger.warning(f'{posdata["StartPhi"]},{posdata["EndPhi"]},{newTrange}')
+                if i >=numlist:
+                    pass
+                else:
+                    collectlist.append(posdata)
+            self.logger.warning(f'View = {view}, len collectlist={len(collectlist)}')
+            self.Par[view]['collectInfo'] = collectlist
+            if len(self.Par[view]['collectInfo'])>0:
+                if view=='View1':
+                    self.collectAllpos_1.setEnabled(True)
+                else:
+                    self.collectAllpos_2.setEnabled(True)
+            # self.send_RasterInfo_to_meshbest(False)#also send par[view][collectInfo]
+            updatestr = f'plotBestpos_{view}'
+            self.send_RasterInfo_to_meshbest(updatestr)
             pass
     def predict_flux(self,currentBeamsize,currentAtten,sampleFlux,Targetbeamsize,par):
         # currentBeamsize =  float(self.bluiceData['string']['currentBeamsize'])
@@ -4153,7 +4264,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             sampleFlux = float(self.bluiceData['string']['sampleFlux']['txt'])
             TargetBeamSize = float(self.selectBeamsize.currentText())
             flux = self.collectparwindows.predict_flux(currentBeamsize,currentAtten,sampleFlux,TargetBeamSize,self.Par)
-            if self.ExpousetimeType.currentText() == "Exposed time":
+            if self.ExpousetimeType.currentText() == "Exposure time":
                 exposure_time = self.ExpouseValue.value()
             elif self.ExpousetimeType.currentText() == "Rate":
                 exposure_time = 1 / self.ExpouseValue.value()
@@ -4347,7 +4458,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         #     pass
         self.meshbest.sendCommandToMeshbest(('Update_par',par,updatetype))
         
-    def update_ui_par_to_meshbest(self):
+    def update_ui_par_to_meshbest(self,updatetype='All'):
         uiparlists,uiindexlists,uitextlists,uicheckablelists= variables.ui_par_lists()
         
         for item in uiparlists:
@@ -4372,7 +4483,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
 
         # par = copy.deepcopy(self.Par)
         par = variables.Raster_to_Meshbest_par(self.RasterPar, self.Par)
-        self.meshbest.sendCommandToMeshbest(('Update_par',par))
+        self.meshbest.sendCommandToMeshbest(('Update_par',par,updatetype))
     def update_All_par_to_meshbest(self):
         # TODO
         uiparlists,uiindexlists,uitextlists ,uicheckablelists= variables.ui_par_lists()

@@ -1,8 +1,10 @@
+from cmath import exp
 from PyQt5 import QtWidgets,QtGui,QtCore
 from PyQt5.QtGui import QPixmap,QPainter,QPen,QImage
 from PyQt5.QtWidgets import QApplication, QMainWindow,QGraphicsScene,QGraphicsItem,QGraphicsRectItem,QGraphicsTextItem,QWidget,QMessageBox,QGraphicsView
 from TPS07A_showresult import Ui_MainWindow
 import argparse,sys,os,signal,math,time,traceback,getpass,re
+import json
 
 class MainUI(QMainWindow,Ui_MainWindow):
     def __init__(self) -> None:
@@ -25,7 +27,13 @@ class MainUI(QMainWindow,Ui_MainWindow):
             graphicsView = getattr(self,item)
             # graphicsView = QGraphicsView()
             graphicsView.setScene(self.Scene[view])
-        
+        #try  read viwe_1_result.json
+        try:
+            with open("viwe_1_result.json","r+") as f:
+                a = json.load(f)
+            print(a)
+        except Exception as e:
+            print(e)
         pass
     def quit(self,signum,frame):
         pass

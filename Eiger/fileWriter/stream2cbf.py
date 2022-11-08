@@ -42,7 +42,7 @@ class Stream2Cbf(FileWriter):
 
         FileWriter().__init__(basename, path, self.ftype, verbose)
         self.Par = Config.Par
-        self.logger = logsetup.getloger2('FileWriter',LOG_FILENAME='./log/FileWriter.txt',level = self.Par['Debuglevel'])
+        self.logger = logsetup.getloger2('FileWriter',LOG_FILENAME='./log/FileWriter.txt',level = self.Par['Debuglevel'],bypassdb=True)
         self._observers=[]
         self.timer=0
         self.dozor_par={"spot_level":5.5,"spot_size":3}
@@ -195,7 +195,7 @@ class Stream2Cbf(FileWriter):
         try:
             if self.metadata["appendix"]['runIndex'] == '101' or self.metadata["appendix"]['runIndex'] =='102':
                 
-            
+                # self.logger.debug(f'Run index {self.metadata["appendix"]["runIndex"]} for raster scan,frame= {header["frame"]}')
                 # info = json.loads(frames[1].bytes)
                 # header = json.loads(frames[0].bytes)
                 # data = frames[2]
@@ -232,7 +232,10 @@ class Stream2Cbf(FileWriter):
         t0 =time.time()
         os.nice(34)
         # data = FileWriter().__decodeImage__(frames,ServerQ,meshbestjobQ,job_queue) # read back image data
+        # self.logger.debug(f'mark1')
         data = FileWriter().__decodeImage__(frames,ServerQ,meshbestjobQ,info,header,job_queue)
+        # self.logger.debug(f'mark2')
+
         # data = frames
         # np.save("/data/blctl/test",data)
         # self.logger.warning(f'Data type = {data.dtype}')
@@ -266,8 +269,9 @@ class Stream2Cbf(FileWriter):
         #dezor
         #tell gui finish job
         self.logger.info(f'save + decode time for frame {frame},time:{time.time()-t0} sec')
-        ServerQ.put(('dozor',dozorresult))
         meshbestjobQ.put(('updateDozor',dozorresult,datastr))
+        ServerQ.put(('dozor',dozorresult))
+        
         pass
     def __decodeEndOfSeries__(self, frames,ServerQ,meshbestjobQ,job_queue):
         self.logger.info(f"End of Series: {self.currentframe}")
@@ -292,6 +296,23 @@ class Stream2Cbf(FileWriter):
     
     # in upper dhs need has a 
     # def notify
+
+    def rerun_dozr(self,path,metadata,frame,dozor_par,meshbestjobQ,ServerQ):
+        dozorresult,datastr = self.dozor(path,metadata,dozor_par)
+        dozorresult['frame'] = frame
+        dozorresult['omega'] = metadata['omega_start']
+        dozorresult['numofX'] = metadata['appendix']['raster_X']
+        dozorresult['numofY'] = metadata['appendix']['raster_Y']
+        if int(metadata['appendix']['runIndex']) == 101:
+            dozorresult['view']=1
+        else:
+            dozorresult['view']=2
+        #dezor
+        #tell gui finish job
+        self.logger.info(f'save + decode time for frame {frame},time:{time.time()-t0} sec')
+        meshbestjobQ.put(('updateDozor',dozorresult,datastr))
+        ServerQ.put(('dozor',dozorresult))
+        pass
     def dozor(self,path,metadata,dozor_par):
         spot_level=f'spot_level {dozor_par["spot_level"]}'
         spot_size=f'spot_size {dozor_par["spot_size"]}'
