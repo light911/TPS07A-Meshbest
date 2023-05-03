@@ -47,6 +47,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         signal.signal(signal.SIGINT, self.quit)
         signal.signal(signal.SIGTERM, self.quit)
         self.setupUi(self)
+        self.smallestpxiel = 25
         self.pid = os.getpid()
         #setup par
         self.bluicekey = key
@@ -221,6 +222,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         # print(self.RootPath.text())
         self.collectAllpos_1.setEnabled(False)
         self.collectAllpos_2.setEnabled(False)
+        self.RootPath_2.hide()
         pass
     
     def initGuiEvent(self):
@@ -274,6 +276,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.selectGridsize.currentIndexChanged.connect(self.selectGridsize_value_change)
         self.selectBeamsize.currentIndexChanged.connect(self.selectBeamsize_value_change)
         self.Distance.valueChanged.connect(self.Distance_value_change)
+        self.ExpouseValue.valueChanged.connect(self.ExpouseValue_change)
         
         self.Overlap_Select_1.currentIndexChanged.connect(self.Overlap_Select_1_value_change)
         self.Overlap_Select_2.currentIndexChanged.connect(self.Overlap_Select_2_value_change)
@@ -1573,7 +1576,10 @@ class MainUI(QMainWindow,Ui_MainWindow):
     def Distance_value_change(self):
         if self.bluiceData['active']:
             self.update_ui_par_to_meshbest()
-        
+            
+    def ExpouseValue_change(self):
+        if self.bluiceData['active']:
+            self.update_ui_par_to_meshbest()
     def plotbox(self,Newone=True):
             self.logger.debug(f'plotbox at Gridsize {float(self.selectGridsize.currentText())}')
             # print('plotbox is called!')
@@ -1880,6 +1886,10 @@ class MainUI(QMainWindow,Ui_MainWindow):
             view=1
             if self.RasterPar['View1']['box'] == QRectF(0,0,0,0):
                 self.skipview = True
+            elif self.RasterPar['View1']['numofX'] == 0 or self.RasterPar['View1']['numofY'] == 0:
+                self.skipview = True
+                pass
+
             else:
                 self.skipview = False
             parlist = self.calRasterParDetector(view1=True)
@@ -1887,6 +1897,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         else:
             view=2
             if self.RasterPar['View2']['box'] == QRectF(0,0,0,0):
+                self.skipview = True
+            elif self.RasterPar['View2']['numofX'] == 0 or self.RasterPar['View2']['numofY'] == 0:
                 self.skipview = True
             else:
                 self.skipview = False
@@ -1896,7 +1908,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             parlist = self.calRasterParDetector(view1=False)
             arm='armview'
             # self.skipview = True
-        
+        self.logger.warning(f'{self.RasterRunstep=},{self.skipview=}')
         if self.skipview:
             self.logger.info(f'skip view{view}')
             # self.TriMD3RasterEx()
@@ -1973,44 +1985,49 @@ class MainUI(QMainWindow,Ui_MainWindow):
             #skip view2 move
             self.StartRasterclicked_done()
         else:
-            attenuation = self.Attenuation.value()
-            samplex = par['sample_x']
-            sampley = par['sample_y']
-            samplez = par['sample_z']
-            angle = par['gonio_phi']
-            zoomx = par['zoom_scale_x']
-            zoomy = par['zoom_scale_y']
-            centerX = par['box'].center().x()
-            CenterY = par['box'].center().y()
-            samplez,sampley,samplex = self.calXYZbaseonCAMCenter(centerX,CenterY,angle,zoomx,zoomy,samplex,sampley,samplez)    
-        
-            command = f'gtos_start_motor_move gonio_phi {angle}'
-            # print(command)
-            self.Qinfo["sendQ"].put(command)
-            command = f'gtos_start_motor_move sample_x {samplex}'
-            # print(command)
-            self.Qinfo["sendQ"].put(command)
-            command = f'gtos_start_motor_move sample_y {sampley}'
-            # print(command)
-            self.Qinfo["sendQ"].put(command)
-            command = f'gtos_start_motor_move sample_z {samplez}'
-            # print(command)
-            self.Qinfo["sendQ"].put(command)
-            command = f'gtos_start_motor_move attenuation {attenuation}'
-            # print(command)
-            self.Qinfo["sendQ"].put(command)
+            if self.skipview:
+                #if skip view do not move
+                callback()
+                pass
+            else:
+                attenuation = self.Attenuation.value()
+                samplex = par['sample_x']
+                sampley = par['sample_y']
+                samplez = par['sample_z']
+                angle = par['gonio_phi']
+                zoomx = par['zoom_scale_x']
+                zoomy = par['zoom_scale_y']
+                centerX = par['box'].center().x()
+                CenterY = par['box'].center().y()
+                samplez,sampley,samplex = self.calXYZbaseonCAMCenter(centerX,CenterY,angle,zoomx,zoomy,samplex,sampley,samplez)    
+            
+                command = f'gtos_start_motor_move gonio_phi {angle}'
+                # print(command)
+                self.Qinfo["sendQ"].put(command)
+                command = f'gtos_start_motor_move sample_x {samplex}'
+                # print(command)
+                self.Qinfo["sendQ"].put(command)
+                command = f'gtos_start_motor_move sample_y {sampley}'
+                # print(command)
+                self.Qinfo["sendQ"].put(command)
+                command = f'gtos_start_motor_move sample_z {samplez}'
+                # print(command)
+                self.Qinfo["sendQ"].put(command)
+                command = f'gtos_start_motor_move attenuation {attenuation}'
+                # print(command)
+                self.Qinfo["sendQ"].put(command)
 
-            motorchecklist=['gonio_phi','sample_x','sample_y','sample_z','attenuation']
-            motorposchecklist=[angle,samplex,sampley,samplez,attenuation]
-            # motorchecklist=['sample_x','sample_y','sample_z']
-            # motorposchecklist=[samplex,sampley,samplez]
-            self.logger.info(f'wait {motorchecklist} goto {motorposchecklist}')
-            # self.timer.singleShot(100,partial(self.waitMotorInPosUpdate,motorchecklist,motorposchecklist,callback))
-            self.timer.singleShot(200, partial(self.waitMotorStopUpdate_v2,motorchecklist,callback))
+                motorchecklist=['gonio_phi','sample_x','sample_y','sample_z','attenuation']
+                motorposchecklist=[angle,samplex,sampley,samplez,attenuation]
+                # motorchecklist=['sample_x','sample_y','sample_z']
+                # motorposchecklist=[samplex,sampley,samplez]
+                self.logger.info(f'wait {motorchecklist} goto {motorposchecklist}')
+                # self.timer.singleShot(100,partial(self.waitMotorInPosUpdate,motorchecklist,motorposchecklist,callback))
+                self.timer.singleShot(200, partial(self.waitMotorStopUpdate_v2,motorchecklist,callback))
         
     def TriMD3Raster(self):
         
-        self.logger.info(f'Ready for Tri. MD3')
+        self.logger.info(f'Ready for Tri. MD3 ({self.RasterRunstep=})')
         self.Qinfo["sendQ"].put('gtos_set_string system_status {Wait for MD3 scan (Raster)} black #d0d000')
         if self.RasterRunstep == 1:
             parlist = self.calstartRasterScanPar(view1=True)
@@ -2024,18 +2041,14 @@ class MainUI(QMainWindow,Ui_MainWindow):
             par = self.RasterPar['View2']
 
         if self.skipview:
+            self.logger.info(f'Skip TriMD3Raster')
             callback()
         else:
-            
             command = f"gtos_start_operation startRasterScan {self.bluiceID}.{self.bluiceCounter} "
             self.bluiceCounter += self.bluiceCounter
             for item in parlist:
                 command = command + str(item) + " "
             self.logger.debug(f"send command to dcss:{command}")
-        
-        
-        
-        
             self.Qinfo["sendQ"].put(command)
             #wait operation done
             self.logger.info(f'Wait for MD3 operation')
@@ -2219,7 +2232,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         gridsizex = par['gridsizeX']
         gridsizey = par['gridsizeY']
         ans =  [runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY,uid,gid,gridsizex,gridsizey]
-        self.logger.debug(f'{ans}')
+        self.logger.debug(f'{runIndex=},{filename=},{directory=},{userName=},{axisName=},{exposureTime=},{oscillationStart=},{detosc=},{TotalFrames=},{distance=},{wavelength=},{detectoroffX=},{detectoroffY=},{sessionId=},{fileindex=},{unknow=},{beamsize=},{atten=},{roi=},{numofX=},{numofY=},{uid=},{gid=},{gridsizex=},{gridsizey=}')
+        # self.logger.debug(f'{ans}')
         return ans
     def gridsizetobeamsize(self,gridsize):
         table={100:80,90:70,80:60,70:50,60:40,50:30,40:20,30:10,20:5,10:1,5:1}
@@ -2433,7 +2447,15 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     cross.setPos(target)
 
     def messageFromMeshbest(self,command):
-        self.logger.debug(f'Meshbest Emit : {command}')
+        #remove some
+        tempcommand =copy.deepcopy(command)
+        if tempcommand[0] == 'updatePar':
+            # tempcommand[1]['View1'] =
+            dellist = ['jpg','Dtable','Ztable','BestPositions','scoreArray','resArray','spotsArray']
+            for item in dellist:
+                del tempcommand[1]['View1'][item]
+                del tempcommand[1]['View2'][item]
+        self.logger.debug(f'Meshbest Emit : {tempcommand}')
         if command[0] == "imagewrited":
             self.logger.info(f'Frame {command[1]} is done!')
             pass
@@ -2454,15 +2476,18 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 view = 'View2'
                 
             x,y=self.convertFrametoXY(command[1]['frame']+1,view1)#frame start from 0 
-            
+            try:
             # self.logger.warning(f'X,Y = {x},{y}, Target array shape:{self.RasterPar[view]["scoreArray"].shape}')
-            self.RasterPar[view]['scoreArray'][x][y] = float(command[1]['score'])
-            self.RasterPar[view]['resArray'][x][y] = float(command[1]['res'])
-            self.RasterPar[view]['spotsArray'][x][y] = float(command[1]['spots'])
-            self.Par[view]['scoreArray'][x][y] = float(command[1]['score'])
-            self.Par[view]['resArray'][x][y] = float(command[1]['res'])
-            self.Par[view]['spotsArray'][x][y] = float(command[1]['spots'])
-            
+                self.RasterPar[view]['scoreArray'][x][y] = float(command[1]['score'])
+                self.RasterPar[view]['resArray'][x][y] = float(command[1]['res'])
+                self.RasterPar[view]['spotsArray'][x][y] = float(command[1]['spots'])
+                self.Par[view]['scoreArray'][x][y] = float(command[1]['score'])
+                self.Par[view]['resArray'][x][y] = float(command[1]['res'])
+                self.Par[view]['spotsArray'][x][y] = float(command[1]['spots'])
+            except Exception as e:
+                # traceback.print_exc()
+                self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
+                self.logger.warning(f'Error:{e}')
             if (time.time()-self.timeformessageFromMeshbest)>0.1:
                 self.timeformessageFromMeshbest=time.time()
                 self.plotdozor_update(x,y,True,'score',view)
@@ -2499,7 +2524,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     self.logger.warning('Do not update!I am doing my job')
                     return
             except Exception as e:
-                traceback.print_exc()
+                # traceback.print_exc()
                 self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
                 self.logger.warning(f'Error:{e}')
             if self.bluiceData['active']:
@@ -2645,6 +2670,13 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 
             else:
                 pass
+        elif command[1] == 'dozor':
+            if sid == 101:
+                self.plot_overlap_image('View1') #make sure it update
+            else:
+                self.plot_overlap_image('View2') #make sure it update
+            
+            pass
         else:
             pass
         #    self.logger.debug(f'Meshbest Emit : {command}')
@@ -2663,7 +2695,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             BestPositions = np.frombuffer(base64.b64decode(par['BestPositions']))
             BestPositions = np.reshape(BestPositions, (int(np.size(BestPositions)/4),4))
         except Exception as e:
-            traceback.print_exc()
+            # traceback.print_exc()
             self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
             self.logger.warning(f'Has error when decodeTable {e}')
             Dtable = None
@@ -2798,95 +2830,98 @@ class MainUI(QMainWindow,Ui_MainWindow):
 
         
     def plotdozor_update(self,x,y,text,Type,view='View1',Opacity=100):
-        
-        if Type == "spots":
-            array = self.RasterPar[view]['spotsArray']
-            data = array[x][y]
-            datatext = f'{data:1.0f}'
-        elif Type == "res":
-            array = self.RasterPar[view]['resArray']
-            data = array[x][y]
-            datatext = f'{data:1.1f}'
-        elif Type == "score":
-            array = self.RasterPar[view]['scoreArray']
-            data = array[x][y]
-            datatext = f'{data:1.1f}'
-            self.logger.debug(f'scoreArray = {array}')
-        else:
-            self.logger.info("Unkonw plot type")
-            return
-        if view == 'View1':
-            Rasterscene= self.Rasterscene1
-            r=1
-            view1 = True
-            par = self.RasterPar['View1']
-        else:
-            Rasterscene= self.Rasterscene2
-            r=2
-            view1 =False
-            par = self.RasterPar['View2']
-        
+        try:
+            if Type == "spots":
+                array = self.RasterPar[view]['spotsArray']
+                data = array[x][y]
+                datatext = f'{data:1.0f}'
+            elif Type == "res":
+                array = self.RasterPar[view]['resArray']
+                data = array[x][y]
+                datatext = f'{data:1.1f}'
+            elif Type == "score":
+                array = self.RasterPar[view]['scoreArray']
+                data = array[x][y]
+                datatext = f'{data:1.1f}'
+                # self.logger.debug(f'scoreArray = {array}')
+            else:
+                self.logger.info("Unkonw plot type")
+                return
+            if view == 'View1':
+                Rasterscene= self.Rasterscene1
+                r=1
+                view1 = True
+                par = self.RasterPar['View1']
+            else:
+                Rasterscene= self.Rasterscene2
+                r=2
+                view1 =False
+                par = self.RasterPar['View2']
             
-        # try:
-        #     for a in self.RasterPar[view]['Textplotarray'] :
-        #         for b in a :
-        #             Rasterscene.removeItem(b)
-                    
-                    
-        # except:
-        #     pass
-        numofXbox = par['numofX']
-        numofYbox = par['numofY']
-        smallbox = par['boxRectItemarray'][0][0]
-        if smallbox.boundingRect().width() <= 1:
-            # box too small(small than xx)
-            #not plot text
-            print(f'{smallbox.boundingRect().width()=}')
-            pass
-        else:
-            # print('here')
-            # qpen = QPen()
-            # qpen.setColor(QColor('white'))
-            # qp=QPainter.setPen(qpen)
-            
-            myfont = QFont()
-            myfont.setBold(False)
-            myfont.setPointSize(10)
-            
-            ratio = self.getViewRatio(r)
-            x0,y0,xc,yc=self.plottool_getpixel(x,y,ratio,view1)
-            # temp = Rasterscene.addText(datatext)
-            temp = self.RasterPar[view]['Textplotarray'][x][y]
-            # temp.paint(qp)
-            temp.setPlainText(datatext)
-            temp.setFont(myfont)
-            
-            if temp.boundingRect().width()>smallbox.boundingRect().width():
-                resizeR = smallbox.boundingRect().width()/temp.boundingRect().width()
-                myfont.setPointSize(int(10*resizeR))
-                temp.setFont(myfont)
-            
-            temp.setPos(xc-temp.boundingRect().width()/2,yc-temp.boundingRect().height()/2)
-            # if text:
-            #     # temp.setDefaultTextColor(QColor('white'))
-            #     # qpen = QPen()
-            #     # qpen.setColor(QColor('white'))
-            #     # qp=QPainter()
-            #     # qp.setPen(qpen)
-            #     # temp.paint(qp,QtWidgets.QStyleOptionGraphicsItem(),QWidget())
-            #     # temp.update(temp.boundingRect())
+                
+            # try:
+            #     for a in self.RasterPar[view]['Textplotarray'] :
+            #         for b in a :
+            #             Rasterscene.removeItem(b)
+                        
+                        
+            # except:
             #     pass
-            # else:
-                # temp.setDefaultTextColor(QColor(0,0,0,0))
-            
-            pos = (xc-temp.boundingRect().width()/2,yc-temp.boundingRect().height()/2)
-            # self.logger.debug(f'x={x},y={y},pos={pos}')                
-            # self.RasterPar[view]['Textplotarray'][x][y] = temp
-            temp.setVisible(True)
-            temp.setOpacity(Opacity)
-            
-        self.DrawColoronBox(array,view,Opacity)
-            
+            numofXbox = par['numofX']
+            numofYbox = par['numofY']
+            smallbox = par['boxRectItemarray'][0][0]
+            if smallbox.boundingRect().width() <= self.smallestpxiel:
+                # box too small(small than xx)
+                #not plot text
+                # print(f'{smallbox.boundingRect().width()=}')
+                pass
+            else:
+                # print('here')
+                # qpen = QPen()
+                # qpen.setColor(QColor('white'))
+                # qp=QPainter.setPen(qpen)
+                
+                myfont = QFont()
+                myfont.setBold(False)
+                myfont.setPointSize(10)
+                
+                ratio = self.getViewRatio(r)
+                x0,y0,xc,yc=self.plottool_getpixel(x,y,ratio,view1)
+                # temp = Rasterscene.addText(datatext)
+                temp = self.RasterPar[view]['Textplotarray'][x][y]
+                # temp.paint(qp)
+                temp.setPlainText(datatext)
+                temp.setFont(myfont)
+                
+                if temp.boundingRect().width()>smallbox.boundingRect().width():
+                    resizeR = smallbox.boundingRect().width()/temp.boundingRect().width()
+                    myfont.setPointSize(int(10*resizeR))
+                    temp.setFont(myfont)
+                
+                temp.setPos(xc-temp.boundingRect().width()/2,yc-temp.boundingRect().height()/2)
+                # if text:
+                #     # temp.setDefaultTextColor(QColor('white'))
+                #     # qpen = QPen()
+                #     # qpen.setColor(QColor('white'))
+                #     # qp=QPainter()
+                #     # qp.setPen(qpen)
+                #     # temp.paint(qp,QtWidgets.QStyleOptionGraphicsItem(),QWidget())
+                #     # temp.update(temp.boundingRect())
+                #     pass
+                # else:
+                    # temp.setDefaultTextColor(QColor(0,0,0,0))
+                
+                pos = (xc-temp.boundingRect().width()/2,yc-temp.boundingRect().height()/2)
+                # self.logger.debug(f'x={x},y={y},pos={pos}')                
+                # self.RasterPar[view]['Textplotarray'][x][y] = temp
+                temp.setVisible(True)
+                temp.setOpacity(Opacity)
+                
+            self.DrawColoronBox(array,view,Opacity)
+        except Exception as e:
+            traceback.print_exc()
+            self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
+            self.logger.warning(f'Error:{e}')    
             # self.RasterPar[view]['boxRectItemarray'][x][y].setBrush(QColor(Color))
     def DrawColoronBox(self,array,view='View1',Opacity=100):                
         maxi = np.nanmax(array)
@@ -2904,7 +2939,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     Color=cc.cwr[Cindex]
                     QQColor = QColor(Color)
                     if Cindex < 1:
-                        QQColor.setAlpha(0)
+                        QQColor.setAlpha(90)
                     elif Cindex < 12:
                         QQColor.setAlpha(125)
                     else:
@@ -2999,35 +3034,46 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 print('error here')
                 return
             
-                
-            for x,item in enumerate(array):
-                for y,item2 in enumerate(item):
-                    
-                    x0,y0,xc,yc=self.plottool_getpixel(x,y,ratio,view1)
-                    
-                    temp = Rasterscene.addText(f'{item2:{txtformat}}',myfont)
-            
-                    if temp.boundingRect().width()>smallbox.boundingRect().width():
-                        resizeR = smallbox.boundingRect().width()/temp.boundingRect().width()
-                        myfont.setPointSize(int(10*resizeR))
-                        temp.setFont(myfont)
+            #if box too small not update text
+            # self.logger.warning(f'{smallbox.boundingRect().width()=}')
+            if smallbox.boundingRect().width() <= self.smallestpxiel:
+                pass
+            else:
+                for x,item in enumerate(array):
+                    for y,item2 in enumerate(item):
                         
-                    # temp.setPen(QPen(QColor('yellow')))
-                    # temp.setFont(myfont)
-                    temp.setPos(xc-temp.boundingRect().width()/2,yc-temp.boundingRect().height()/2)
-                    if text:
-                        temp.setDefaultTextColor(QColor('white'))
-                    else:
-                        temp.setDefaultTextColor(QColor(0, 0, 0, 0))
-                    pos = (xc-temp.boundingRect().width()/2,yc-temp.boundingRect().height()/2)
-                    # self.logger.info(f'x={x},y={y},pos={pos}')                
-                    temp.setOpacity(Opacity)
-                    # try:
-                    self.RasterPar[view]['Textplotarray'][x][y] = temp
-                    # except Exception as e:
-                    #     traceback.print_exc()
-                    #     self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
-                    #     self.logger.warning(f'Error:{e}')
+                        x0,y0,xc,yc=self.plottool_getpixel(x,y,ratio,view1)
+                        
+                        temp = Rasterscene.addText(f'{item2:{txtformat}}',myfont)
+                
+                        if temp.boundingRect().width()>smallbox.boundingRect().width():
+                            resizeR = smallbox.boundingRect().width()/temp.boundingRect().width()
+                            myfont.setPointSize(int(10*resizeR))
+                            temp.setFont(myfont)
+                            
+                        # temp.setPen(QPen(QColor('yellow')))
+                        # temp.setFont(myfont)
+                        temp.setPos(xc-temp.boundingRect().width()/2,yc-temp.boundingRect().height()/2)
+                        if text:
+                            temp.setDefaultTextColor(QColor('white'))
+                        else:
+                            temp.setDefaultTextColor(QColor(0, 0, 0, 0))
+                        pos = (xc-temp.boundingRect().width()/2,yc-temp.boundingRect().height()/2)
+                        # self.logger.info(f'x={x},y={y},pos={pos}')                
+                        temp.setOpacity(Opacity)
+                        # try:
+                        try:
+                            self.RasterPar[view]['Textplotarray'][x][y] = temp
+                        except IndexError:
+                            # self.logger.warning(f'Index error at view={view} x={x} y={y}')
+                            # array not match current XY
+                            pass
+
+                        # except Exception as e:
+                        #     traceback.print_exc()
+                        #     self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
+                        #     self.logger.warning(f'Error:{e}')
+            #update color anyway
             self.DrawColoronBox(array,view,Opacity)   
         except Exception as e:
             traceback.print_exc()
@@ -3073,10 +3119,11 @@ class MainUI(QMainWindow,Ui_MainWindow):
             
         numofX = par['numofX']
         numofY = par['numofY']
-        if number%numofY == 0:
+        if numofY == 0:
+           return (0,0)
+        elif number%numofY == 0:
             #in last row
             offset = 0
-            
         else:
             offset = 1
             
