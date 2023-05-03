@@ -503,12 +503,15 @@ class MestbestSever():
                             self.logger.info(f'update dozor par = {DozorPar.DozorPar}')
                             pass
                         elif command[0] == 'rundozr':
+                            # self.ZMQQ.put('rundozr',cbfpath,header,frame)
                             pass
-                            metadata = command[1]
-                            frame = command[2] - 1
+                            path = command[1]
+                            metadata = command[2]
+                            frame = command[3]
                             importlib.reload(DozorPar)
                             dozor_par = DozorPar.DozorPar
-                            p1 = Process(target=self.__decodeImage2__,args=(frames,ServerQ,metadata,meshbestjobQ,info,header,job_queue,dozor_par,))
+                
+                            p1 = Process(target=fw.rerun_dozr,args=(path,metadata,frame,dozor_par,meshbestjobQ,ServerQ,))
                             p1.start()
                     else:
                         pass
@@ -651,7 +654,7 @@ class MestbestSever():
                                     #nothing change but still lack data
                                     if (time.time()-latsnewdatatime1) > 10:
                                         self.logger.info(f'Timeout for viwe1 check data,10 sec no new data coming')
-                                        # meshbestjobQ.put(('recover_data',sid,header))
+                                        meshbestjobQ.put(('recover_data',sid,header))
                                     else:
                                         meshbestjobQ.put(('check_data',sid,header))
                             
@@ -670,7 +673,7 @@ class MestbestSever():
                                     #nothing change but still lack data
                                     if (time.time()-latsnewdatatime2) > 10:
                                         self.logger.info(f'Timeout for viwe2 check data,10 sec no new data coming')
-                                        #meshbestjobQ.put(('recover_data',sid,header))
+                                        meshbestjobQ.put(('recover_data',sid,header))
                                     else:
                                         meshbestjobQ.put(('check_data',sid,header))
                                 
@@ -691,44 +694,69 @@ class MestbestSever():
                         b = [x for x in range(exceptNum)]
                         miss = set(a) ^ set(b)
                         self.logger.info(f'SID ={sid} Try to recover image from h5, we miss {miss}')
-                        dir = header['appendix']['directory']#/data/blctl/20220923_07A/125136
-                        filename = header['appendix']['filename']#RasterScanview2_0000
-                        h5path= pathlib.Path(f'{dir}/{filename}/_master.h5')
-                        #todo
-                        #make sure data has downlaod to raid??
-
-                        #write to tempfolder
-                        try:
-                            alldata = readframe(h5path,miss)
-                            
-                            for data,frame in zip(alldata,miss):
-                                # cbfpath = h5path.parent / f'{h5path.stem}_{frame:05d}.cbf'
-                                cbfpath = f'{self.tempcbffolder}/{filename}_{frame:05d}.cbf' 
-                                #this is for dozor which only take 32bit image
-                                if data.dtype != "uint32" :
-                                    if data.dtype == "uint16":
-                                        maxV=65535
-                                    elif data.dtype == "uint8":
-                                        maxV=255
-                                    else:
-                                        maxV=4294967295
-                                    data = data.astype('uint32')
-                                    data = numpy.where(data==maxV,4294967295,data)
-                                self.logger.info(f'recover {cbfpath}')
-
-                                cbf.write(cbfpath,data)
-                        except Exception as e:
-                            traceback.print_exc()
-                            self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
-                            self.logger.warning(f'Error : {e}')
+                        if len(miss) == 0:
                             pass
-                        #dozor(self,path,metadata,dozor_par,):
-                        #rundozr , header,frame #frame start with 1 maybe need -1 in dozor
+                        else:
+                            dir = header['appendix']['directory']#/data/blctl/20220923_07A/125136
+                            filename = header['appendix']['filename']#RasterScanview2_0000
+                            h5path= pathlib.Path(f'{dir}/{filename}_master.h5')
+                            #todo
+                            #make sure data has downlaod to raid??
 
+                            #write to tempfolder
+                            try:
+                                alldata = readframe(h5path,miss)
+                                
+                                for data,frame in zip(alldata,miss):
+                                    # cbfpath = h5path.parent / f'{h5path.stem}_{frame:05d}.cbf'
+                                    cbfpath = f'{self.tempcbffolder}/{filename}_{frame+1:05d}.cbf' 
+                                    #this is for dozor which only take 32bit image
+                                    if data.dtype != "uint32" :
+                                        if data.dtype == "uint16":
+                                            maxV=65535
+                                        elif data.dtype == "uint8":
+                                            maxV=255
+                                        else:
+                                            maxV=4294967295
+                                        data = data.astype('uint32')
+                                        data = numpy.where(data==maxV,4294967295,data)
+                                    self.logger.info(f'recover {cbfpath}')
 
+                                    cbf.write(cbfpath,data)
+                            except Exception as e:
+                                traceback.print_exc()
+                                self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
+                                self.logger.warning(f'Error : {e}')
+                                pass
+                            #dozor(self,path,metadata,dozor_par,):
+                            #rundozr , header,frame #frame start with 0 ,miss start with 0 ,but file start with 1
+                            for frame in miss:
+                                cbfpath = f'{self.tempcbffolder}/{filename}_{frame+1:05d}.cbf' 
+                                self.ZMQQ.put(('rundozr',cbfpath,header,frame))
+                            #wait a sec then recheck ?
+
+                        self.timer = time.time()
+                        meshbestjobQ.put(('wait_time',sid,header,0.5))
+
+                        pass
+                     elif command[0] == "wait_time":
+                        # meshbestjobQ.put(('wait_time',sid,header,0.5))
+                        sid = command[1]
+                        header = command[2]
                         
+                        if time.time() - self.timer > command[3]:
+                            if command[1] == 101:
+                                latsnewdatatime1 = time.time()
+                            else:
+                                latsnewdatatime2 = time.time()
+                            meshbestjobQ.put(('check_data',sid,header))
+                        else:
+                            time.sleep(0.1)
+                            meshbestjobQ.put(('wait_time',sid,header,command[3]))
                         pass
                      elif command[0] == "startjob":
+                        #the info is compelet,i thik UI can tak another update
+                         ServerQ.put(('notify_ui_update','dozor',sid))
                          self.logger.info(f'startjob {sid}')
                          sid = command[1]
                          header = command[2]
