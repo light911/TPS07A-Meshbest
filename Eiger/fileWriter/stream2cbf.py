@@ -298,6 +298,8 @@ class Stream2Cbf(FileWriter):
     # def notify
 
     def rerun_dozr(self,path,metadata,frame,dozor_par,meshbestjobQ,ServerQ):
+        t0 = time.time()
+
         dozorresult,datastr = self.dozor(path,metadata,dozor_par)
         dozorresult['frame'] = frame
         dozorresult['omega'] = metadata['omega_start']
@@ -309,9 +311,10 @@ class Stream2Cbf(FileWriter):
             dozorresult['view']=2
         #dezor
         #tell gui finish job
-        self.logger.info(f'save + decode time for frame {frame},time:{time.time()-t0} sec')
+        self.logger.info(f'decode time for frame {frame},time:{time.time()-t0} sec')
         meshbestjobQ.put(('updateDozor',dozorresult,datastr))
         ServerQ.put(('dozor',dozorresult))
+        
         pass
     def dozor(self,path,metadata,dozor_par):
         spot_level=f'spot_level {dozor_par["spot_level"]}'
