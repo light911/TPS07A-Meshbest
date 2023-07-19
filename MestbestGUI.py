@@ -4179,15 +4179,37 @@ class MainUI(QMainWindow,Ui_MainWindow):
         elif updatetype == 2:#peak
             #todo
             collectlist=list()
-            if not select.currentIndex() in [2,3]:
-                self.logger.warning(f'currentselect index = {select.currentIndex()},not in 2 or 3 ')
+            if not select.currentIndex() in [2,3,6]:
+                self.logger.warning(f'currentselect index = {select.currentIndex()},not in 2 or 3 or 6')
                 return
             elif select.currentIndex() == 2:
                 table = RasterPar['scoreArray']
             elif select.currentIndex() == 3:
                 table = RasterPar['spotsArray']
+            elif select.currentIndex() == 6:
+                #make crystal map with dozor 
+                # RasterPar['Dtable']
+                modifyZtable = np.copy(RasterPar['Ztable'])
+                #make single crystal area pos
+                modifyZtable[modifyZtable > 0] = 1
+                modifyZtable[modifyZtable <= 0] = -1
+                # print('Ztable=',modifyZtable)
+                table = modifyZtable * RasterPar['Dtable']
+                # print('table=',table)
+                #reorder -1 area
+                natives = table[table<0]
+                sorted_natives = np.sort(natives)
+                neg_min = np.min(sorted_natives)
+                neg_max = np.max(sorted_natives)
+                normalized_natives = (sorted_natives - neg_min) / (neg_max - neg_min)* 99
+                table[table<0] = normalized_natives
+                # print('len table=',table.shape)
+                table = np.transpose(table)
+                print('table=',table)
+                pass
             else:
                 return
+            # print('len table=',table.shape)
             peaks,a,b = detect_peaks_1(table,Threshold,Min_peak_distance,numlist)
             for i,item in enumerate(peaks):
                 posdata={}

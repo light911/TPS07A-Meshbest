@@ -75,7 +75,7 @@ def detect_peaks_1(image:numpy.ndarray,threshold:float=1,distance:int=1,maxnum:i
         else:
             break
     # print(len(peaks))
-    
+    # print("peaks=",peaks)
     # print(type(data.mask))
     print(f'detect_peaks_1:Run time = {time.time()-t0}')
     #peaks pos,mask for pos,debug map
