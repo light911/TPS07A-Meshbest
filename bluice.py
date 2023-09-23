@@ -117,10 +117,6 @@ class BluiceClient(QThread):
         self.info['sid']=loginID
         self.info['counter']=1
         loginsrt = "gtos_client_is_gui "+ self.user+ " " + loginID + " " + self.hostname
-        # self.logger.info(loginsrt)
-        '''
-        gtos_client_is_gui blctl F1EA013BCAB10598F440A3ADC76EC37E gui05a1-local.nsrrc.org.tw :0
-        '''
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.settimeout(self.tcptimeout)
         self.logger.info("try to connect")

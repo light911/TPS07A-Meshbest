@@ -6,7 +6,7 @@ Created on Fri Jul  9 10:37:32 2021
 @author: blctl
 """
 import argparse,sys,os,signal,math,time,traceback,getpass,re
-
+import ast,pickle
 from functools import partial
 import beamlineinfo
 import logsetup
@@ -15,10 +15,10 @@ from PyQt5 import QtWidgets,QtGui,QtCore
 # from PyQt5.QtCore import QRectF
 from PyQt5.QtCore import QLineF, QPointF, QRectF, Qt,QSizeF, QSize
 from PyQt5.QtGui import QPixmap,QPainter,QPen,QImage
-from PyQt5.QtWidgets import QApplication, QMainWindow,QGraphicsScene,QGraphicsItem,QGraphicsRectItem,QGraphicsTextItem,QWidget,QMessageBox
+from PyQt5.QtWidgets import QApplication, QMainWindow,QGraphicsScene,QGraphicsItem,QGraphicsRectItem,QGraphicsTextItem,QWidget,QMessageBox,QFileDialog
 from PyQt5.QtCore import QObject,QThread,pyqtSignal,pyqtSlot,QMutex,QMutexLocker,QEvent,QTimer,QPoint
 from PyQt5.QtGui import QPainter,QBrush,QPen,QColor,QFont,QCursor
-from pathlib import Path
+# from pathlib import Path
 
 import colorcet as cc
 import copy,base64
@@ -234,7 +234,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.debug_shutter.clicked.connect(self.debug_shutterclicked)
         self.debug_raster.clicked.connect(self.debug_rasterclicked)
         self.debug_Debug.clicked.connect(self.debug_Debugclicked)
-        
+        self.debug_loaddata.clicked.connect(self.debug_loaddataclicked)
+
         self.Raster.clicked.connect(self.Rasterclicked)
         self.StartRaster.clicked.connect(self.StartRasterclicked)
         self.Centermode.clicked.connect(self.Centermodeclicked)
@@ -3415,6 +3416,13 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 self.Par['StateCtl']['AbletoStartRaster'] = True
                 self.update_ui_par_to_meshbest()
                 self.Par['StateCtl']['reciveserverupdate'] = True
+            elif command[1] == 'Warning' and command[2] == 'epicsdhs':
+                xtlist = command[3:]
+                txt =command[2]#start with raster and add space in rest str
+                for item in txtlist:
+                    txt = f'{txt} {item}'
+                mesbox = QMessageBox.warning(self,"Warning from epicsdhs",txt,QMessageBox.Ok)
+                pass
             else:
                 self.logger.info(f'Bluice Emit : {command}')
             pass
@@ -3719,6 +3727,253 @@ class MainUI(QMainWindow,Ui_MainWindow):
     def info_client_update_ui(self) :
         if self.bluiceData['active']:
             self.update_ui_par_to_meshbest()
+    def debug_loaddataclicked(self):
+        self.clear_Raster_scence_item()
+        default_dir = os.getcwd()
+        directory = QFileDialog.getExistingDirectory(self, "Choose Directory",default_dir)
+        if directory:
+            print("Dir=", directory)
+            crystal_image1_path = Path(f'{directory}/crystalimage_1.jpg')
+            crystal_image2_path = Path(f'{directory}/crystalimage_2.jpg')
+            StartRasterclickedPar_path = Path(f'{directory}/StartRasterclickedPar.txt')
+            RasterPar_path = Path(f'{directory}/RasterPar.txt')
+            UI_collectPar_path = Path(f'{directory}/UI_collectPar.txt')
+            viwe_1_result_path = Path(f'{directory}/viwe_1_result.json')
+            viwe_2_result_path = Path(f'{directory}/viwe_2_result.json')
+            RasterParpkl_path = Path(f'{directory}/RasterPar.pkl')
+            message_text = ''
+            if RasterParpkl_path.exists():
+                #it will easier just load pkl file
+                with open(RasterParpkl_path, 'rb') as f:
+                    self.Par = pickle.load(f)
+                message_text += f'RasterParpkl_path=\n{str(RasterParpkl_path)}\n'
+                pass
+            else:
+                if crystal_image1_path.exists():
+                    message_text += f'crystal_image1_path=\n{str(crystal_image1_path)}\n'
+                    image1 = QImage(str(crystal_image1_path))
+                    # 将QImage转换为QPixmap
+                    self.RasterView1QPixmap_ori = QPixmap.fromImage(image1)
+                if crystal_image2_path.exists():
+                    message_text += f'crystal_image2_path=\n{str(crystal_image2_path)}\n'
+                    image2 = QImage(str(crystal_image2_path))
+                    # 将QImage转换为QPixmap
+                    self.RasterView2QPixmap_ori = QPixmap.fromImage(image2)
+                if StartRasterclickedPar_path.exists():
+                    #the par record before take raster
+                    with open(StartRasterclickedPar_path,'r') as f:
+                        UI_parstr = f.readline()
+                        UI_par = ast.literal_eval(UI_parstr[7:-1])
+                        data = f.readlines()
+                        tempdata = {}
+                        tempdata['View1'] = {}
+                        tempdata['View2'] = {}
+                        view='View1'
+                        checkitem = ['box','collectInfo','GridX','GridY','gonio_phi','sample_x','sample_y',\
+                        'sample_z','align_z','zoom','zoom_scale_x','zoom_scale_y','numofX','numofY',\
+                        'gridsizeX','gridsizeY']
+                        for item in data:
+                            ans1 = re.match('View.',item)
+                            if ans1:
+                                view = ans1[0]
+                            for key in checkitem:
+                                ans2 = re.search(f'{key}:',item)
+                                if ans2:
+                                    tempdata[view][key] = ast.literal_eval(item[ans2.end():-1])
+                                    # if key == 'box':
+                                    #     tempdata[view][key] = ast.literal_eval(item[ans2.end():-1])
+                                    # else:
+                                    #     try:
+                                    #         tempdata[view][key] = ast.literal_eval(item[ans2.end():-1])
+                                    #     except:
+                                    #         tempdata[view][key] = None
+                            # print(ans1,view)
+                    print(tempdata)
+                    pass
+                if RasterPar_path.exists():
+                    message_text += f'RasterPar_path=\n{str(RasterPar_path)}\n'
+                    # with open(RasterPar_path, 'r') as f:
+                        # content = f.read()
+                        # Par = ast.literal_eval(content)
+                        # Par = json.load(f)
+                        # print(Par)
+                if UI_collectPar_path.exists():
+                    #this info more correct than StartRasterclickedPar_path
+                    #numofxy mabbe wrong in StartRasterclickedPar_path
+                    message_text += f'UI_collectPar_path=\n{str(UI_collectPar_path)}\n'
+                    with open(UI_collectPar_path,'r') as f:
+                        UI_parstr = f.readline()
+                        UI_par = ast.literal_eval(UI_parstr[7:-1])
+                        uiparlists, uiindexlists, uitextlists,uicheckablelists = variables.ui_par_lists()
+                        for item in uiparlists:
+                            newitem = getattr(self,item)
+                        if UI_par[item] is not None:
+                            newitem.setValue(UI_par[item])                     
+                        self.selectGridsize.setCurrentIndex(UI_par['selectGridsize'])
+                        data = f.readlines()
+                        tempdata = {}
+                        tempdata['View1'] = {}
+                        tempdata['View2'] = {}
+                        view='View1'
+                        checkitem = ['box','collectInfo','GridX','GridY','gonio_phi','sample_x','sample_y',\
+                        'sample_z','align_z','zoom','zoom_scale_x','zoom_scale_y','numofX','numofY',\
+                        'gridsizeX','gridsizeY']
+                        for item in data:
+                            ans1 = re.match('View.',item)
+                            if ans1:
+                                view = ans1[0]
+                            for key in checkitem:
+                                ans2 = re.search(f'{key}:',item)
+                                if ans2:
+                                    tempdata[view][key] = ast.literal_eval(item[ans2.end():-1])
+
+                    print(tempdata)
+
+                for view in ['View1','View2']:
+                    gonio_phi = tempdata[view]['gonio_phi']
+                    sample_x = tempdata[view]['sample_x']
+                    sample_y = tempdata[view]['sample_y']
+                    sample_z = tempdata[view]['sample_z']
+                    align_z = tempdata[view]['align_z']
+                    zoom = tempdata[view]['zoom']
+                    zoom_scale_x = tempdata[view]['zoom_scale_x']
+                    zoom_scale_y = tempdata[view]['zoom_scale_y']
+                    box = tempdata[view]['box']
+                    numofX = tempdata[view]['numofX']
+                    numofY = tempdata[view]['numofY']
+                    gridsizeX = tempdata[view]['gridsizeX']
+                    gridsizeY = tempdata[view]['gridsizeY']
+                    self.debug_update_raster_par(gonio_phi,sample_x,sample_y,sample_z,align_z,\
+                                    zoom,zoom_scale_x,zoom_scale_y,box,numofX,numofY,\
+                                    gridsizeX,gridsizeY,view)
+                if viwe_1_result_path.exists():
+                    message_text += f'viwe_1_result_path=\n{str(viwe_1_result_path)}\n'
+                    with open(viwe_1_result_path, 'r') as file:
+                        view1_data = json.load(file)
+                        try:
+                            self.Par['View1']['BestPositions'] = view1_data['1']['data']['MeshBest']['BestPositions']
+                        except:
+                            self.Par['View1']['BestPositions'] = None
+                    
+                        self.Par['View1']['Dtable'] = view1_data['1']['data']['MeshBest']['Dtable']
+                        self.Par['View1']['Ztable'] =view1_data['1']['data']['MeshBest']['Ztable']
+                        Dtable,Ztable,BestPositions = self.decodeTable(self.Par['View1'])
+                        
+                        self.RasterPar['View1']['BestPositions'] = BestPositions
+                        self.RasterPar['View1']['Dtable'] = Dtable
+                        self.RasterPar['View1']['Ztable'] = Ztable
+                        print(BestPositions,Dtable,Ztable)
+                        self.initScoreArray('View1')
+                        for item in view1_data['1']['data']['meshPositions']:
+                            index = item['index']
+                            x,y=self.convertFrametoXY(index+1,True)#frame start from 0 
+                            indexY = item['indexY']
+                            indexZ = item['indexZ']
+                            dozor_score = item['dozor_score']
+                            dozorSpotList = item['dozorSpotList']
+                            try:
+                                tempspot = np.frombuffer(base64.b64decode(dozorSpotList))
+                                # array = array.reshape((int(array.size/5), 5))
+                                numspot = len(tempspot) / 5
+                            except:
+                                numspot = 0
+                            # print(index,x,y,dozor_score,numspot)
+                            self.RasterPar['View1']['spotsArray'][x][y] = numspot
+                            self.RasterPar['View1']['resArray'][x][y] = 50
+                            self.RasterPar['View1']['scoreArray'][x][y] = dozor_score
+                            self.Par['View1']['spotsArray'][x][y] = numspot
+                            self.Par['View1']['resArray'][x][y] = 50
+                            self.Par['View1']['scoreArray'][x][y] = dozor_score
+                if viwe_2_result_path.exists():
+                    message_text += f'viwe_2_result_path=\n{str(viwe_2_result_path)}\n'
+                    with open(viwe_2_result_path, 'r') as file:
+                        view2_data = json.load(file)
+                        try:
+                            self.Par['View2']['BestPositions'] = view2_data['2']['data']['MeshBest']['BestPositions']
+                        except:
+                            self.Par['View2']['BestPositions'] = None
+                        self.Par['View2']['Dtable'] = view2_data['2']['data']['MeshBest']['Dtable']
+                        self.Par['View2']['Ztable'] =view2_data['2']['data']['MeshBest']['Ztable']
+                        Dtable2,Ztable2,BestPositions2 = self.decodeTable(self.Par['View2'])
+                        
+                        self.RasterPar['View2']['BestPositions'] = BestPositions2
+                        self.RasterPar['View2']['Dtable'] = Dtable2
+                        self.RasterPar['View2']['Ztable'] = Ztable2
+                        self.initScoreArray('View2')
+                        for item in view1_data['2']['data']['meshPositions']:
+                            index = item['index']
+                            x,y=self.convertFrametoXY(index+1,True)#frame start from 0 
+                            indexY = item['indexY']
+                            indexZ = item['indexZ']
+                            dozor_score = item['dozor_score']
+                            dozorSpotList = item['dozorSpotList']
+                            try:
+                                tempspot = np.frombuffer(base64.b64decode(dozorSpotList))
+                                # array = array.reshape((int(array.size/5), 5))
+                                numspot = len(tempspot) / 5
+                            except:
+                                numspot = 0
+                            
+                            self.RasterPar['View2']['spotsArray'][x][y] = numspot
+                            self.RasterPar['View2']['resArray'][x][y] = 50
+                            self.RasterPar['View2']['scoreArray'][x][y] = dozor_score
+                            self.Par['View2']['spotsArray'][x][y] = numspot
+                            self.Par['View2']['resArray'][x][y] = 50
+                            self.Par['View2']['scoreArray'][x][y] = dozor_score
+            if message_text != '':
+                message_box = QMessageBox()
+                message_box.setText(message_text)
+                message_box.setWindowTitle("Load data")
+                message_box.setIcon(QMessageBox.Information)
+                message_box.setStandardButtons(QMessageBox.Ok)
+                # Adjust the size of the message box to fit the content
+                message_box.adjustSize()
+                message_box.exec_()
+        
+        self.plotView12(False)
+
+        pass
+    def debug_update_raster_par(self,gonio_phi,sample_x,sample_y,sample_z,align_z,\
+                                zoom,zoom_scale_x,zoom_scale_y,box,numofX,numofY,\
+                                gridsizeX,gridsizeY,view='View1'):
+        if view == 'View1':
+            RasterQPixmap_ori_size = self.RasterView1QPixmap_ori.size()
+        else:
+            RasterQPixmap_ori_size = self.RasterView2QPixmap_ori.size()
+        self.RasterPar[view]['gonio_phi']=gonio_phi
+        self.RasterPar[view]['sample_x']=sample_x
+        self.RasterPar[view]['sample_y']=sample_y
+        self.RasterPar[view]['sample_z']=sample_z
+        self.RasterPar[view]['align_z']=align_z
+        self.RasterPar[view]['zoom']=zoom
+        self.RasterPar[view]['zoom_scale_x']=zoom_scale_x
+        self.RasterPar[view]['zoom_scale_y']=zoom_scale_y
+        
+        self.RasterPar[view]['size'] = RasterQPixmap_ori_size
+        # self.RasterPar[view]['jpg'] = jpg
+        self.RasterPar[view]['box'] = QRectF(box[0],box[1],box[2],box[3])
+        self.RasterPar[view]['numofX'] = numofX
+        self.RasterPar[view]['numofY'] = numofY
+        self.RasterPar[view]['gridsizeX'] = gridsizeX
+        self.RasterPar[view]['gridsizeY'] = gridsizeY
+
+        self.Par[view]['gonio_phi']=gonio_phi
+        self.Par[view]['sample_x']=sample_x
+        self.Par[view]['sample_y']=sample_y
+        self.Par[view]['sample_z']=sample_z
+        self.Par[view]['align_z']=align_z
+        self.Par[view]['zoom']=zoom
+        self.Par[view]['zoom_scale_x']=zoom_scale_x
+        self.Par[view]['zoom_scale_y']=zoom_scale_y
+        
+        self.Par[view]['size'] = RasterQPixmap_ori_size
+        # self.RasterPar[view]['jpg'] = jpg
+        # self.Par[view]['box'] = box
+        self.Par[view]['numofX'] = numofX
+        self.Par[view]['numofY'] = numofY
+        self.Par[view]['gridsizeX'] = gridsizeX
+        self.Par[view]['gridsizeY'] = gridsizeY
+        pass
     def debug_Debugclicked(self): 
         print('Par=================Start')
         # print(self.bluiceData['motor'])
@@ -4594,6 +4849,13 @@ class MainUI(QMainWindow,Ui_MainWindow):
             CurrentCollectindex, CurrentCollectinfo = self.findNeedCollectInfo(view)
             if CurrentCollectindex == -1:
                 #collect done
+                #close cover
+                command = f"gtos_start_operation detector_close_cover {self.bluiceID}.{self.bluiceCounter} "
+                self.bluiceCounter += self.bluiceCounter
+                # self.opCompleted['detector_close_cover'] = False
+                self.Qinfo["sendQ"].put(command)
+                # self.logger.info(f'Wait for close cover operation')
+                # oplist=['detector_close_cover']
                 self.showforreadycollect(True)
                 return False
 
@@ -4762,8 +5024,9 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 for key, value in self.Par[view].items(): 
                     if str(key) in writeitem: 
                         f.write(f'{key}:{value}\n')
-            
-        
+        path = f'{self.RootPath_2.text()}/RasterPar.pkl'
+        with open(path, 'wb') as f:
+            pickle.dump(self.Par, f)
         self._save_current_image('collectview')
         # sys.exit()    
         #todo

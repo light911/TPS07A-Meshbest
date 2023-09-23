@@ -457,6 +457,10 @@ class MestbestSever():
                         # All job done
                         # self.sendtoAllClient(tuple(temp))
                         pass
+                     elif command[0] == "abort":
+                        self.logger.info(f'abort!Try to recover thing')
+                        meshbestjobQ.put(('abort'))
+                        pass
                 else:
                     pass
             except IOError:
@@ -636,7 +640,9 @@ class MestbestSever():
                              self.logger.info(f'job done! we got {currentnum} data,time pass after collect done = {time.time()-check_data_starttime}')
                              
                              meshbestjobQ.put(('startjob',sid,header))
-                             
+                         elif currentnum >exceptNum:
+                             self.logger.info(f'something wrong we got {currentnum} data more than {exceptNum},time pass after collect done = {time.time()-check_data_starttime}')
+                             meshbestjobQ.put(('startjob',sid,header))
                          else:
                              time.sleep(0.02)
                              
@@ -802,7 +808,12 @@ class MestbestSever():
                         sid = command[1]
                         starttime = command[2]
                         response = requests.get(self.meshbesturl)
-                        ans = response.json()
+                        try:
+                            ans = response.json()
+                        except:
+                            ServerQ.put(('Direct_Update_par','meshbetjob',sid))
+                            # ans = {}
+                            # ans['']
                         # print(len(ans))
                         # print(ans)
                         
@@ -874,6 +885,10 @@ class MestbestSever():
                          if ans['state'] == 'Start':
                              pass
                              # meshbestjobQ.put(('check_state',alldata['sessionid']))
+                     elif command[0] == "abort":
+                         #clear some flag
+
+                         pass
                 else:
                     pass
             except Empty:
