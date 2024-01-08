@@ -3475,10 +3475,15 @@ class MainUI(QMainWindow,Ui_MainWindow):
 
                     
                 else:
-                    ans = data.split()
-                    state = ans[0]
-                    textc = ans[1]
-                    bagc =  ans[2]
+                    try:
+                        ans = data.split()
+                        state = ans[0]
+                        textc = ans[1]
+                        bagc =  ans[2]
+                    except:
+                        state = 'Unknow'
+                        textc = 'black'
+                        bagc = 'yellow'
                 self.LastInfo.setText(state)
                 self.LastInfo.setStyleSheet(f'color: {textc};background-color: {bagc}')
                 if state == "Abort!":
