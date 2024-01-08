@@ -625,7 +625,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             pass
         elif self.Par['StateCtl']['RasterDone'] :
             iseditpos = self.EditPos_2.isChecked() or self.MovePos_2.isChecked()
-            if event.button() == 1 and not iseditpos and and self.bluiceData['active']:
+            if event.button() == 1 and not iseditpos and self.bluiceData['active']:
                 self.logger.info(f'Click on view1 and want to move sample')
                 try:
                     if self.bluiceData['motor']['sample_x']['moving']:
