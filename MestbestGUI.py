@@ -458,15 +458,15 @@ class MainUI(QMainWindow,Ui_MainWindow):
         if self.RasterView1QPixmap_ori.isNull():
             self.logger.debug(f'isNull,bypass')
             pass
-        elif not self.bluiceData['active']:
-            self.logger.debug(f'not active,bypass')
-            pass
+        # elif not self.bluiceData['active']:
+        #     self.logger.debug(f'not active,bypass')
+        #     pass
         elif self.RasterRuning :
             self.logger.debug(f'Raster Runing ,bypass')
             pass
         elif self.Par['StateCtl']['RasterDone'] :
             iseditpos = self.EditPos_1.isChecked() or self.MovePos_1.isChecked()
-            if event.button() == 1 and not iseditpos:
+            if event.button() == 1 and not iseditpos and self.bluiceData['active']:
                 #for move sample
                 self.logger.info(f'Click on view1 and want to move sample')
                 try:
@@ -508,11 +508,11 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
                     self.logger.warning(f'Error : {e}')
                 pass
-            elif self.MovePos_1.isChecked():
+            elif self.MovePos_1.isChecked() and self.bluiceData['active']:
                 position = QPoint(event.pos().x(),event.pos().y())
                 self.movePosinCollectinfo(event,position,view='View1')
                 pass
-            elif self.EditPos_1.isChecked():
+            elif self.EditPos_1.isChecked() and self.bluiceData['active']:
                 position = QPoint(event.pos().x(),event.pos().y())
                 if event.button() == 1 :
                     self.addPosinCollectinfo(position,view='View1')
@@ -619,13 +619,13 @@ class MainUI(QMainWindow,Ui_MainWindow):
     def DrawinRasterView2Press(self,event):
         if self.RasterView2QPixmap_ori.isNull():
             pass
-        elif not self.bluiceData['active']:
-            pass
+        # elif not self.bluiceData['active']:
+        #     pass
         elif self.RasterRuning:
             pass
         elif self.Par['StateCtl']['RasterDone'] :
             iseditpos = self.EditPos_2.isChecked() or self.MovePos_2.isChecked()
-            if event.button() == 1 and not iseditpos:
+            if event.button() == 1 and not iseditpos and and self.bluiceData['active']:
                 self.logger.info(f'Click on view1 and want to move sample')
                 try:
                     if self.bluiceData['motor']['sample_x']['moving']:
@@ -666,11 +666,11 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
                     self.logger.warning(f'Error : {e}')
                 pass
-            elif self.MovePos_2.isChecked():
+            elif self.MovePos_2.isChecked() and self.bluiceData['active']:
                 position = QPoint(event.pos().x(),event.pos().y())
                 self.movePosinCollectinfo(event,position,view='View2')
                 pass
-            elif self.EditPos_2.isChecked():
+            elif self.EditPos_2.isChecked() and self.bluiceData['active']:
                 position = QPoint(event.pos().x(),event.pos().y())
                 if event.button() == 1 :
                     self.addPosinCollectinfo(position,view='View2')
@@ -1877,6 +1877,9 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.Par['StateCtl']['RasterDone'] = True
         self.update_ui_par_to_meshbest()
         self.Qinfo["sendQ"].put('gtos_set_string system_status Ready black #00a040')
+        path = f'{self.RootPath_2.text()}/AfterRasterPar.pkl'
+        with open(path, 'wb') as f:
+            pickle.dump(self.Par, f)
         pass
     
     def ArmDetectorandMeshbest(self):
