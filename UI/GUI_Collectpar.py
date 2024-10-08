@@ -121,6 +121,7 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
         print ("RoughDoseDoubleClick")
         
     def buttonBoxYesToAllClick(self):
+        # print(f'buttonBoxYesToAllClick')
         if len((self.InfoTable.selectedRanges())) == 0:
             return
   
@@ -136,15 +137,23 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
             
         #Everything Fine
         self.SelectedColumn = self.InfoTable.selectedRanges()[0].leftColumn()
-
+        print(f'{self.SelectedColumn=}')
         self.SelectedRow=[]            
         for item in self.InfoTable.selectedRanges():
             for i in range(item.topRow(),item.bottomRow()+1):
                 self.SelectedRow.append(i)
-
-        if self.SelectedColumn == 0 or self.SelectedColumn == 1 or self.SelectedColumn == 2:
-            return
         
+        if self.SelectedColumn == 0 or self.SelectedColumn == 1:
+            return
+        elif self.SelectedColumn == 2:
+            # print ("normal change for beam size")
+            self.NormalApply.updateDefaultValue(float(self.InfoTable.item(self.SelectedRow[0], self.SelectedColumn).text()))
+            self.NormalApply.updateTitle(self.InfoTable.horizontalHeaderItem(self.SelectedColumn).text())
+#            print float(self.InfoTable.item(self.SelectedRow[0], self.SelectedColumn).text())
+            self.NormalApply.show()
+            
+            #update collect par
+            pass
         elif self.SelectedColumn == 3 or self.SelectedColumn == 4:
             self.DoseApply.updateDefaultValue(float(self.InfoTable.item(self.SelectedRow[0], self.SelectedColumn).text()))
             self.DoseApply.updateTitle(self.InfoTable.horizontalHeaderItem(self.SelectedColumn).text())
