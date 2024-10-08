@@ -235,9 +235,11 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.debug_raster.clicked.connect(self.debug_rasterclicked)
         self.debug_Debug.clicked.connect(self.debug_Debugclicked)
         self.debug_loaddata.clicked.connect(self.debug_loaddataclicked)
+        self.RecollectRaster.clicked.connect(self.RecollectRasterclicked)
 
         self.Raster.clicked.connect(self.Rasterclicked)
         self.StartRaster.clicked.connect(self.StartRasterclicked)
+        self.Direct_collect.clicked.connect(self.Direct_collectclicked)
         self.Centermode.clicked.connect(self.Centermodeclicked)
         self.Transfermode.clicked.connect(self.Transfermodeclicked)
         
@@ -350,6 +352,21 @@ class MainUI(QMainWindow,Ui_MainWindow):
             if updateUI:
                 self.update_ui_par_to_meshbest()
             pass
+    def RecollectRasterclicked(self):
+        old_RootPath_2_txt =self.RootPath_2.text()
+        txtpos = old_RootPath_2_txt.find(".")
+        if txtpos == -1:
+            self.RootPath_2.setText(f'{old_RootPath_2_txt}.1')
+        else:
+            oldnumber = int(old_RootPath_2_txt[txtpos+1:])
+            self.RootPath_2.setText(f'{old_RootPath_2_txt[:txtpos]}{oldnumber+1}')
+        Path(self.RootPath_2.text()).mkdir(parents=True, exist_ok=True)
+        self.StartRaster.setEnabled(True)
+        self.Direct_collect.setEnabled(True)
+        self.Par['StateCtl']['AbletoStartRaster'] = True
+        self.update_ui_par_to_meshbest()
+        self.Par['StateCtl']['reciveserverupdate'] = True
+        pass
     def GetDefalutFolder_clicked(self,addtext = None):
         # QtGui.QMessageBox.critical
         
@@ -888,6 +905,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.logger.info('move back')
         self.logger.debug(f'command:{command}')
         self.StartRaster.setEnabled(True)
+        self.Direct_collect.setEnabled(True)
         self.Par['StateCtl']['AbletoStartRaster'] = True
         self.update_ui_par_to_meshbest()
         self.Par['StateCtl']['reciveserverupdate'] = True
@@ -1351,6 +1369,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             self.Autocenter.setEnabled(False)
             self.Raster.setEnabled(False)
             self.StartRaster.setEnabled(False)
+            self.Direct_collect.setEnabled(False)
             self.Focus_neg_l.setEnabled(False)
             self.Focus_neg_s.setEnabled(False)
             self.Focus_pos_s.setEnabled(False)
@@ -1835,6 +1854,34 @@ class MainUI(QMainWindow,Ui_MainWindow):
 
     def test(self):
         pass
+    def Direct_collectclicked(self):
+        self.logger.info(f'Button Direct colect clicked')
+        #write current par to file
+        path=f'{self.RootPath_2.text()}/StartRasterclickedPar.txt'
+        with open(path,'w') as f:
+            f.write(f"UI_par:{self.Par['UI_par']}\n")
+            writeitem = ['box','collectInfo','GridX','GridY','gonio_phi','sample_x','sample_y',\
+                'sample_z','align_z','zoom','zoom_scale_x','zoom_scale_y','numofX','numofY',\
+                'gridsizeX','gridsizeY']
+            for view in ['View1','View2']:
+                f.write(f"{view}:===\n")
+                for key, value in self.Par[view].items(): 
+                    if str(key) in writeitem: 
+                        f.write(f'{key}:{value}\n')
+
+        #only support view1 
+        # self.Overlap_Select_1.setCurrentIndex(3)
+        # self.Overlap_Select_2.setCurrentIndex(2)
+        parlist = self.calRasterParDetector(view1=True)
+        self.meshbest.sendCommandToMeshbest(('directCollect',parlist))
+        self.Par['StateCtl']['RasterDone'] = True
+        #set position pick, set all pos score to 1?
+
+        self.update_ui_par_to_meshbest()
+        path = f'{self.RootPath_2.text()}/AfterRasterPar.pkl'
+        with open(path, 'wb') as f:
+            pickle.dump(self.Par, f)
+        pass
     def StartRasterclicked(self):
         self.logger.info(f'Button Start Raster clicked')
         path=f'{self.RootPath_2.text()}/StartRasterclickedPar.txt'
@@ -1859,6 +1906,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.plotView12(True)
         
         self.StartRaster.setEnabled(False)
+        self.Direct_collect.setEnabled(False)
         self.Raster.setEnabled(False)
         # self.clear_dozor_plot()
         self.RasterRuning = True
@@ -2506,7 +2554,63 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 #put in temp update list?
                 pass
             # self.logger.warning(f'data:{self.RasterPar[view]["scoreArray"]}')
+        elif command[0] == 'Direct_Update_par':
+            pass
+            #this update from direct fixed target serial data collction
+            view1_data = command[1]['View1']
+            view2_data = command[1]['View2']
+            ui_par_data = command[1]['UI_par']
+            StateCtl_data = command[1]['StateCtl']
+            self.Par['View1'] = view1_data
+            self.Par['View2'] = view2_data
+            self.Par['UI_par'] = ui_par_data
+            self.Par['StateCtl'] = StateCtl_data
+            # self.logger.info(f'got view1 dtable = {command[1]["View1"]["Dtable"]}')
+            # self.logger.info(f'got view2 dtable = {command[1]["View2"]["Dtable"]}')
+            #update and decode Dtable to Raster
+            Dtable,Ztable,BestPositions = self.decodeTable(self.Par['View1'])
+            self.RasterPar['View1']['Dtable'] = Dtable
+            self.RasterPar['View1']['Ztable'] = Ztable
+            #filter bad pos
+            filterBestPositions = self.filter_BestPositions(BestPositions)
+
+            self.RasterPar['View1']['BestPositions'] = filterBestPositions
             
+            Dtable,Ztable,BestPositions = self.decodeTable(self.Par['View2'])
+            self.RasterPar['View2']['Dtable'] = Dtable
+            self.RasterPar['View2']['Ztable'] = Ztable
+            filterBestPositions = self.filter_BestPositions(BestPositions)
+
+
+            self.RasterPar['View2']['BestPositions'] = filterBestPositions
+            
+            self.RasterPar['View1']['scoreArray'] = view1_data['scoreArray']
+            self.RasterPar['View1']['resArray'] = view1_data['resArray']
+            self.RasterPar['View1']['spotsArray'] = view1_data['spotsArray']
+            self.RasterPar['View2']['scoreArray'] = view2_data['scoreArray']
+            self.RasterPar['View2']['resArray'] = view2_data['resArray']
+            self.RasterPar['View2']['spotsArray'] = view2_data['spotsArray']
+            # self.logger.info(f'after update Par :{self.Par}')
+            # self.logger.info(f'after view1 decode = {self.RasterPar["View1"]["Dtable"]}')
+            # self.logger.info(f'after view2 decode = {self.RasterPar["View2"]["Dtable"]}')
+            if self.bluiceData['active']:
+                if len(self.Par['View1']['collectInfo'])>0:
+                    self.collectAllpos_1.setEnabled(True)
+                if len(self.Par['View2']['collectInfo'])>0:
+                    self.collectAllpos_2.setEnabled(True)
+                        
+            else:
+                # self.logger.debug(f'view1_data update Par :{self.RasterPar["View1"]["scoreArray"]}')
+                # self.logger.debug(f'after update Par :{self.RasterPar}')
+                self.collectAllpos_1.setEnabled(False)
+                self.collectAllpos_2.setEnabled(False)
+                pass
+
+            # full update
+            # self.logger.warning(f'{self.Par=}')
+            self.full_update(self.Par)
+            self.Overlap_Select_1.setCurrentIndex(3)
+            self.updatelist_1.setCurrentIndex(2)
         elif command[0] == 'updatePar':
             # try:
             #     self.logger.warning(f"test: {command[1]['View1'].keys()}")
@@ -3416,6 +3520,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 command = f'gtos_start_motor_move gonio_phi {pos}'
                 self.Qinfo["sendQ"].put(command)
                 self.StartRaster.setEnabled(True)
+                self.Direct_collect.setEnabled(True)
                 self.Par['StateCtl']['AbletoStartRaster'] = True
                 self.update_ui_par_to_meshbest()
                 self.Par['StateCtl']['reciveserverupdate'] = True
@@ -3529,7 +3634,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.Raster.setEnabled(True)
         if self.Par['StateCtl']['AbletoStartRaster']:
             self.StartRaster.setEnabled(True)
-
+            self.Direct_collect.setEnabled(True)
         if len(self.Par['View1']['collectInfo'])>0:        
             self.collectAllpos_1.setEnabled(True)
         if len(self.Par['View2']['collectInfo'])>0:        
@@ -5060,6 +5165,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             show = False
         self.Raster.setEnabled(show)
         self.StartRaster.setEnabled(show)
+        self.Direct_collect.setEnabled(show)
         self.viwe1_move_down.setEnabled(show)
         self.viwe1_move_up.setEnabled(show)
         self.viwe1_move_left.setEnabled(show)

@@ -51,7 +51,7 @@ class MestbestSever():
         self.Par['StateCtl']=statectrl
         
         self.MangerPort = 6534
-        self.logger = logsetup.getloger2('MestbestServer',LOG_FILENAME='./log/MesrbestServerLog.txt',level = self.Par['Debuglevel'],bypassdb=True)
+        self.logger = logsetup.getloger2('MestbestServer',LOG_FILENAME='/root/log/MesrbestServerLog.txt',level = self.Par['Debuglevel'],bypassdb=True)
         self.ServerQ = self.m.Queue()
         # self.processQ = self.m.Queue()
         self.ZMQQ = self.m.Queue()
@@ -377,6 +377,33 @@ class MestbestSever():
                         self.logger.info(f'New client ask for register: {command[1]}')
                         self.addManagerClient(command[1])
                         pass
+                     elif command[0] == "directCollect":
+                        #update user uid
+                        userName = command[1][3]
+                        uid = command[1][21]
+                        gid = command[1][22]
+                        meshbestjobQ.put(('updateuser', userName,uid,gid))
+                        self.user = command[1][3]
+                        #sholud clear old data and has new array for resArray/spotsArray/scoreArray
+                        if command[1][1] == "RasterScanview1":
+                            view='View1'
+                        else:
+                            view='View2'
+                        numofXbox = int(command[1][19])
+                        numofYbox = int(command[1][20])
+                        self.logger.info(f'got directCollect numofXbox={numofXbox},numofYbox={numofYbox}')
+                        self.initScoreArray(numofXbox,numofYbox,view,5)
+                        #should also update Dtable,Ztable,BestPositions
+                        # Par = copy.deepcopy(self.Par['View1'])
+                        # Par['GridX'] = int(my_sid_ans['data']['grid_info']['steps_x'])
+                        # Par['GridY'] = int(my_sid_ans['data']['grid_info']['steps_y'])
+                        # Par['Dtable'] = my_sid_ans['data']['MeshBest']['Dtable']
+                        # Par['Ztable'] = my_sid_ans['data']['MeshBest']['Ztable']
+                        # Par['BestPositions'] = my_sid_ans['data']['MeshBest']['BestPositions']
+                        # self.Par['View1'] = Par
+                        
+                        ServerQ.put(('Direct_Update_par','directCollect'))
+                        pass
                      elif command[0] == "armview":
                         # 'armview',[runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY,uid,gid]]
                         self.logger.info(f'Got Arm Veiw 1: {command[1]}')
@@ -421,7 +448,7 @@ class MestbestSever():
                      elif command[0] == "Direct_Update_par":
                         self.logger.info(f'Direct_Update_par')
                         par = copy.deepcopy(self.Par)
-                        self.sendtoAllClient(('updatePar',par))
+                        self.sendtoAllClient(('Direct_Update_par',par))
                              
                      
                      elif command[0] == "notify_ui_update":
@@ -1082,19 +1109,27 @@ class MestbestSever():
        self.logger.info(f'got defaultinput {ans}')
        return ans
 
-    def initScoreArray(self,numofXbox,numofYbox,view='View1'):
+    def initScoreArray(self,numofXbox,numofYbox,view='View1',default_value=0):
         # numofXbox = self.Par[view]['numofX']
         # numofYbox = self.Par[view]['numofY']
+        
         temp = copy.deepcopy(self.Par[view])
         temp['numofX'] = numofXbox
         temp['numofY'] = numofYbox
-        temp['Textplotarray']=[[0]*numofYbox for i in range(numofXbox)]
+        
+        temp['Textplotarray']=[[default_value]*numofYbox for i in range(numofXbox)]
         temp['scoreArray'] = numpy.zeros((numofXbox, numofYbox))
-        temp['scoreArray'][:] = numpy.nan
+        if default_value==0:
+            temp['scoreArray'][:] = numpy.nan
+        else:
+            temp['scoreArray'][:] = default_value
         temp['resArray']=numpy.zeros((numofXbox, numofYbox))
         temp['resArray'][:]=50#set all value to 50
         temp['spotsArray']=numpy.zeros((numofXbox, numofYbox))
-        temp['spotsArray'][:] = numpy.nan
+        if default_value==0: 
+            temp['spotsArray'][:] = numpy.nan
+        else:
+            temp['spotsArray'][:] = default_value
         self.Par[view] = temp
         self.logger.debug(f' init array {numofXbox},{numofYbox}')
         # try:

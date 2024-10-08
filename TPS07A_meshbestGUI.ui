@@ -325,31 +325,6 @@
        <layout class="QGridLayout" name="gridLayout_5" columnstretch="0,0,50,50" rowminimumheight="140,0,0,0" columnminimumwidth="0,0,0,0">
         <item row="0" column="0" rowspan="2">
          <layout class="QGridLayout" name="gridLayout_4">
-          <item row="1" column="0" colspan="2">
-           <widget class="QPushButton" name="Raster">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>30</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Take Raster Image</string>
-            </property>
-            <property name="iconSize">
-             <size>
-              <width>16</width>
-              <height>16</height>
-             </size>
-            </property>
-           </widget>
-          </item>
           <item row="14" column="0">
            <widget class="QPushButton" name="Autocenter">
             <property name="sizePolicy">
@@ -607,6 +582,56 @@
             </property>
            </widget>
           </item>
+          <item row="2" column="2" colspan="2">
+           <widget class="QPushButton" name="Direct_collect">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Direct Fixed Target Serial Data Collect</string>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>16</width>
+              <height>16</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" rowspan="2" colspan="2">
+           <widget class="QPushButton" name="Raster">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>50</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Take Raster Image</string>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>16</width>
+              <height>16</height>
+             </size>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
         <item row="0" column="2" colspan="2">
@@ -655,7 +680,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1199</width>
+             <width>1149</width>
              <height>72</height>
             </rect>
            </property>
@@ -693,7 +718,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1185</width>
+             <width>1135</width>
              <height>73</height>
             </rect>
            </property>
@@ -1751,6 +1776,64 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="Option">
+       <attribute name="title">
+        <string>Option</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_7">
+        <item row="0" column="0">
+         <layout class="QGridLayout" name="gridLayout_6">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_25">
+            <property name="text">
+             <string>Raster scan scoring</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="Raster_scoring_way">
+            <item>
+             <property name="text">
+              <string>Dozor</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>None</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="0" column="2">
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="Collect">
        <attribute name="title">
         <string>Collect</string>
@@ -1809,6 +1892,13 @@
            <widget class="QPushButton" name="debug_loaddata">
             <property name="text">
              <string>Load data</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QPushButton" name="RecollectRaster">
+            <property name="text">
+             <string>RecollectRaster</string>
             </property>
            </widget>
           </item>
