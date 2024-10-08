@@ -42,7 +42,7 @@ class Stream2Cbf(FileWriter):
 
         FileWriter().__init__(basename, path, self.ftype, verbose)
         self.Par = Config.Par
-        self.logger = logsetup.getloger2('FileWriter',LOG_FILENAME='./log/FileWriter.txt',level = self.Par['Debuglevel'],bypassdb=True)
+        self.logger = logsetup.getloger2('FileWriter',LOG_FILENAME='/root/log/FileWriter.txt',level = self.Par['Debuglevel'],bypassdb=True)
         self._observers=[]
         self.timer=0
         self.dozor_par={"spot_level":5.5,"spot_size":3}

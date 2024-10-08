@@ -52,7 +52,7 @@ class ZMQStream():
         create stream listener object
         """
         self.Par = Config.Par
-        self.logger = logsetup.getloger2('ZMQStream',LOG_FILENAME='./log/ZMQStream.txt',level = self.Par['Debuglevel'])
+        self.logger = logsetup.getloger2('ZMQStream',LOG_FILENAME='/root/log/ZMQStream.txt',level = self.Par['Debuglevel'])
         self.__host__ = host # EIGER ip
         self.__port__ = port # tcp stream port
         self.__verbose__ = verbose # verbosity
