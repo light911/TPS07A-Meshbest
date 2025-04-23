@@ -23,6 +23,9 @@ Par={
     "Atten":0,
     "Energy":12700,
     "Flux":{100:8.8E12, 1: 9e+11, 5:1.97e12, 10:3.81e12, 20:6.71e12},
+    "PV_dbpm3fluxlist":'07a-ES:Table:DBPM3Fluxlist',
+    "PV_beamsizelist":'07a-ES:Table:Beamsize',
+    "Beamsizelist":[1,5,10,20,30,40,50,60,70,80,90,100],
     "Fluxfactor":[1,2.213,4.28,7.2896,10.1737],#useless now,factor bewtween s3op =1 and =0.003,[1,5,10,20,30]
     "DoseFactor":[2.25,2.14,1.89,1.81,1.08,1,1],
     "BestDose":[3,3.6,4.4,6,8],

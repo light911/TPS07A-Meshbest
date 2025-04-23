@@ -37,7 +37,7 @@ from UI.GUI_Collectpar import collectparui
 from adxv import adxv
 from pathlib import Path
 from peakfind import detect_peaks_1
-
+from myepics import myepics
 # import faulthandler
 # faulthandler.enable()
 
@@ -148,7 +148,21 @@ class MainUI(QMainWindow,Ui_MainWindow):
         logfolder.mkdir(parents=True, exist_ok=True)
 
         self.logger = logsetup.getloger2('MestbestGUI',LOG_FILENAME,level = self.Par['Debuglevel'])
+        # update flux ratio
+        self.ca = myepics(self.logger)
+        fluxlist = self.ca.caget(self.Par['PV_dbpm3fluxlist'])
+        self.logger.info(f'Flux list = {fluxlist}')
+        fluxratio = fluxlist /fluxlist[0]
+        self.logger.info(f'{fluxratio}')
+        self.Par['Fluxfactor'] = fluxratio
+        beamsizelist = self.ca.caget(self.Par['PV_beamsizelist'])
+        self.logger.info(f'beamsizelist list = {beamsizelist}')
+        self.Par['Beamsizelist'] = beamsizelist
+        # self.logger.info(f'{type(self.Par["Fluxfactor"])}')
+        #cal flux later?
 
+
+        # sys.exit()
         temp = self.Par['View1']['collectInfo']
         self.collectparwindows = collectparui(self.Par,view='View3')
         self.collectparwindows1 = collectparui(self.Par,view='View1')
@@ -280,6 +294,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.selectBeamsize.currentIndexChanged.connect(self.selectBeamsize_value_change)
         self.Distance.valueChanged.connect(self.Distance_value_change)
         self.ExpouseValue.valueChanged.connect(self.ExpouseValue_change)
+        self.Raster_scoring_way.currentIndexChanged.connect(self.Raster_scoring_way_change)
         
         self.Overlap_Select_1.currentIndexChanged.connect(self.Overlap_Select_1_value_change)
         self.Overlap_Select_2.currentIndexChanged.connect(self.Overlap_Select_2_value_change)
@@ -386,6 +401,15 @@ class MainUI(QMainWindow,Ui_MainWindow):
             pass
         elif mesbox ==QMessageBox.Yes:
             self.RootPath.setText(path)
+            #also update some UI to default
+            self.Raster_scoring_way.setCurrentIndex(0)
+            self.selectROI.setCurrentIndex(0)
+            self.select2scan.setCurrentIndex(0)
+            self.ExpouseValue.setValue(0.01)
+            self.Attenuation.setValue(0)
+            self.Distance.setValue(0)
+            self.RotationValue.setValue(0)
+
         self.update_ui_par_to_meshbest()
 
         
@@ -1598,6 +1622,10 @@ class MainUI(QMainWindow,Ui_MainWindow):
             self.update_ui_par_to_meshbest()
             
     def ExpouseValue_change(self):
+        self.CalRasterDose()
+        if self.bluiceData['active']:
+            self.update_ui_par_to_meshbest()
+    def Raster_scoring_way_change(self):
         if self.bluiceData['active']:
             self.update_ui_par_to_meshbest()
     def plotbox(self,Newone=True):
@@ -1979,6 +2007,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             
             #arm meshbetserver and detector
             self.meshbest.sendCommandToMeshbest((arm,parlist))
+            time.sleep(0.5)#wait meshbest update
             self.opCompleted['detector_ratser_setup'] = False
             self.Qinfo["sendQ"].put(command)
             
@@ -2283,7 +2312,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         gid = self.gid
         gridsizex = par['gridsizeX']
         gridsizey = par['gridsizeY']
-        ans =  [runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY,uid,gid,gridsizex,gridsizey]
+        Raster_scoring_way = self.Raster_scoring_way.currentText()
+        ans =  [runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY,uid,gid,gridsizex,gridsizey,Raster_scoring_way]
         self.logger.debug(f'{runIndex=},{filename=},{directory=},{userName=},{axisName=},{exposureTime=},{oscillationStart=},{detosc=},{TotalFrames=},{distance=},{wavelength=},{detectoroffX=},{detectoroffY=},{sessionId=},{fileindex=},{unknow=},{beamsize=},{atten=},{roi=},{numofX=},{numofY=},{uid=},{gid=},{gridsizex=},{gridsizey=}')
         # self.logger.debug(f'{ans}')
         return ans
@@ -3361,9 +3391,12 @@ class MainUI(QMainWindow,Ui_MainWindow):
             string=""
             for item in a:
                 string = string + item + " "
-            self.bluiceData['string'][name]['state'] = state
-            self.bluiceData['string'][name]['txt'] = string.rstrip()
-            self.bluiceData['string'][name]['array'] = a
+            try:
+                self.bluiceData['string'][name]['state'] = state
+                self.bluiceData['string'][name]['txt'] = string.rstrip()
+                self.bluiceData['string'][name]['array'] = a
+            except:
+                pass#maybe KeyError: 'timeToNextInjSec'
             self.update_string_to_ui(name,a)
             #todo update system_status to state bar?
         elif command[0] == "stog_set_motor_base_units":
@@ -4663,7 +4696,22 @@ class MainUI(QMainWindow,Ui_MainWindow):
             else:
                 FullFlux=par['Flux'][currentBeamsize]
             pass
+            currentBeamsizeindex = -1
+            Targetbeamsizeindex = -1
         else:
+            #update flux by ratio
+            currentBeamsizeindex = -1
+            Targetbeamsizeindex = -1
+            tempindex = 0
+            for item in par['Beamsizelist']:
+                if int(currentBeamsize) == int(item):
+                    currentBeamsizeindex = tempindex
+
+                if int(Targetbeamsize) == int(item):
+                    Targetbeamsizeindex = tempindex
+                # print(f'{tempindex=},{item=},{currentBeamsizeindex=},{Targetbeamsizeindex=},{currentBeamsize=},{Targetbeamsize=}')
+                tempindex += 1
+            
             pass
         
         if currentBeamsize >= 30:
@@ -4671,14 +4719,26 @@ class MainUI(QMainWindow,Ui_MainWindow):
             factor1 = par['Flux'][100]
         else:
             factor1 = par['Flux'][currentBeamsize]
+        if currentBeamsizeindex == -1:
+            pass
+        else:
+            factor1 = par['Fluxfactor'][currentBeamsizeindex]
+
 
         if Targetbeamsize >= 30:
             #Targetbeamsize factor at max
             factor2 = par['Flux'][100]
         else:
             factor2 = par['Flux'][Targetbeamsize]
+
+        if Targetbeamsizeindex == -1:
+            pass
+        else:
+            factor2 = par['Fluxfactor'][Targetbeamsizeindex]
         
         flux = FullFlux / factor1 * factor2
+        # print(f'{currentBeamsizeindex=},{Targetbeamsize=}')
+        # print(f'{flux=},{FullFlux=},{factor1=},{factor2=}')
         # if currentBeamsize >= 30 and Targetbeamsize >= 30:
         #     # same
         #     flux = FullFlux

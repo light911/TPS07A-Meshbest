@@ -269,7 +269,7 @@ class MestbestSever():
                     
 
                 else:
-                    self.logger.warning(f'send message {message}to ID {cid} client')
+                    self.logger.debug(f'send message {message}to ID {cid} client')
             except EOFError:
                 removelist.append(cid)
                 self.logger.warning(f'sending Queue has EOFError,id = {cid}')
@@ -405,7 +405,8 @@ class MestbestSever():
                         ServerQ.put(('Direct_Update_par','directCollect'))
                         pass
                      elif command[0] == "armview":
-                        # 'armview',[runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY,uid,gid]]
+                        # 'armview',[runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY,uid,gid,gridsizex,gridsizey,Raster_scoring_way]]
+                        
                         self.logger.info(f'Got Arm Veiw 1: {command[1]}')
                         #update user uid
                         userName = command[1][3]
@@ -420,6 +421,7 @@ class MestbestSever():
                             view='View2'
                         numofXbox = int(command[1][19])
                         numofYbox = int(command[1][20])
+                        # Raster_scoring_way = command[1][23] #Dozor/None
                         self.logger.info(f'got armview numofXbox={numofXbox},numofYbox={numofYbox}')
                         self.initScoreArray(numofXbox,numofYbox,view)
                         ZMQQ.put(command)
@@ -524,14 +526,24 @@ class MestbestSever():
                         self.logger.info(f'command is tuple')
                         if command[0] == "armview" :
                             # [17, 'RasterScanViwe1', '/data/blctl/20210727_07A/', 'blctl', 'gonio_phi', 0.1, 119.999802, 0.0, 15, 625.99884, 7.874044121870488e-05, 0.0, -0.997409, 'no', 0, 1, 50.0, 0.0, 1, 3, 5]
-                            # [runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY]
-                            self.logger.info(f'update filename to {command[1][1]}')
-                            fw.basename = command[1][1]
-                            self.logger.info(f'CBF file will write to  {fw.path} with filename {fw.basename}')
-                            #reload dozor par
-                            importlib.reload(DozorPar)
-                            fw.dozor_par=DozorPar.DozorPar
-                            self.logger.info(f'update dozor par = {DozorPar.DozorPar}')
+                            # [runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY,,gridsizex,gridsizey,Raster_scoring_way]
+                            
+                            self.logger.info(f'Got command: {command}')
+                            # seem unable to update fw
+                            try:                               
+                                self.logger.info(f'update filename to {command[1][1]}')
+                                fw.basename = command[1][1]
+                                self.logger.info(f'CBF file will write to  {fw.path} with filename {fw.basename}')
+                                
+                                #reload dozor par
+                                importlib.reload(DozorPar)
+                                fw.dozor_par=DozorPar.DozorPar
+                                self.logger.info(f'update dozor par = {DozorPar.DozorPar}')
+
+                                fw.Raster_scoring_way = command[1][25]#Dozor/ None
+                                self.logger.info(f'set Raster scoring way to {fw.Raster_scoring_way}')
+                            except Exception as e:
+                                self.logger.warning(f'Error : {e}')
                             pass
                         elif command[0] == 'rundozr':
                             # self.ZMQQ.put('rundozr',cbfpath,header,frame)
