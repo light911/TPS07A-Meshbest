@@ -46,6 +46,7 @@ class Stream2Cbf(FileWriter):
         self._observers=[]
         self.timer=0
         self.dozor_par={"spot_level":5.5,"spot_size":3}
+        self.Raster_scoring_way = 'Dozor'
         # self.process = Pool(100)
         # self.header = {}
         # self.temp=True
@@ -145,7 +146,7 @@ class Stream2Cbf(FileWriter):
         if header["header_detail"]:
             if self.__verbose__:
                 print("[OK] decode header ", header)
-        if header["header_detail"] is not "none":
+        if header["header_detail"] != "none":
             if len(frames) == 9 and self.__verbose__:
                 # print("[*] Appendix:", frames[8].bytes)
                 pass
@@ -188,9 +189,13 @@ class Stream2Cbf(FileWriter):
         
         info = json.loads(frames[1].bytes)
         header = json.loads(frames[0].bytes)
-        
-        if len(frames)==5:
-            self.metadata["appendix"] = frames[4].bytes
+        try:
+            if len(frames)==5:
+                # self.metadata["appendix"] = frames[4].bytes
+                self.metadata["appendix"] = json.loads(frames[4].bytes)
+        except Exception as e:
+            self.logger.warning(f'Has error on {e}')
+
         self.metadata["real_time"] = json.loads(frames[3].bytes)["real_time"]
         try:
             if self.metadata["appendix"]['runIndex'] == '101' or self.metadata["appendix"]['runIndex'] =='102':
@@ -207,8 +212,28 @@ class Stream2Cbf(FileWriter):
                 # r.get()
                 # job_queue.put((frames,ServerQ,self.metadata,meshbestjobQ))
                 dozor_par = self.dozor_par
-                p1 = Process(target=self.__decodeImage2__,args=(frames,ServerQ,self.metadata,meshbestjobQ,info,header,job_queue,dozor_par,))
-                p1.start()
+                if self.Raster_scoring_way=="Dozor":
+                    p1 = Process(target=self.__decodeImage2__,args=(frames,ServerQ,self.metadata,meshbestjobQ,info,header,job_queue,dozor_par,))
+                    p1.start()
+                elif self.Raster_scoring_way=="None":
+                    t0 = time.time()
+                    dozorresult,datastr = self.fake_dozor("",self.metadata,dozor_par)
+                    dozorresult['frame'] = frame
+                    dozorresult['omega'] = self.metadata['omega_start']
+                    dozorresult['numofX'] = self.metadata['appendix']['raster_X']
+                    dozorresult['numofY'] = self.metadata['appendix']['raster_Y']
+                    # view =int(self.metadata["appendix"]['runIndex'])
+                    if self.metadata["appendix"]['runIndex'] == '101':
+                        dozorresult['view']=1
+                    else:
+                        dozorresult['view']=2
+                    #dezor
+                    #tell gui finish job
+                    self.logger.info(f'save + decode time for frame {frame},time:{time.time()-t0} sec')
+                    meshbestjobQ.put(('updateDozor',dozorresult,datastr))
+                    ServerQ.put(('dozor',dozorresult))
+                else:
+                    pass
             else:
                 self.logger.debug(f'Run index {self.metadata["appendix"]["runIndex"]} not a raster scan,frame= {header["frame"]}')
         except Exception as e:
@@ -470,7 +495,66 @@ class Stream2Cbf(FileWriter):
     #     os.chown(filemccdpath.replace(extwithpt,".score"), os.stat(filemccdpath).st_uid, os.stat(filemccdpath).st_gid)    
         
         return dozorresult,datastr
-    
+    def fake_dozor(self,path,metadata,dozor_par):
+        start_time = time.time()   
+        dozorresult={}
+        pid=os.getpid()
+        result = ''' Program dozor /A.Popov & G.Bourenkov/
+     Version 2.0.2 //  21.05.2019
+     Copyright 2014 by Alexander Popov and Gleb Bourenkov
+     N    |            SPOTS             |        Powder Wilson              |        Main    Spot   Visible
+    image | num.of  INTaver R-factor Res.|   Scale B-fac. Res. Corr. R-factor|       Score   Score  Resolution
+    --------------------------------------------------------------------------------------------------------
+    1 |     1        1.   0.000  99.0| ---------no results -----------   |       1.000    0.00   99.00
+    --------------------------------------------------------------------------------------------------------
+    '''
+        # print(result)
+        # print(type(result))
+        result2 = result.split("\n")
+        i=0
+        for temp in result2:
+           i=i+1 
+           
+           if i==7:
+               #only take line 7
+              #print temp
+              dozorspots=int(temp[7:13])
+              dozorscore=float(temp[74:86])
+              dozorres=float(temp[31:37])
+              #print "score=",dozorscore
+              #print "spots=",dozorspots
+              #print "res.=",dozorres
+           else:
+              pass
+              #dozorscore.append(float(temp[13:23]))
+              #dozorspots.append(int(temp[7:13]))
+
+        datastr =""
+ 
+        
+        #print "Run dozor time=",dozorresult['dozorTime']
+        dozorresult['totalTime']=time.time()-start_time
+        #print "Total run time=",dozorresult['totalTime']
+        dozorresult['File']=path
+        dozorresult['spots']=dozorspots
+        dozorresult['score']=dozorscore
+        dozorresult['res']=dozorres
+        
+        self.logger.debug("PID:%d Fake dozor result=%s",pid,dozorresult)
+        
+        txt=""
+        txt=txt+str(dozorresult['score'])+"\n"
+        txt=txt+str(dozorresult['spots'])+"\n"
+        txt=txt+str(dozorresult['res'])+"\n"
+        txt=txt+str(dozorresult['File'])+"\n"
+        txt=txt+"score\tspots\tres\tFile name"
+    # #    with open(filemccdpath.replace(".mccd",".score"), 'w') as outfile:
+    #     with open(filemccdpath.replace(extwithpt,".score"), 'w') as outfile:
+    #         outfile.write(txt)
+    # #    os.chown(filemccdpath.replace(".mccd",".score"), os.stat(filemccdpath).st_uid, os.stat(filemccdpath).st_gid)    
+    #     os.chown(filemccdpath.replace(extwithpt,".score"), os.stat(filemccdpath).st_uid, os.stat(filemccdpath).st_gid)    
+        
+        return dozorresult,datastr    
     def readspot(self,path):
         """
         read xxxx.spot file
