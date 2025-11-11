@@ -38,6 +38,7 @@ from adxv import adxv
 from pathlib import Path
 from peakfind import detect_peaks_1
 from myepics import myepics
+from epics import caget
 # import faulthandler
 # faulthandler.enable()
 
@@ -150,6 +151,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.logger = logsetup.getloger2('MestbestGUI',LOG_FILENAME,level = self.Par['Debuglevel'])
         # update flux ratio
         self.ca = myepics(self.logger)
+        #TODO
         fluxlist = self.ca.caget(self.Par['PV_dbpm3fluxlist'])
         self.logger.info(f'Flux list = {fluxlist}')
         fluxratio = fluxlist /fluxlist[0]
@@ -4753,7 +4755,19 @@ class MainUI(QMainWindow,Ui_MainWindow):
         #     #shoud not got to here
         #         flux =FullFlux
         return flux
-    
+    def get_beamprofile(self,beamsize):
+        BeamSizeNamePV = '07a-ES:Table:Beamsize'
+        # BeamSizeNamelist = self.ca.caget(PV=BeamSizeNamePV,format=float,array=True)
+        BeamSizeNamelist = caget(BeamSizeNamePV)
+        beamsizeindex = np.where(BeamSizeNamelist == beamsize)
+        # BeamSizeHorlist = self.ca.caget(PV='07a-ES:Table:BeamsizeX',format=float,array=True)
+        # BeamSizeVerlist = self.ca.caget(PV='07a-ES:Table:BeamsizeY',format=float,array=True)
+        BeamSizeHorlist = caget('07a-ES:Table:BeamsizeX')
+        BeamSizeVerlist = caget('07a-ES:Table:BeamsizeY')
+        beamhor = float(BeamSizeHorlist[beamsizeindex])
+        beamver = float(BeamSizeVerlist[beamsizeindex])
+        # print(beamsize,beamhor,beamver)
+        return beamhor,beamver
     def CalRasterDose(self):
         try:
             currentBeamsize =  float(self.bluiceData['string']['currentBeamsize']['txt'])
@@ -4778,8 +4792,9 @@ class MainUI(QMainWindow,Ui_MainWindow):
             #     beamXsize = TargetBeamSize/2.35*6# 6 sigma
             # else:
             #     beamXsize = TargetBeamSize+10#10umbigger
+            beamXsize,beamYsize=self.get_beamprofile(TargetBeamSize)
             if TargetBeamSize == 1:
-                beamXsize = 2#beam size in hor direct,fwhm=2
+                beamXsize = 3#beam size in hor direct,fwhm=2
             else:
                 beamXsize = TargetBeamSize
 

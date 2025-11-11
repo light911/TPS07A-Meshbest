@@ -68,6 +68,7 @@ class ZMQStream():
 
         context = zmq.Context()
         receiver = context.socket(zmq.PULL)
+        
         receiver.connect("tcp://{0}:{1}".format(self.__host__,self.__port__))
 
         self.__receiver__ = receiver

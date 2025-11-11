@@ -19,8 +19,8 @@ import variables
 import importlib
 import DozorPar,pathlib
 from HDFtool import readframe
-import cbf
-
+import cbf,argparse,asapo_consumer
+from asapo_to_dozor import AsapoToDozor
 # from ldapclient import ladpcleint #not use any more
 
 #https://stackoverflow.com/questions/29788809/python-how-to-pass-an-autoproxy-object
@@ -29,7 +29,7 @@ import cbf
 class QueueManager(BaseManager): pass
 
 class MestbestSever():
-    def __init__(self):
+    def __init__(self,use_asapo=False):
         signal.signal(signal.SIGINT, self.quit)
         signal.signal(signal.SIGTERM, self.quit)
         self.m = Manager()
@@ -95,6 +95,7 @@ class MestbestSever():
         self.user='blctl'
         self.uid=1000
         self.gid=501
+        self.use_asapo = use_asapo
 
     def worker(self,job_queue):
         os.nice(19)
@@ -499,67 +500,185 @@ class MestbestSever():
                 self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
                 self.logger.warning(f'Error : {e}')
                 self.logger.warning(f'Error with command: {command}')
+    def run_asapo_worker(self,tempcbffolder,server,beamtime,token,stream_id,ServerQ,meshbestjobQ,
+                         Raster_scoring_way,dozor_par,group_id,logger,par):
+        
+        AsapoToDozor(tempcbffolder, server, beamtime, token, stream_id,ServerQ,meshbestjobQ,
+                     Raster_scoring_way,dozor_par,group_id=group_id,logger=logger,par=par)
+        # AsapoToDozor.run()
+        pass
     def ZMQ_monitor(self,ZMQQ,ServerQ,meshbestjobQ,job_queue):
-         os.nice(-19)#high priority
-         fw = stream2cbf.Stream2Cbf("temp", self.tempcbffolder)
-        #  fw = stream2cbf.Stream2Cbf("temp", "/mnt/data_buffer/")
-         fw.register_observer(self)
-         # folder = fw.path
-         self.logger.info(f'CBF file will write to  {fw.path} with filename {fw.basename}')
-         stream = ZMQStream(self.eigerhost,  self.eigerzmqport)
-         while True:
-            frames = stream.receive() # get ZMQ frames
-            if frames: # decode frames using the filewriter
-                   fw.decodeFrames(frames,ServerQ,meshbestjobQ,job_queue)
-            else:#only there is no frames we got new command   
-                try:
-                    command = ZMQQ.get(block=False)
-                    if isinstance(command,str):
-                        self.logger.info(f'command is srt')
-                        if command == "exit" :
-                            self.logger.critical(f'close ZMQ stream')
-                            stream.close()
-                            # ZMQQ.close()
-                            # sys.exit()
-                            break
-                    elif isinstance(command,tuple) :
-                        self.logger.info(f'command is tuple')
-                        if command[0] == "armview" :
-                            # [17, 'RasterScanViwe1', '/data/blctl/20210727_07A/', 'blctl', 'gonio_phi', 0.1, 119.999802, 0.0, 15, 625.99884, 7.874044121870488e-05, 0.0, -0.997409, 'no', 0, 1, 50.0, 0.0, 1, 3, 5]
-                            # [runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY,,gridsizex,gridsizey,Raster_scoring_way]
-                            
-                            self.logger.info(f'Got command: {command}')
-                            # seem unable to update fw
-                            try:                               
-                                self.logger.info(f'update filename to {command[1][1]}')
-                                fw.basename = command[1][1]
-                                self.logger.info(f'CBF file will write to  {fw.path} with filename {fw.basename}')
-                                
-                                #reload dozor par
-                                importlib.reload(DozorPar)
-                                fw.dozor_par=DozorPar.DozorPar
-                                self.logger.info(f'update dozor par = {DozorPar.DozorPar}')
+        if self.use_asapo:
+            # os.nice(-19)#high priority
+            os.nice(15)#low priority
+            fw = stream2cbf.Stream2Cbf("temp", self.tempcbffolder)
+            endpoint = "epu011:8400"
+            beamtime = "asapo_test"
+            with open('token.key', 'r', encoding='utf-8') as f:
+                token = f.read().rstrip()
+            data_source = "Eiger16M"
+            consumer = asapo_consumer.create_consumer(
+                endpoint, "auto", False, beamtime, data_source, token, 5000
+            )
+            last_stream_info = consumer.get_last_stream()
+            last_stream_id = last_stream_info['name']
+            self.logger.info(f'last stream id = {last_stream_id} (init stage)')
+            while True:
+                time.sleep(0.1)
+                last_stream_info = consumer.get_last_stream()
+                if last_stream_info['name'] != last_stream_id:
+                    last_stream_id = last_stream_info['name']
+                    stream_meta = consumer.get_stream_meta(last_stream_id)
+                    self.logger.info(f"New stream: {last_stream_info['name']} with runIndex = {stream_meta['runIndex']}")
+                    # check is data come from raster scan 
+                    
+                    if int(stream_meta['runIndex']) == 101 or int(stream_meta['runIndex']) == 102:
+                        Raster_scoring_way = fw.Raster_scoring_way
+                        dozor_par = fw.dozor_par
+                        view = int(stream_meta['runIndex'])#int
+                        self.logger.info(f'Send message for clear older data')
+                        meshbestjobQ.put(('BeginOfSeries',view))#clear older data
+                        #wait for 0.1 sec to make sure old data is clear
+                        # time.sleep(0.1)
+                        # start asapo worker pool
+                        process = []
+                        self.logger.info(f'Got new stream, start asapo worker')
+                        for i in range(126):
+                            p = Process(target=self.run_asapo_worker, args=(self.tempcbffolder, endpoint, beamtime, token, last_stream_id, ServerQ, meshbestjobQ,Raster_scoring_way, dozor_par,'dozor',self.logger,self.Par))
+                            process.append(p)
+                            p.start()
+                        
+                        for p in process:
+                            p.join()
 
-                                fw.Raster_scoring_way = command[1][25]#Dozor/ None
-                                self.logger.info(f'set Raster scoring way to {fw.Raster_scoring_way}')
-                            except Exception as e:
-                                self.logger.warning(f'Error : {e}')
-                            pass
-                        elif command[0] == 'rundozr':
-                            # self.ZMQQ.put('rundozr',cbfpath,header,frame)
-                            pass
-                            path = command[1]
-                            metadata = command[2]
-                            frame = command[3]
-                            importlib.reload(DozorPar)
-                            dozor_par = DozorPar.DozorPar
-                
-                            p1 = Process(target=fw.rerun_dozr,args=(path,metadata,frame,dozor_par,meshbestjobQ,ServerQ,))
-                            p1.start()
-                    else:
+                        # self.logger.info(f"End of Series: {self.currentframe}")
+                        ServerQ.put(('EndOfSeries'))#useless?
+                        modifymetadata = stream_meta
+                        modifymetadata['appendix'] = stream_meta
+                        meshbestjobQ.put(('EndOfSeries',modifymetadata))
+                        self.logger.info(consumer.get_stream_info(last_stream_id))
                         pass
-                except:
-                    pass
+                        # use pool to get data
+                    else:
+                        self.logger.info(f'Not a raster scan stream, skip it')
+                        pass
+                    # #start recveive data in new stream
+                    # # group_id = consumer.generate_group_id()
+                    # group_id = 'dozor'
+                    # data, meta = consumer.get_next(group_id, stream=last_stream_info['name'], meta_only=False, ordered=False)
+
+                else:
+                    try:
+                        command = ZMQQ.get(block=False)
+                        pass
+                        if isinstance(command,str):
+                            self.logger.info(f'command is srt')
+                            if command == "exit" :
+                                    self.logger.critical(f'close ZMQ stream')
+                                    stream.close()
+                                    # ZMQQ.close()
+                                    # sys.exit()
+                                    break
+                        elif isinstance(command,tuple) :
+                            self.logger.info(f'command is tuple')
+                            if command[0] == "armview" :
+                                # [17, 'RasterScanViwe1', '/data/blctl/20210727_07A/', 'blctl', 'gonio_phi', 0.1, 119.999802, 0.0, 15, 625.99884, 7.874044121870488e-05, 0.0, -0.997409, 'no', 0, 1, 50.0, 0.0, 1, 3, 5]
+                                # [runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY,,gridsizex,gridsizey,Raster_scoring_way]
+                                
+                                self.logger.info(f'Got command: {command}')
+                                # seem unable to update fw
+                                try:                               
+                                    self.logger.info(f'update filename to {command[1][1]}')
+                                    fw.basename = command[1][1]
+                                    self.logger.info(f'CBF file will write to  {fw.path} with filename {fw.basename}')
+                                    
+                                    #reload dozor par
+                                    importlib.reload(DozorPar)
+                                    fw.dozor_par=DozorPar.DozorPar
+                                    self.logger.info(f'update dozor par = {DozorPar.DozorPar}')
+
+                                    fw.Raster_scoring_way = command[1][25]#Dozor/ None
+                                    self.logger.info(f'set Raster scoring way to {fw.Raster_scoring_way}')
+                                except Exception as e:
+                                    self.logger.warning(f'Error : {e}')
+                                pass
+                            elif command[0] == 'rundozr':
+                                # self.ZMQQ.put('rundozr',cbfpath,header,frame)
+                                self.logger.info(f'rundozr with {command}')
+                                pass
+                                path = command[1]
+                                metadata = command[2]
+                                frame = command[3]
+                                importlib.reload(DozorPar)
+                                dozor_par = DozorPar.DozorPar
+                    
+                                p1 = Process(target=fw.rerun_dozr,args=(path,metadata,frame,dozor_par,meshbestjobQ,ServerQ,))
+                                p1.start()
+                        else:
+                            pass
+                    except Exception as e:
+                        pass
+        else:
+            os.nice(-19)#high priority
+            fw = stream2cbf.Stream2Cbf("temp", self.tempcbffolder)
+            #  fw = stream2cbf.Stream2Cbf("temp", "/mnt/data_buffer/")
+            fw.register_observer(self)
+            # folder = fw.path
+            self.logger.info(f'CBF file will write to  {fw.path} with filename {fw.basename}')
+            stream = ZMQStream(self.eigerhost,  self.eigerzmqport)
+            while True:
+                frames = stream.receive() # get ZMQ frames
+                if frames: # decode frames using the filewriter
+                    fw.decodeFrames(frames,ServerQ,meshbestjobQ,job_queue)
+                else:#only there is no frames we got new command   
+                    try:
+                        command = ZMQQ.get(block=False)
+                        if isinstance(command,str):
+                            self.logger.info(f'command is srt')
+                            if command == "exit" :
+                                self.logger.critical(f'close ZMQ stream')
+                                stream.close()
+                                # ZMQQ.close()
+                                # sys.exit()
+                                break
+                        elif isinstance(command,tuple) :
+                            self.logger.info(f'command is tuple')
+                            if command[0] == "armview" :
+                                # [17, 'RasterScanViwe1', '/data/blctl/20210727_07A/', 'blctl', 'gonio_phi', 0.1, 119.999802, 0.0, 15, 625.99884, 7.874044121870488e-05, 0.0, -0.997409, 'no', 0, 1, 50.0, 0.0, 1, 3, 5]
+                                # [runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten,roi,numofX,numofY,,gridsizex,gridsizey,Raster_scoring_way]
+                                
+                                self.logger.info(f'Got command: {command}')
+                                # seem unable to update fw
+                                try:                               
+                                    self.logger.info(f'update filename to {command[1][1]}')
+                                    fw.basename = command[1][1]
+                                    self.logger.info(f'CBF file will write to  {fw.path} with filename {fw.basename}')
+                                    
+                                    #reload dozor par
+                                    importlib.reload(DozorPar)
+                                    fw.dozor_par=DozorPar.DozorPar
+                                    self.logger.info(f'update dozor par = {DozorPar.DozorPar}')
+
+                                    fw.Raster_scoring_way = command[1][25]#Dozor/ None
+                                    self.logger.info(f'set Raster scoring way to {fw.Raster_scoring_way}')
+                                except Exception as e:
+                                    self.logger.warning(f'Error : {e}')
+                                pass
+                            elif command[0] == 'rundozr':
+                                # self.ZMQQ.put('rundozr',cbfpath,header,frame)
+                                pass
+                                path = command[1]
+                                metadata = command[2]
+                                frame = command[3]
+                                importlib.reload(DozorPar)
+                                dozor_par = DozorPar.DozorPar
+                    
+                                p1 = Process(target=fw.rerun_dozr,args=(path,metadata,frame,dozor_par,meshbestjobQ,ServerQ,))
+                                p1.start()
+                        else:
+                            pass
+                    except:
+                        pass
 
     def notify(self, observable, *args, **kwargs):          
         
@@ -580,6 +699,7 @@ class MestbestSever():
             #check command
             try:
                 command = meshbestjobQ.get(block=False)
+                # command = meshbestjobQ.get(block=True)
                 # self.logger.info(f'Get Q: {command}')
                 if isinstance(command,str):
                     # self.logger.info(f'command is srt')
@@ -1211,7 +1331,9 @@ if __name__ == "__main__":
     # signal.signal(signal.SIGINT, quit)
     # signal.signal(signal.SIGTERM, quit)
     # logger=logsetup.getloger2('MestbestServer')
-    
-    m=MestbestSever()
+    par = argparse.ArgumentParser()
+    par.add_argument("-asapo",action='store_true',help="Asapo mode")
+    args = par.parse_args()
+    m=MestbestSever(use_asapo=args.asapo)
     m.start()
     
