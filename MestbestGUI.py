@@ -497,7 +497,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.Active.setStyleSheet('background-color: red')
         
     def DrawinRasterView1Press(self,event):
-        
+        print(f"DrawinRasterView1Press:{self.Par['StateCtl']['RasterDone'] }")
         if self.RasterView1QPixmap_ori.isNull():
             self.logger.debug(f'isNull,bypass')
             pass
@@ -1886,6 +1886,16 @@ class MainUI(QMainWindow,Ui_MainWindow):
         pass
     def Direct_collectclicked(self):
         self.logger.info(f'Button Direct colect clicked')
+        self.RasterRuning = False
+        statectrl ={}
+        statectrl['RasterDone'] = True
+        statectrl['AbletoStartRaster'] = True
+        statectrl['reciveserverupdate'] = True
+        statectrl['AbletoCollect'] = True
+        self.Par['StateCtl']=statectrl
+        # self.Par['StateCtl']['RasterDone'] = True
+        # self.Par['StateCtl']['AbletoStartRaster'] = True
+        # self.Par['StateCtl']['reciveserverupdate'] = True
         #write current par to file
         path=f'{self.RootPath_2.text()}/StartRasterclickedPar.txt'
         with open(path,'w') as f:
@@ -1898,20 +1908,24 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 for key, value in self.Par[view].items(): 
                     if str(key) in writeitem: 
                         f.write(f'{key}:{value}\n')
-
+        par = variables.Raster_to_Meshbest_par(self.RasterPar, self.Par)
+        self.Par.update(par)
         #only support view1 
         # self.Overlap_Select_1.setCurrentIndex(3)
         # self.Overlap_Select_2.setCurrentIndex(2)
+        self.update_ui_par_to_meshbest()
         parlist = self.calRasterParDetector(view1=True)
         self.meshbest.sendCommandToMeshbest(('directCollect',parlist))
-        self.Par['StateCtl']['RasterDone'] = True
+       
+       
         #set position pick, set all pos score to 1?
 
-        self.update_ui_par_to_meshbest()
+        
         path = f'{self.RootPath_2.text()}/AfterRasterPar.pkl'
         with open(path, 'wb') as f:
             pickle.dump(self.Par, f)
         pass
+        print(f"Direct_collectclicked {self.Par['StateCtl']['RasterDone']}")
     def StartRasterclicked(self):
         self.logger.info(f'Button Start Raster clicked')
         path=f'{self.RootPath_2.text()}/StartRasterclickedPar.txt'
@@ -4995,6 +5009,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
 
         # par = copy.deepcopy(self.Par)
         par = variables.Raster_to_Meshbest_par(self.RasterPar, self.Par)
+        print(f"Update UI par to meshbest:{par['StateCtl']['RasterDone']}")
         self.meshbest.sendCommandToMeshbest(('Update_par',par,updatetype))
     def update_All_par_to_meshbest(self):
         # TODO
