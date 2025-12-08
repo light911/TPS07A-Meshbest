@@ -259,10 +259,15 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.Centermode.clicked.connect(self.Centermodeclicked)
         self.Transfermode.clicked.connect(self.Transfermodeclicked)
         
+        self.neg_1deg.clicked.connect(self.neg_1degclicked)
+        self.neg_5deg.clicked.connect(self.neg_5degclicked)
         self.neg_10deg.clicked.connect(self.neg_10degclicked)
         self.neg_90deg.clicked.connect(self.neg_90degclicked)
+        self.pos_1deg.clicked.connect(self.pos_1degclicked)
+        self.pos_5deg.clicked.connect(self.pos_5degclicked)
         self.pos_10deg.clicked.connect(self.pos_10degclicked)
         self.pos_90deg.clicked.connect(self.pos_90degclicked)
+      
         self.Zoom1.clicked.connect(self.Zoom1clicked)
         self.Zoom2.clicked.connect(self.Zoom2clicked)
         self.Zoom3.clicked.connect(self.Zoom3clicked)
@@ -1082,7 +1087,17 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.Qinfo["sendQ"].put(command)
     def Zoom4clicked(self):
         command = f'gtos_start_motor_move camera_zoom 4'
+        self.Qinfo["sendQ"].put(command)
+    def neg_1degclicked(self):
+        newpos = self.bluiceData['motor']['gonio_phi']['pos'] - 1
+        # gtos_start_motor_move motorName destination
+        command = f'gtos_start_motor_move gonio_phi {newpos}'
         self.Qinfo["sendQ"].put(command)    
+    def neg_5degclicked(self):
+        newpos = self.bluiceData['motor']['gonio_phi']['pos'] - 5
+        # gtos_start_motor_move motorName destination
+        command = f'gtos_start_motor_move gonio_phi {newpos}'
+        self.Qinfo["sendQ"].put(command)
     def neg_10degclicked(self):
         newpos = self.bluiceData['motor']['gonio_phi']['pos'] - 10
         # gtos_start_motor_move motorName destination
@@ -1090,6 +1105,16 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.Qinfo["sendQ"].put(command)
     def neg_90degclicked(self):
         newpos = self.bluiceData['motor']['gonio_phi']['pos'] - 90
+        # gtos_start_motor_move motorName destination
+        command = f'gtos_start_motor_move gonio_phi {newpos}'
+        self.Qinfo["sendQ"].put(command)
+    def pos_1degclicked(self):
+        newpos = self.bluiceData['motor']['gonio_phi']['pos'] + 1
+        # gtos_start_motor_move motorName destination
+        command = f'gtos_start_motor_move gonio_phi {newpos}'
+        self.Qinfo["sendQ"].put(command)
+    def pos_5degclicked(self):
+        newpos = self.bluiceData['motor']['gonio_phi']['pos'] + 5
         # gtos_start_motor_move motorName destination
         command = f'gtos_start_motor_move gonio_phi {newpos}'
         self.Qinfo["sendQ"].put(command)
@@ -1363,8 +1388,12 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 setstate = not self.bluiceData['motor']['gonio_phi']['moving']
                 # print(self.bluiceData['motor']['gonio_phi']['moving'])
                 # print(setstate)
+                self.neg_1deg.setEnabled(setstate)
+                self.neg_5deg.setEnabled(setstate)
                 self.neg_10deg.setEnabled(setstate)
                 self.neg_90deg.setEnabled(setstate)
+                self.pos_1deg.setEnabled(setstate)
+                self.pos_5deg.setEnabled(setstate)
                 self.pos_10deg.setEnabled(setstate)
                 self.pos_90deg.setEnabled(setstate)
                 # self.Focus_neg_l.setEnabled(setstate)
@@ -1388,8 +1417,12 @@ class MainUI(QMainWindow,Ui_MainWindow):
             self.Zoom4.setEnabled(False)
             self.Centermode.setEnabled(False)
             self.Transfermode.setEnabled(False)
+            self.neg_1deg.setEnabled(False)
+            self.neg_5deg.setEnabled(False)
             self.neg_10deg.setEnabled(False)
             self.neg_90deg.setEnabled(False)
+            self.pos_1deg.setEnabled(False)
+            self.pos_5deg.setEnabled(False)
             self.pos_10deg.setEnabled(False)
             self.pos_90deg.setEnabled(False)
             self.Autocenter.setEnabled(False)
