@@ -1356,8 +1356,19 @@
             </item>
             <item>
              <widget class="QPushButton" name="Generate_position_1">
+              <property name="styleSheet">
+               <string notr="true">QPushButton:checked {
+	background-color:rgb(255, 0, 0)
+}</string>
+              </property>
               <property name="text">
                <string>Generate</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
               </property>
              </widget>
             </item>
@@ -1618,8 +1629,19 @@
             </item>
             <item>
              <widget class="QPushButton" name="Generate_position_2">
+              <property name="styleSheet">
+               <string notr="true">QPushButton:checked {
+	background-color:rgb(255, 0, 0)
+}</string>
+              </property>
               <property name="text">
                <string>Generate</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
               </property>
              </widget>
             </item>
@@ -1915,17 +1937,17 @@
        <layout class="QGridLayout" name="gridLayout_9">
         <item row="0" column="0">
          <layout class="QGridLayout" name="gridLayout_8">
-          <item row="2" column="0">
-           <widget class="QPushButton" name="debug_raster">
-            <property name="text">
-             <string>Raster</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="0">
            <widget class="QPushButton" name="debug_operation">
             <property name="text">
              <string>operation</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QPushButton" name="debug_raster">
+            <property name="text">
+             <string>Raster</string>
             </property>
            </widget>
           </item>

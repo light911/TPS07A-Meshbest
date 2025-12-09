@@ -339,6 +339,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.MovePos_2.clicked.connect(self.make_EditPos_2_uncheck)
         self.EditPos_2.clicked.connect(self.make_MovePos_2_uncheck)
 
+
         self.updatelist_1.currentIndexChanged.connect(self.updatelist_1_update)
         self.updatelist_2.currentIndexChanged.connect(self.updatelist_2_update)
         self.Generate_position_1.clicked.connect(self.Generate_position_1_click)
@@ -456,10 +457,16 @@ class MainUI(QMainWindow,Ui_MainWindow):
             self.update_ui_par_to_meshbest('plotBestpos_View2')
     def Generate_position_1_click(self):
         if self.bluiceData['active']:
+            # self.Generate_position_1.setStyleSheet("color: #ff0000;")
+            self.Generate_position_1.setChecked(True)
+            # QApplication.processEvents()
             self.create_collectinfo('View1',call='Generate')
             self.update_ui_par_to_meshbest('plotBestpos_View1')
     def Generate_position_2_click(self):
         if self.bluiceData['active']:
+            # self.Generate_position_2.setStyleSheet("color: #ff0000;")
+            self.Generate_position_2.setChecked(True)
+            # QApplication.processEvents()
             self.create_collectinfo('View2',call='Generate')
             self.update_ui_par_to_meshbest('plotBestpos_View2')
 
@@ -1451,6 +1458,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
             self.ClearAll_1.setEnabled(False)
             self.EditPos_1.setEnabled(False)
             self.MovePos_1.setEnabled(False)
+            self.Generate_position_1.setEnabled(False)
+            self.Generate_position_2.setEnabled(False)
 
             self.ClearAll_2.setEnabled(False)
             self.EditPos_2.setEnabled(False)
@@ -1477,6 +1486,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
             self.ClearAll_1.setEnabled(True)
             self.EditPos_1.setEnabled(True)
             self.MovePos_1.setEnabled(True)
+            self.Generate_position_1.setEnabled(True)
+            self.Generate_position_2.setEnabled(True)
 
             self.ClearAll_2.setEnabled(True)
             self.EditPos_2.setEnabled(True)
@@ -4781,13 +4792,13 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 pass
             if call=='Generate':
                 server_url = self.Par['crystal_predict_server']
-                self.predictions = CHiMPClient.get_crystal_predict(imagepath,server_url,logger=self.logger)
+                self.predictions = CHiMPClient.get_crystal_predict(imagepath,server_url,logger=self.logger,saveimage=False)
             else:
                 if self.predictions:
                     pass
                 else:
                     server_url = self.Par['crystal_predict_server']
-                    self.predictions = CHiMPClient.get_crystal_predict(imagepath,server_url,logger=self.logger)
+                    self.predictions = CHiMPClient.get_crystal_predict(imagepath,server_url,logger=self.logger,saveimage=False)
                 
             if self.predictions:
                 # self.logger.info(predictions[0])
@@ -4867,6 +4878,14 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     
             else:
                 pass
+            if call == 'Generate':
+                if view=='View1':
+                    # self.Generate_position_1.setStyleSheet("")
+                    self.Generate_position_1.setChecked(False)
+                else:
+                    # self.Generate_position_2.setStyleSheet("")
+                    self.Generate_position_2.setChecked(False)
+                # QApplication.processEvents()
 
             pass
     def predict_flux(self,currentBeamsize,currentAtten,sampleFlux,Targetbeamsize,par):

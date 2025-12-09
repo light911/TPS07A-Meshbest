@@ -159,7 +159,7 @@ def find_overlapping_boxes(predictions, iou_threshold=0.1):
                 overlapping_indices.add(j)
 
     return overlapping_indices
-def get_crystal_predict(image_path, server_url="http://localhost:8000",logger:logging.Logger=None):
+def get_crystal_predict(image_path, server_url="http://localhost:8000",logger:logging.Logger=None,saveimage=True):
     # 檢查檔案是否存在
     if not logger:
         logger = logging.getLogger('get_crystal_predict')
@@ -197,6 +197,118 @@ def get_crystal_predict(image_path, server_url="http://localhost:8000",logger:lo
     # 按照信心度排序預測結果（信心度高in front)
     sorted_predictions = sorted(enumerate(result['predictions'], 1), key=lambda x: x[1]['score'],
                                 reverse=True)
+    if saveimage:
+        # 載入原始圖片
+        image = Image.open(image_path).convert("RGB")
+        # 創建一個透明圖層用於繪製帶透明度的框和遮罩
+        overlay = Image.new('RGBA', image.size, (0, 0, 0, 0))
+        draw_overlay = ImageDraw.Draw(overlay)
+        # 用於繪製文字的圖層（不需要透明）
+        draw = ImageDraw.Draw(image)
+        # 創建一個 numpy 陣列來累積所有遮罩
+        mask_overlay = np.zeros((image.size[1], image.size[0], 4), dtype=np.uint8)
+        def get_color_for_index(idx, total):
+            """為每個實例生成不同的顏色"""
+            import colorsys
+            # 使用 HSV 色輪，保持飽和度和亮度固定，改變色調
+            hue = (idx * 0.618033988749895) % 1.0  # 黃金角度，確保顏色分散
+            rgb = colorsys.hsv_to_rgb(hue, 0.8, 0.95)
+            return tuple(int(c * 255) for c in rgb)
+
+        # 按照信心度排序預測結果（信心度低的先繪製，高的後繪製，這樣高信心度的會在上層）
+        sorted_predictions_2 = sorted(enumerate(result['predictions'], 1), key=lambda x: x[1]['score'])
+        # 先收集所有晶體的中心和安全直徑資訊
+        crystal_centers = []
+        all_masks_info = []
+
+        # 第一遍：計算所有晶體的中心和內接圓
+        for idx, pred in sorted_predictions:
+            mask = pred.get('mask', None)
+            if mask is not None and len(mask) > 0:
+                box = pred['box']
+                x1, y1, x2, y2 = [int(coord) for coord in box]
+                mask_array = np.array(mask, dtype=np.uint8)
+
+                # 計算中心和內接圓直徑
+                center_x, center_y, max_diameter = calculate_crystal_center_and_max_diameter(mask_array, x1, y1)
+
+                if center_x is not None:
+                    all_masks_info.append((mask, [x1, y1, x2, y2]))
+                    crystal_centers.append({
+                        'idx': idx,
+                        'center_x': center_x,
+                        'center_y': center_y,
+                        'inner_diameter': max_diameter,
+                        'mask': mask,
+                        'box': [x1, y1, x2, y2]
+                    })
+            # 第三遍：繪製晶體
+    for idx, pred in sorted_predictions:
+        box = pred['box']  # [x1, y1, x2, y2]
+        score = pred['score']
+        mask = pred.get('mask', None)  # 2D array (cropped to box)
+
+        x1, y1, x2, y2 = [int(coord) for coord in box]
+
+        # 如果要顯示遮罩且有遮罩數據
+        if mask is not None and len(mask) > 0:
+            # 為這個實例生成獨特的顏色
+            instance_color = get_color_for_index(idx, len(result['predictions']))
+
+            # 將 mask 轉換為 numpy 陣列
+            mask_array = np.array(mask, dtype=np.uint8)
+
+            # 確保 mask 尺寸與 box 匹配
+            expected_height = y2 - y1
+            expected_width = x2 - x1
+
+            if mask_array.shape[0] == expected_height and mask_array.shape[1] == expected_width:
+                # 在完整圖像的遮罩層上填充這個實例的顏色
+                # alpha 設定為 120 (約 50% 透明度) 以便看到底層圖像
+                mask_alpha = int(100 + (score * 100))  # 根據信心度調整透明度 (100-200)
+
+                for dy in range(mask_array.shape[0]):
+                    for dx in range(mask_array.shape[1]):
+                        if mask_array[dy, dx] > 0:  # 如果這個像素屬於物體
+                            py = y1 + dy
+                            px = x1 + dx
+                            if 0 <= py < mask_overlay.shape[0] and 0 <= px < mask_overlay.shape[1]:
+                                # 使用 alpha blending 合併顏色
+                                mask_overlay[py, px] = [*instance_color, mask_alpha]
+            center_info = next((c for c in crystal_centers if c['idx'] == idx), None)
+            if center_info:
+                cx, cy = center_info['center_x'], center_info['center_y']
+                inner_d = center_info['inner_diameter']
+                # safe_d = center_info['safe_diameter']
+                safe_d = inner_d
+                # 繪製中心點（十字線）
+                cross_size = 5
+                draw_overlay.line([(cx - cross_size, cy), (cx + cross_size, cy)], fill=(255, 255, 0, 255), width=2)
+                draw_overlay.line([(cx, cy - cross_size), (cx, cy + cross_size)], fill=(255, 255, 0, 255), width=2)
+            # 繪製安全圓（不碰到其他晶體的最大圓，青色虛線）
+                safe_r = safe_d / 2
+                draw_overlay.ellipse(
+                    [cx - safe_r, cy - safe_r, cx + safe_r, cy + safe_r],
+                    outline=(0, 255, 255, 180), width=2
+                )
+            # 將透明圖層合併到原始圖片上
+    image = image.convert("RGBA")
+
+    # 如果有遮罩，先合併遮罩層
+    mask_image = Image.fromarray(mask_overlay, mode='RGBA')
+    image = Image.alpha_composite(image, mask_image)
+    image = image.convert("RGB")
+    # 生成輸出檔案名稱
+    base_name = os.path.splitext(image_path)[0]
+    suffix = "_masks" 
+    output_path = f"{base_name}{suffix}.jpg"
+
+    # 儲存標註後的圖片
+    image.save(output_path, quality=95)
+
+
+
+
     return sorted_predictions
 
 
