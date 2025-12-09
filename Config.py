@@ -31,5 +31,6 @@ Par={
     "BestDose":[3,3.6,4.4,6,8],
     "BeamFWHM":[980,380,195,49.8,23.76],
     "minExposedTime":7.8e-3,
-    "Bestlowlimitscore":1
+    "Bestlowlimitscore":1,
+    "crystal_predict_server":"http://10.7.1.121:8000"
     }

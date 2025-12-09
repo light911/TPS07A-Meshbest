@@ -4777,7 +4777,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
                 imagepath = f'{self.RootPath_2.text()}/crystalimage_1.jpg'
                 pass
             else:
-                imagepath = f'{self.RootPath_2.text()}/crystalimage_1.jpg'
+                imagepath = f'{self.RootPath_2.text()}/crystalimage_2.jpg'
                 pass
             if call=='Generate':
                 server_url = self.Par['crystal_predict_server']
