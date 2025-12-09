@@ -39,6 +39,7 @@ from pathlib import Path
 from peakfind import detect_peaks_1
 from myepics import myepics
 from epics import caget
+import CHiMPClient 
 # import faulthandler
 # faulthandler.enable()
 
@@ -63,6 +64,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.numofclient = 0
         self.bluiceID = -1
         self.bluiceCounter = 0
+        self.predictions = None
         self.m1 = Manager()
         
         self.bluiceData={}
@@ -339,6 +341,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
 
         self.updatelist_1.currentIndexChanged.connect(self.updatelist_1_update)
         self.updatelist_2.currentIndexChanged.connect(self.updatelist_2_update)
+        self.Generate_position_1.clicked.connect(self.Generate_position_1_click)
+        self.Generate_position_2.clicked.connect(self.Generate_position_2_click)
 
         self.RootPath.textChanged.connect(self.checkRootFolder)
         self.GetDefalutFolder.clicked.connect(self.GetDefalutFolder_clicked)
@@ -449,6 +453,14 @@ class MainUI(QMainWindow,Ui_MainWindow):
         #     self.updatelist_2.setStyleSheet("")
         if self.bluiceData['active']:
             self.create_collectinfo('View2')
+            self.update_ui_par_to_meshbest('plotBestpos_View2')
+    def Generate_position_1_click(self):
+        if self.bluiceData['active']:
+            self.create_collectinfo('View1',call='Generate')
+            self.update_ui_par_to_meshbest('plotBestpos_View1')
+    def Generate_position_2_click(self):
+        if self.bluiceData['active']:
+            self.create_collectinfo('View2',call='Generate')
             self.update_ui_par_to_meshbest('plotBestpos_View2')
 
     def collectAllpos_1_clicked(self):
@@ -4420,6 +4432,39 @@ class MainUI(QMainWindow,Ui_MainWindow):
 
         # self.logger.warning(f'{viewX=},{rasterX=},{diffx=},{convert_posX=},{boxX=},{ratio=},{zoomx=},{RasterPar["gridsizeX"]=}')
         return viewX,viewY
+    def Image_Mapto_Raster(self,posx,posy,view='View1'):
+        RasterPar =  self.RasterPar[view]
+        if view =='View1':
+            ratio = 1
+        else:
+            ratio = 1
+        if view == 'View1':
+            RasterView = self.RasterView1
+        else:
+            RasterView = self.RasterView2
+        #position at full view
+        convert_posX = posx
+        convert_posY = posy
+        
+        #get box pos
+        boxX = RasterPar['box'].x()
+        boxY = RasterPar['box'].y()
+        
+        zoomx = RasterPar['zoom_scale_x']
+        zoomy = RasterPar['zoom_scale_y']
+
+        #diffpos
+        diffx = convert_posX - boxX + RasterPar['gridsizeX']/2/zoomx
+        diffy = convert_posY - boxY + RasterPar['gridsizeX']/2/zoomy
+
+
+        rasterX = diffx * zoomx 
+        rasterY = diffy * zoomy 
+        viewX = rasterX / RasterPar['gridsizeX'] 
+        viewY = rasterY / RasterPar['gridsizeY']
+
+        # self.logger.warning(f'{viewX=},{rasterX=},{diffx=},{convert_posX=},{boxX=},{ratio=},{zoomx=},{RasterPar["gridsizeX"]=}')
+        return viewX,viewY
     def movePosinCollectinfo(self,event,position,view='View1'):
         raster = self.RasterPar[view]
         if view == 'View1':
@@ -4533,8 +4578,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         # self.plot_overlap_image(view)#too heavy
         # self.plotBestpos(view)#will replot by after send message to server
         
-    def create_collectinfo(self,view='View1'):
-        
+    def create_collectinfo(self,view='View1',call=None):
         RasterPar = self.RasterPar[view]
         par = self.Par[view]
         if view=='View1':
@@ -4726,6 +4770,104 @@ class MainUI(QMainWindow,Ui_MainWindow):
             # self.send_RasterInfo_to_meshbest(False)#also send par[view][collectInfo]
             updatestr = f'plotBestpos_{view}'
             self.send_RasterInfo_to_meshbest(updatestr)
+            pass
+        elif updatetype == 3:#Crystal form OM image
+            collectlist=list()
+            if view=='View1':
+                imagepath = f'{self.RootPath_2.text()}/crystalimage_1.jpg'
+                pass
+            else:
+                imagepath = f'{self.RootPath_2.text()}/crystalimage_1.jpg'
+                pass
+            if call=='Generate':
+                server_url = self.Par['crystal_predict_server']
+                self.predictions = CHiMPClient.get_crystal_predict(imagepath,server_url,logger=self.logger)
+            else:
+                if self.predictions:
+                    pass
+                else:
+                    server_url = self.Par['crystal_predict_server']
+                    self.predictions = CHiMPClient.get_crystal_predict(imagepath,server_url,logger=self.logger)
+                
+            if self.predictions:
+                # self.logger.info(predictions[0])
+                # return
+                for i,item in enumerate(self.predictions):
+                    # predictions= (ID,Ditc[box,score,mask])
+                    mask = item[1].get('mask', None)
+                   
+                    box = item[1]['box']
+                    x1, y1, x2, y2 = [int(coord) for coord in box]
+                    mask_array = np.array(mask, dtype=np.uint8)
+
+                    center_x, center_y, max_diameter = CHiMPClient.calculate_crystal_center_and_max_diameter(mask_array, x1, y1)
+                    posdata={}
+                    #,x,y,beamsize,socre
+                    posdata['ViewX'],posdata['ViewY']= self.Image_Mapto_Raster(center_x,center_y,view=view)
+                    BeamSize = self.CorrectBeamsize(1 * RasterPar['gridsizeY'])
+
+                    CollectOrder = int(i+1)
+                    CollectType = 0#todo collec
+                    CollectDone = False
+                    FileName = f'{i+1:03d}'
+                    
+                    FolderName = f'{self.RootPath_2.text()}/collect'
+                    Distance = self.Distance.value()
+                    Energy = self.bluiceData['motor']['energy']['pos']
+                    TotalCollectRange = 10 #todo set a input?
+                    StartPhi = RasterPar['gonio_phi'] - (TotalCollectRange /2)
+                    EndPhi = RasterPar['gonio_phi'] + (TotalCollectRange /2)
+                    Delta = 0.1 #todo set a input?
+                    Atten = 0
+                    ExpTime = 0.01
+                    displaytext = "Atten-Time"
+                    DoseSelect = 0
+                    dose = 10
+                    RoughtDose = 10
+                    EstimateDose = 10
+                    #get flux
+                    currentBeamsize =  float(self.bluiceData['string']['currentBeamsize']['txt'])
+                    currentAtten = self.bluiceData['motor']['attenuation']['pos']#float
+                    sampleFlux = float(self.bluiceData['string']['sampleFlux']['txt'])
+                    flux = self.collectparwindows.predict_flux(currentBeamsize,currentAtten,sampleFlux,BeamSize,self.Par)
+                    
+                    newHdose,newAdose,newAtten,newExptime,newTrange,newDelta,NewDistance,NewEnergy=\
+                    self.collectparwindows.calDosePar(displaytext,DoseSelect,BeamSize,dose,RoughtDose,EstimateDose,Atten,ExpTime,TotalCollectRange,Delta,Distance,Energy,flux)
+                    posdata['BeamSize'] = BeamSize
+                    posdata['CollectOrder'] = CollectOrder
+                    posdata['CollectType'] = CollectType
+                    posdata['CollectDone'] = CollectDone
+                    posdata['FileName'] = FileName
+                    posdata['FolderName'] = FolderName
+                    posdata['Distance'] = Distance
+                    posdata['Energy'] = Energy
+                    posdata['StartPhi'] = RasterPar['gonio_phi'] - (newTrange /2)
+                    posdata['EndPhi'] = RasterPar['gonio_phi'] + (newTrange /2)
+                    posdata['TotalCollectRange'] = newTrange
+                    posdata['Delta'] = newDelta
+                    posdata['ExpTime'] = newExptime
+                    posdata['Atten'] = newAtten
+                    posdata['RoughtDose']=newHdose
+                    posdata['EstimateDose'] = newAdose
+                    # self.logger.warning(f'{posdata["StartPhi"]},{posdata["EndPhi"]},{newTrange}')
+                    if i >=numlist:
+                        pass
+                    else:
+                        collectlist.append(posdata)
+                self.logger.warning(f'View = {view}, len collectlist={len(collectlist)}')
+                self.Par[view]['collectInfo'] = collectlist
+                if len(self.Par[view]['collectInfo'])>0:
+                    if view=='View1':
+                        self.collectAllpos_1.setEnabled(True)
+                    else:
+                        self.collectAllpos_2.setEnabled(True)
+                # self.send_RasterInfo_to_meshbest(False)#also send par[view][collectInfo]
+                updatestr = f'plotBestpos_{view}'
+                self.send_RasterInfo_to_meshbest(updatestr)
+                    
+            else:
+                pass
+
             pass
     def predict_flux(self,currentBeamsize,currentAtten,sampleFlux,Targetbeamsize,par):
         # currentBeamsize =  float(self.bluiceData['string']['currentBeamsize'])
