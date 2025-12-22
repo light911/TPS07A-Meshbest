@@ -5372,6 +5372,26 @@ class MainUI(QMainWindow,Ui_MainWindow):
         #todo update GUI_collecrpar.py
         #update to meshbest server
         self.update_All_par_to_meshbest()
+        #after collect use user defined delay for make crystal back to groud state
+        if self.PostCollecttionDelay.value()==0:
+            pass
+        else:
+            state =f'Post collection delay:sleep for {self.PostCollecttionDelay.value()}'
+            self.logger.info(f"Post collection delay: sleep for {self.PostCollecttionDelay.value()}")
+            # oldtext = self.LastInfo.text()
+            self.LastInfo.setText(state)
+            self.LastInfo.setStyleSheet(f'color: black;background-color: #d0d000')
+            QApplication.processEvents()
+            t0 = time.time()
+            time.sleep(0.2)
+            while self.PostCollecttionDelay.value() > (time.time()-t0):
+                state =f'Post collection delay: {time.time()-t0:.1f} ({self.PostCollecttionDelay.value()})'
+                self.LastInfo.setText(state)
+                QApplication.processEvents()
+                time.sleep(0.1)
+            self.LastInfo.setText('Ready')
+            self.LastInfo.setStyleSheet(f'color: black;background-color: #00a040')
+            # time.sleep(self.PostCollecttionDelay.value())
         #go for next check pause? or check abort?
         if not self.collectPause:
             self.CollectAction(view)

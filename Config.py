@@ -9,7 +9,7 @@ Created on Mon Apr 12 09:49:13 2021
 Par={
     "Beamline":"TPS07A",
     "Debuglevel":"INFO",#ERROR,WARNING,INFO,DEBUG
-    "AvailableBeamSizes":[100,90,80,70,60,50,40,30,20,10,20,5],
+    "AvailableBeamSizes":[100,90,80,70,60,50,40,30,20,10,5,1],
     "dcsshost":"10.7.1.1",
     "dcssport":14243,
     "authhost":"10.7.1.1",
@@ -17,7 +17,7 @@ Par={
     "foldername":"07A",
     #for default value
     "TotalRange":10,
-    "Distance":200,
+    "Distance":140,
     "FrameWidth":0.01,
     "ExposedTime":0.01,
     "Atten":0,
