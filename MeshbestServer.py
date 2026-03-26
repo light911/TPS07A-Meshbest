@@ -525,11 +525,53 @@ class MestbestSever():
             self.logger.info(f'last stream id = {last_stream_id} (init stage)')
             while True:
                 time.sleep(0.1)
+                #TODO 應該還有更好的方法
                 last_stream_info = consumer.get_last_stream()
-                if last_stream_info['name'].startswith(('peaks', 'indexing')):
-                    last_stream_id = last_stream_info['name']
-                    self.logger.info(f"Skip stream: {last_stream_id} (starts with peaks/indexing)")
-                    continue
+                if last_stream_info['name'].startswith(('peaks_', 'indexing_')):
+                    # 取得 peaks_ 或 indexing_ 後面的原始 stream 名稱
+                    if last_stream_info['name'].startswith('peaks_'):
+                        original_stream_name = last_stream_info['name'][len('peaks_'):]
+                    else:
+                        original_stream_name = last_stream_info['name'][len('indexing_'):]
+                    # self.logger.info(f"Detected {last_stream_info['name']}, original stream: {original_stream_name}, last processed: {last_stream_id}")
+                    if original_stream_name == last_stream_id:
+                        continue
+                    elif original_stream_name != last_stream_id:
+                        last_stream_id = original_stream_name
+                        stream_meta = consumer.get_stream_meta(last_stream_id)
+                        self.logger.info(f"New stream: {last_stream_info['name']} with runIndex = {stream_meta['runIndex']}")
+                        # check is data come from raster scan 
+                        
+                        if int(stream_meta['runIndex']) == 101 or int(stream_meta['runIndex']) == 102:
+                            Raster_scoring_way = fw.Raster_scoring_way
+                            dozor_par = fw.dozor_par
+                            view = int(stream_meta['runIndex'])#int
+                            self.logger.info(f'Send message for clear older data')
+                            meshbestjobQ.put(('BeginOfSeries',view))#clear older data
+                            #wait for 0.1 sec to make sure old data is clear
+                            # time.sleep(0.1)
+                            # start asapo worker pool
+                            process = []
+                            self.logger.info(f'Got new stream, start asapo worker')
+                            for i in range(126):
+                                p = Process(target=self.run_asapo_worker, args=(self.tempcbffolder, endpoint, beamtime, token, last_stream_id, ServerQ, meshbestjobQ,Raster_scoring_way, dozor_par,'dozor',self.logger,self.Par))
+                                process.append(p)
+                                p.start()
+                            
+                            for p in process:
+                                p.join()
+
+                            # self.logger.info(f"End of Series: {self.currentframe}")
+                            ServerQ.put(('EndOfSeries'))#useless?
+                            modifymetadata = stream_meta
+                            modifymetadata['appendix'] = stream_meta
+                            meshbestjobQ.put(('EndOfSeries',modifymetadata))
+                            self.logger.info(consumer.get_stream_info(last_stream_id))
+                            pass
+                            # use pool to get data
+                        else:
+                            self.logger.info(f'Not a raster scan stream, skip it')
+                            pass
                 elif last_stream_info['name'] != last_stream_id:
                     last_stream_id = last_stream_info['name']
                     stream_meta = consumer.get_stream_meta(last_stream_id)
