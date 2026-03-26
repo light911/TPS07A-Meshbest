@@ -526,7 +526,11 @@ class MestbestSever():
             while True:
                 time.sleep(0.1)
                 last_stream_info = consumer.get_last_stream()
-                if last_stream_info['name'] != last_stream_id:
+                if last_stream_info['name'].startswith(('peaks', 'indexing')):
+                    last_stream_id = last_stream_info['name']
+                    self.logger.info(f"Skip stream: {last_stream_id} (starts with peaks/indexing)")
+                    continue
+                elif last_stream_info['name'] != last_stream_id:
                     last_stream_id = last_stream_info['name']
                     stream_meta = consumer.get_stream_meta(last_stream_id)
                     self.logger.info(f"New stream: {last_stream_info['name']} with runIndex = {stream_meta['runIndex']}")
