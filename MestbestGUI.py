@@ -43,6 +43,10 @@ import CHiMPClient
 # import faulthandler
 # faulthandler.enable()
 
+def QPointI(x, y):
+    """QPoint wrapper that tolerates float inputs."""
+    return QPoint(int(x), int(y))
+
 class MainUI(QMainWindow,Ui_MainWindow):
     def __init__(self,folder,key,user,stra,beamline,info,passwd,base64passwd):
         super(MainUI,self).__init__()
@@ -189,6 +193,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.timer = QTimer()
         self.abort = False
         self.convertlist = variables.convertlist()
+        self.cal_SSX_Totaltime()
+        self.SSX_LaserInitialState_Changed()
         self.initGuiEvent()
         # self.checkRootFolder()
     def initGUI(self):
@@ -353,8 +359,13 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.Focus_neg_s.clicked.connect(self.Focus_neg_s_clicked)
         self.Focus_pos_s.clicked.connect(self.Focus_pos_s_clicked)
         self.Focus_pos_l.clicked.connect(self.Focus_pos_l_clicked)
-        
-        
+        #SSX section
+        self.SSX_StartCollect.clicked.connect(self.SSX_StartCollect_clicked)
+        self.SSX_NumberFrames.valueChanged.connect(self.cal_SSX_Totaltime)
+        self.SSX_Time.valueChanged.connect(self.cal_SSX_Totaltime)
+        self.SSX_StopCollect.clicked.connect(self.SSX_StopCollect_clicked)
+        self.SSX_LaserInitialState.currentIndexChanged.connect(self.SSX_LaserInitialState_Changed)
+        self.SSX_DetectorMode.currentIndexChanged.connect(self.SSX_DetectorMode_Changed)
         
         pass        
     def checkRootFolder(self,updateUI=True):
@@ -552,10 +563,10 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
                     self.logger.warning(f'Error:{e}')
             elif event.button() == Qt.RightButton and not iseditpos:#=2
-                position = QPoint(event.pos().x(),event.pos().y())
+                position = QPointI(event.pos().x(),event.pos().y())
                 mouseX=self.RasterView1.mapToScene(position).x()
                 mouseY=self.RasterView1.mapToScene(position).y()
-                convert_pos = QPoint(mouseX,mouseY)
+                convert_pos = QPointI(mouseX,mouseY)
                 print(position,mouseX,mouseY)#semm the same?
                 findx=-1
                 findy=-1
@@ -576,11 +587,11 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     self.logger.warning(f'Error : {e}')
                 pass
             elif self.MovePos_1.isChecked() and self.bluiceData['active']:
-                position = QPoint(event.pos().x(),event.pos().y())
+                position = QPointI(event.pos().x(),event.pos().y())
                 self.movePosinCollectinfo(event,position,view='View1')
                 pass
             elif self.EditPos_1.isChecked() and self.bluiceData['active']:
-                position = QPoint(event.pos().x(),event.pos().y())
+                position = QPointI(event.pos().x(),event.pos().y())
                 if event.button() == 1 :
                     self.addPosinCollectinfo(position,view='View1')
                 elif event.button() == 2 :
@@ -631,12 +642,12 @@ class MainUI(QMainWindow,Ui_MainWindow):
             # print('DrawinRasterView1Move=============')
             # print(self.view1box.boundingRect(),self.view2box.boundingRect())
         elif self.RasterPar['View1']['movingplot']:
-            position = QPoint(event.pos().x(),event.pos().y())
+            position = QPointI(event.pos().x(),event.pos().y())
             mouseX=self.RasterView1.mapToScene(position).x()
             mouseY=self.RasterView1.mapToScene(position).y()
             i = self.RasterPar['View1']['movingindex']
             newrect = self.RasterPar['View1']['pos_circle_array'][i].rect()
-            newrect.moveCenter(QPoint(mouseX,mouseY))
+            newrect.moveCenter(QPointI(mouseX,mouseY))
             self.RasterPar['View1']['pos_circle_array'][i].setRect(newrect)
         else:
             pass
@@ -710,11 +721,11 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
                     self.logger.warning(f'Error:{e}')
             elif event.button() == Qt.RightButton and not iseditpos:#=2
-                position = QPoint(event.pos().x(),event.pos().y())
+                position = QPointI(event.pos().x(),event.pos().y())
                 mouseX=self.RasterView2.mapToScene(position).x()
                 mouseY=self.RasterView2.mapToScene(position).y()
                 print(position,mouseX,mouseY)#semm the same?
-                convert_pos = QPoint(mouseX,mouseY)
+                convert_pos = QPointI(mouseX,mouseY)
                 findx=-1
                 findy=-1
                 for x,items in enumerate(self.RasterPar['View2']['boxRectItemarray']):
@@ -734,11 +745,11 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     self.logger.warning(f'Error : {e}')
                 pass
             elif self.MovePos_2.isChecked() and self.bluiceData['active']:
-                position = QPoint(event.pos().x(),event.pos().y())
+                position = QPointI(event.pos().x(),event.pos().y())
                 self.movePosinCollectinfo(event,position,view='View2')
                 pass
             elif self.EditPos_2.isChecked() and self.bluiceData['active']:
-                position = QPoint(event.pos().x(),event.pos().y())
+                position = QPointI(event.pos().x(),event.pos().y())
                 if event.button() == 1 :
                     self.addPosinCollectinfo(position,view='View2')
                 elif event.button() == 2 :
@@ -784,12 +795,12 @@ class MainUI(QMainWindow,Ui_MainWindow):
             h = self.view2box.rect().height() #using view2 height
             self.view1box.setRect(x,y,w,h)
         elif self.RasterPar['View2']['movingplot']:
-            position = QPoint(event.pos().x(),event.pos().y())
+            position = QPointI(event.pos().x(),event.pos().y())
             mouseX=self.RasterView2.mapToScene(position).x()
             mouseY=self.RasterView2.mapToScene(position).y()
             i = self.RasterPar['View2']['movingindex']
             newrect = self.RasterPar['View2']['pos_circle_array'][i].rect()
-            newrect.moveCenter(QPoint(mouseX,mouseY))
+            newrect.moveCenter(QPointI(mouseX,mouseY))
             self.RasterPar['View2']['pos_circle_array'][i].setRect(newrect)
         else:
             pass
@@ -4391,7 +4402,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
     def delcollectpos(self,position,view):
         mouseX=self.RasterView1.mapToScene(position).x()
         mouseY=self.RasterView1.mapToScene(position).y()
-        convert_pos = QPoint(mouseX,mouseY)
+        convert_pos = QPointI(mouseX,mouseY)
         findindex = -1
         for i,item in enumerate(self.RasterPar[view]['pos_circle_array']):
             if item.contains(convert_pos):
@@ -4484,7 +4495,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             RasterView = self.RasterView2
         mouseX=RasterView.mapToScene(position).x()
         mouseY=RasterView.mapToScene(position).y()
-        convert_pos = QPoint(mouseX,mouseY)
+        convert_pos = QPointI(mouseX,mouseY)
         if event.button() == 1 :
             if not raster['movingplot']:
                 findindex = -1
@@ -5452,8 +5463,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         path=f'{self.RootPath_2.text()}/{filename}1.jpg'
         rect = self.RasterView1.sceneRect()
         rectf=QRectF(rect)        
-        image = QImage(rectf.width(),rectf.height(), QImage.Format_ARGB32_Premultiplied)
-        
+        # image = QImage(rectf.width(),rectf.height(), QImage.Format_ARGB32_Premultiplied)
+        image = QImage(int(rectf.width()), int(rectf.height()), QImage.Format_ARGB32_Premultiplied)
         painter = QPainter(image)
         self.Rasterscene1.render(painter, QRectF(image.rect()),rectf)
         image.save(path)
@@ -5483,6 +5494,159 @@ class MainUI(QMainWindow,Ui_MainWindow):
         # self.Collectdata.setEnabled(show)
         # self.Abort.setEnabled(True)
         # self.Pause.setEnabled(not show)
+        pass
+
+    ####SSX section
+    def SSX_StartCollect_clicked(self):
+        #start SSX_data collect
+        command = f"gtos_start_operation SSXCollect {self.bluiceID}.{self.bluiceCounter} "
+        self.bluiceCounter += self.bluiceCounter
+        pass
+        # [runIndex,filename,directory,userName,axisName,exposureTime,oscillationStart,detosc,TotalFrames,distance,wavelength,detectoroffX,detectoroffY,sessionId,fileindex,unknow,beamsize,atten]
+        # set operationHandle [start_waitable_operation detector_collect_shutterless \
+        #                  $darkCacheNumber \
+        #                  $filename \
+        #                  $directory \
+        #                  $userName \
+        #                  $motor \
+        #                  $time \
+        #                  $startAngle \
+        #                  $delta \
+        #                  $totalFrames \
+        #                  [set $gMotorDistance] \
+        #                  $wavelength \
+        #                  [set $gMotorHorz] \
+        #                  [set $gMotorVert] \
+        #                  0 \detector mode
+        #                  0 \
+        #                  $sessionId \
+        #                  [lindex $args 0] \
+        #                  $totalFrames \
+        #                  $beam_size \
+        #                  $attn]\
+        parlist = []
+        filename = self.SSX_Prefix.text()
+        directory = self.SSX_Directory.text()
+        userName = self.user
+        exposureTime = self.SSX_Time.value() / 1000#ms to sec
+        oscillationStart = 0
+        detosc = 0
+        TotalFrames = self.SSX_NumberFrames.value()
+        distance = self.SSX_Distance.value()
+        wavelength = 1/self.bluiceData['motor']['energy']['pos']*12398
+        detectoroffX = self.bluiceData['motor']['detector_vert']['pos']
+        detectoroffY = self.bluiceData['motor']['detector_horz']['pos']
+        fileindex = self.SSX_Fileindex.value()
+        detmode = self.SSX_DetectorMode.currentIndex()
+        beamsize = 1
+        atten = self.SSX_Attenuation.value()
+        LaserInitialState = self.SSX_LaserInitialState.currentIndex()
+        SSX_LassrTimeArray_1 = self.SSX_LassrTimeArray_1.value() / 1000#ms to sec
+        SSX_LassrTimeArray_2 = self.SSX_LassrTimeArray_2.value() / 1000#ms to sec
+        SSX_PeakSearchAlgorithm = self.SSX_PeakSearchAlgorithm.currentIndex()
+        SSX_PeakSearch_threshold = self.SSX_PeakSearch_threshold.value()
+        SSX_PeakSearch_minsnr = self.SSX_PeakSearch_minsnr.value()
+        SSX_PeakSearch_min_pix_count = self.SSX_PeakSearch_min_pix_count.value()
+        SSX_PeakSearch_max_pix_count = self.SSX_PeakSearch_max_pix_count.value()
+        SSX_PeakSearch_local_bg_radius = self.SSX_PeakSearch_local_bg_radius.value()
+        SSX_PeakSearch_min_res = self.SSX_PeakSearch_min_res.value()
+        SSX_PeakSearch_max_res = self.SSX_PeakSearch_max_res.value()
+        SSX_PeakSearch_min_snr_biggest_pix = self.SSX_PeakSearch_min_snr_biggest_pix.value()
+        SSX_PeakSearch_min_snr_peak_pix = self.SSX_PeakSearch_min_snr_peak_pix.value()
+        SSX_PeakSearch_min_sig = self.SSX_PeakSearch_min_sig.value()
+        runIndex = int(105) #105 for SSX collect ,view1 =101 view2 =102
+        parlist.append(filename)
+        parlist.append(directory)
+        parlist.append(userName)
+        parlist.append(exposureTime)
+        parlist.append(oscillationStart)
+        parlist.append(detosc)
+        parlist.append(TotalFrames)
+        parlist.append(distance)
+        parlist.append(wavelength)
+        parlist.append(detectoroffX)
+        parlist.append(detectoroffY)
+        parlist.append(fileindex)
+        parlist.append(detmode)
+        parlist.append(beamsize)
+        parlist.append(atten)
+        parlist.append(LaserInitialState)
+        parlist.append(SSX_LassrTimeArray_1)
+        parlist.append(SSX_LassrTimeArray_2)
+        parlist.append(SSX_PeakSearchAlgorithm)
+        parlist.append(SSX_PeakSearch_threshold)
+        parlist.append(SSX_PeakSearch_minsnr)
+        parlist.append(SSX_PeakSearch_min_pix_count)
+        parlist.append(SSX_PeakSearch_max_pix_count)
+        parlist.append(SSX_PeakSearch_local_bg_radius)
+        parlist.append(SSX_PeakSearch_min_res)
+        parlist.append(SSX_PeakSearch_max_res)
+        parlist.append(SSX_PeakSearch_min_snr_biggest_pix)
+        parlist.append(SSX_PeakSearch_min_snr_peak_pix)
+        parlist.append(SSX_PeakSearch_min_sig)
+        parlist.append(runIndex)
+        for item in parlist:
+            command = command + str(item) + " "
+
+        self.opCompleted['SSXCollect'] = False
+        self.Qinfo["sendQ"].put(command)
+        self.SSXtimer = QTimer()
+        self.SSXtimer.singleShot(100,self.updateDetectorFrame)
+        self.SSXtimerinit = True
+        
+
+        # #wait collect done(operation)
+        # self.logger.info(f'Wait for Collect operation')
+        # oplist=['mutiPosCollect']
+        # callback = self.after_collectdone
+        # callbackarg = (view,CurrentCollectindex)
+        # self.timer.singleShot(100, partial(self.waitOperationDone
+        #                                     ,oplist,callback,callbackarg))
+        self.SSX_Fileindex.setValue(fileindex+1)
+    def cal_SSX_Totaltime(self):
+        Totaltime = self.SSX_NumberFrames.value() * self.SSX_Time.value() /1000
+        self.SSX_Totaltime.setValue(Totaltime)
+    def updateDetectorFrame(self):
+        
+        framenumber = int(caget('07a:beamline:timing:info:last_detector_count'))
+        # print(framenumber)
+        # print(self.SSX_NumberFrames.value())
+        # print(self.SSXtimerinit)
+        if self.SSXtimerinit:
+            if framenumber > 0 :
+                self.SSXtimerinit=False
+            self.SSXtimer.singleShot(100,self.updateDetectorFrame)
+        else:
+            if framenumber == 0:
+                self.SSXtimer.stop()
+                self.SSX_CurrentFrame.setStyleSheet('')
+                # print('Stop timer')
+            else:
+                self.SSX_CurrentFrame.setStyleSheet('background-color: red')
+                pass
+                self.SSXtimer.singleShot(100,self.updateDetectorFrame)
+        self.SSX_CurrentFrame.setValue(framenumber)
+    def SSX_StopCollect_clicked(self):
+        command = f"gtos_start_operation SSXStopCollect {self.bluiceID}.{self.bluiceCounter} "
+        self.bluiceCounter += self.bluiceCounter
+        self.Qinfo["sendQ"].put(command)
+
+        pass
+    def SSX_LaserInitialState_Changed(self):
+        if self.SSX_LaserInitialState.currentIndex() == 0:#OFF
+            self.SSX_LaserInitialState_2.setCurrentIndex(1)
+        elif self.SSX_LaserInitialState.currentIndex() == 1:#ON
+            self.SSX_LaserInitialState_2.setCurrentIndex(0)
+        pass
+
+    def SSX_DetectorMode_Changed(sefl):
+        if sefl.SSX_DetectorMode.currentIndex() == 0:
+            #16M
+            sefl.SSX_Time.setMinimum(8)
+        elif sefl.SSX_DetectorMode.currentIndex() == 1:
+            sefl.SSX_Time.setMinimum(2)
+        else:
+            sefl.SSX_Time.setMinimum(2)
         pass
 
 
