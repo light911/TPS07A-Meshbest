@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1654</width>
-    <height>1076</height>
+    <width>1864</width>
+    <height>981</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -732,8 +732,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>128</width>
-             <height>70</height>
+             <width>130</width>
+             <height>74</height>
             </rect>
            </property>
            <attribute name="label">
@@ -770,8 +770,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1173</width>
-             <height>73</height>
+             <width>1360</width>
+             <height>77</height>
             </rect>
            </property>
            <property name="sizePolicy">
@@ -1867,9 +1867,9 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="Option">
+      <widget class="QWidget" name="SpecialOption">
        <attribute name="title">
-        <string>Option</string>
+        <string>Special Option</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_7">
         <item row="0" column="0">
@@ -1895,7 +1895,7 @@
             </item>
            </widget>
           </item>
-          <item row="1" column="0">
+          <item row="2" column="0">
            <spacer name="verticalSpacer">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
@@ -1908,8 +1908,45 @@
             </property>
            </spacer>
           </item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="PostCollecttionDelay">
+            <property name="suffix">
+             <string>sec</string>
+            </property>
+            <property name="decimals">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <double>1000.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_27">
+            <property name="text">
+             <string>Post collection delay</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLabel" name="label_28">
+            <property name="text">
+             <string>Adds an intentional pause between consecutive small-wedge data collections. After one dataset (wedge) finishes and before the next dataset begins, the system waits for the specified duration.Use this delay to:allow the crystal to relax back toward its ground state</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="QLabel" name="label_29">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="2">
-           <spacer name="horizontalSpacer_3">
+           <spacer name="horizontalSpacer_4">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
@@ -1925,10 +1962,622 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="Collect">
+      <widget class="QWidget" name="SSXCollect">
        <attribute name="title">
-        <string>Collect</string>
+        <string>SSX Collect</string>
        </attribute>
+       <layout class="QGridLayout" name="gridLayout_14">
+        <item row="3" column="2">
+         <widget class="QLabel" name="label_32">
+          <property name="text">
+           <string>Distance</string>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="3">
+         <widget class="QDoubleSpinBox" name="SSX_Totaltime">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+          <property name="suffix">
+           <string>sec</string>
+          </property>
+          <property name="minimum">
+           <double>0.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>99999999999999.000000000000000</double>
+          </property>
+          <property name="value">
+           <double>0.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Prefix</string>
+          </property>
+         </widget>
+        </item>
+        <item row="24" column="3">
+         <spacer name="verticalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="12" column="4">
+         <widget class="QDoubleSpinBox" name="SSX_LassrTimeArray_2">
+          <property name="suffix">
+           <string>ms</string>
+          </property>
+          <property name="decimals">
+           <number>0</number>
+          </property>
+          <property name="minimum">
+           <double>0.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>9999999999.000000000000000</double>
+          </property>
+          <property name="value">
+           <double>700.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="16" column="0">
+         <widget class="QLabel" name="label_47">
+          <property name="text">
+           <string>min-pix-count</string>
+          </property>
+         </widget>
+        </item>
+        <item row="14" column="0">
+         <widget class="QLabel" name="label_45">
+          <property name="text">
+           <string>Peak threshold</string>
+          </property>
+         </widget>
+        </item>
+        <item row="14" column="1">
+         <widget class="QSpinBox" name="SSX_PeakSearch_threshold">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>65535</number>
+          </property>
+          <property name="value">
+           <number>800</number>
+          </property>
+         </widget>
+        </item>
+        <item row="12" column="0">
+         <widget class="QLabel" name="label_43">
+          <property name="text">
+           <string>On-line peak search par</string>
+          </property>
+         </widget>
+        </item>
+        <item row="15" column="1">
+         <widget class="QSpinBox" name="SSX_PeakSearch_minsnr">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>65535</number>
+          </property>
+          <property name="value">
+           <number>5</number>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="2">
+         <widget class="QLabel" name="label_35">
+          <property name="text">
+           <string>Attenuation</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="3">
+         <widget class="QDoubleSpinBox" name="SSX_Distance">
+          <property name="suffix">
+           <string>mm</string>
+          </property>
+          <property name="minimum">
+           <double>140.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>900.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="2">
+         <widget class="QLabel" name="label_33">
+          <property name="text">
+           <string>Beam size</string>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="2">
+         <widget class="QLabel" name="label_39">
+          <property name="text">
+           <string>Total Collection time</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="2">
+         <widget class="QLabel" name="label_34">
+          <property name="text">
+           <string>Beam stop</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="2">
+         <widget class="QLabel" name="label_31">
+          <property name="text">
+           <string>Detector mode</string>
+          </property>
+         </widget>
+        </item>
+        <item row="21" column="0">
+         <widget class="QLabel" name="label_52">
+          <property name="text">
+           <string>min-snr-biggest-pix</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="5">
+         <widget class="QDoubleSpinBox" name="SSX_Resolution">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+          <property name="suffix">
+           <string>A</string>
+          </property>
+         </widget>
+        </item>
+        <item row="24" column="0">
+         <spacer name="verticalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="1" column="3" colspan="3">
+         <widget class="QLineEdit" name="SSX_Directory"/>
+        </item>
+        <item row="2" column="3">
+         <widget class="QComboBox" name="SSX_DetectorMode">
+          <item>
+           <property name="text">
+            <string>Normal (16M)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>ROI (9M)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>High frame rate in 16M</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>High frame rate in ROI</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="19" column="0">
+         <widget class="QLabel" name="label_50">
+          <property name="text">
+           <string>min-res</string>
+          </property>
+         </widget>
+        </item>
+        <item row="18" column="0">
+         <widget class="QLabel" name="label_49">
+          <property name="text">
+           <string>local-bg-radius</string>
+          </property>
+         </widget>
+        </item>
+        <item row="22" column="0">
+         <widget class="QLabel" name="label_53">
+          <property name="text">
+           <string>min-snr-peak-pix</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QCommandLinkButton" name="SSX_StartCollect">
+          <property name="text">
+           <string>Collect</string>
+          </property>
+         </widget>
+        </item>
+        <item row="20" column="0">
+         <widget class="QLabel" name="label_51">
+          <property name="text">
+           <string>max-res</string>
+          </property>
+         </widget>
+        </item>
+        <item row="12" column="2">
+         <widget class="QLabel" name="label_42">
+          <property name="text">
+           <string>Laser Trigger Time array</string>
+          </property>
+         </widget>
+        </item>
+        <item row="13" column="1">
+         <widget class="QComboBox" name="SSX_PeakSearchAlgorithm">
+          <property name="currentIndex">
+           <number>1</number>
+          </property>
+          <item>
+           <property name="text">
+            <string>peakfinder8</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>peakfinder9</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QLabel" name="label_30">
+          <property name="text">
+           <string>Directory</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="2">
+         <widget class="QLabel" name="label_36">
+          <property name="text">
+           <string>Time for single frame</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0" colspan="2">
+         <spacer name="horizontalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="8" column="2">
+         <widget class="QLabel" name="label_38">
+          <property name="text">
+           <string>Number frames</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="3">
+         <widget class="QSpinBox" name="SSX_NumberFrames">
+          <property name="minimum">
+           <number>0</number>
+          </property>
+          <property name="maximum">
+           <number>10800000</number>
+          </property>
+          <property name="singleStep">
+           <number>1000</number>
+          </property>
+          <property name="value">
+           <number>0</number>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="4">
+         <widget class="QLabel" name="label_37">
+          <property name="text">
+           <string>Resolution</string>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="2">
+         <widget class="QLabel" name="label_41">
+          <property name="text">
+           <string>Laser Trigger Initial State</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="3">
+         <widget class="QDoubleSpinBox" name="SSX_Attenuation">
+          <property name="suffix">
+           <string>%</string>
+          </property>
+          <property name="maximum">
+           <double>100.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="3">
+         <widget class="QComboBox" name="SSX_LaserInitialState">
+          <property name="editable">
+           <bool>false</bool>
+          </property>
+          <item>
+           <property name="text">
+            <string>OFF</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>ON</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="7" column="3">
+         <widget class="QDoubleSpinBox" name="SSX_Time">
+          <property name="suffix">
+           <string>ms</string>
+          </property>
+          <property name="minimum">
+           <double>2.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>10000000.000000000000000</double>
+          </property>
+          <property name="value">
+           <double>8.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="17" column="0">
+         <widget class="QLabel" name="label_48">
+          <property name="text">
+           <string>max-pix-count</string>
+          </property>
+         </widget>
+        </item>
+        <item row="12" column="3">
+         <widget class="QDoubleSpinBox" name="SSX_LassrTimeArray_1">
+          <property name="suffix">
+           <string>ms</string>
+          </property>
+          <property name="decimals">
+           <number>0</number>
+          </property>
+          <property name="minimum">
+           <double>0.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>9999999999.000000000000000</double>
+          </property>
+          <property name="value">
+           <double>300.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="15" column="0">
+         <widget class="QLabel" name="label_46">
+          <property name="text">
+           <string>min-snr</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3" colspan="3">
+         <widget class="QLineEdit" name="SSX_Prefix"/>
+        </item>
+        <item row="13" column="0">
+         <widget class="QLabel" name="sda">
+          <property name="text">
+           <string>Peak search algorithm</string>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="2">
+         <widget class="QLabel" name="label_40">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QCommandLinkButton" name="SSX_StopCollect">
+          <property name="text">
+           <string>Stop</string>
+          </property>
+         </widget>
+        </item>
+        <item row="23" column="0">
+         <widget class="QLabel" name="label_54">
+          <property name="text">
+           <string>min-sig</string>
+          </property>
+         </widget>
+        </item>
+        <item row="16" column="1">
+         <widget class="QSpinBox" name="SSX_PeakSearch_min_pix_count">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>65535</number>
+          </property>
+          <property name="value">
+           <number>5</number>
+          </property>
+         </widget>
+        </item>
+        <item row="17" column="1">
+         <widget class="QSpinBox" name="SSX_PeakSearch_max_pix_count">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>65535</number>
+          </property>
+          <property name="value">
+           <number>5</number>
+          </property>
+         </widget>
+        </item>
+        <item row="18" column="1">
+         <widget class="QSpinBox" name="SSX_PeakSearch_local_bg_radius">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>65535</number>
+          </property>
+          <property name="value">
+           <number>5</number>
+          </property>
+         </widget>
+        </item>
+        <item row="19" column="1">
+         <widget class="QSpinBox" name="SSX_PeakSearch_min_res">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>65535</number>
+          </property>
+          <property name="value">
+           <number>5</number>
+          </property>
+         </widget>
+        </item>
+        <item row="20" column="1">
+         <widget class="QSpinBox" name="SSX_PeakSearch_max_res">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>65535</number>
+          </property>
+          <property name="value">
+           <number>5</number>
+          </property>
+         </widget>
+        </item>
+        <item row="21" column="1">
+         <widget class="QSpinBox" name="SSX_PeakSearch_min_snr_biggest_pix">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>65535</number>
+          </property>
+          <property name="value">
+           <number>5</number>
+          </property>
+         </widget>
+        </item>
+        <item row="22" column="1">
+         <widget class="QSpinBox" name="SSX_PeakSearch_min_snr_peak_pix">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>65535</number>
+          </property>
+          <property name="value">
+           <number>5</number>
+          </property>
+         </widget>
+        </item>
+        <item row="23" column="1">
+         <widget class="QSpinBox" name="SSX_PeakSearch_min_sig">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>65535</number>
+          </property>
+          <property name="value">
+           <number>5</number>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="4">
+         <widget class="QComboBox" name="SSX_LaserInitialState_2">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <item>
+           <property name="text">
+            <string>OFF</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>ON</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="2" column="5">
+         <widget class="QSpinBox" name="SSX_Fileindex">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="maximum">
+           <number>1000</number>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="4">
+         <widget class="QLabel" name="label_44">
+          <property name="text">
+           <string>File index</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="4">
+         <widget class="QSpinBox" name="SSX_CurrentFrame">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="minimum">
+           <number>0</number>
+          </property>
+          <property name="maximum">
+           <number>10800000</number>
+          </property>
+          <property name="singleStep">
+           <number>1000</number>
+          </property>
+          <property name="value">
+           <number>0</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -2006,8 +2655,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1654</width>
-     <height>20</height>
+     <width>1864</width>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMeshBestGUI">
