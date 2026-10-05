@@ -50,15 +50,20 @@ class image(QThread):
                     self.logger.warning(f'image source {self.ip}:{self.port}{self.path} lost, {reason}')
                     connected = False
                 self.imageerror.emit(reason)
-                time.sleep(self.retryinterval)
+                self._sleep(self.retryinterval)
                 continue
             if not connected:
                 self.logger.warning(f'image source {self.ip}:{self.port}{self.path} reconnected')
                 connected = True
             self.updateimage.emit(tempq)
-            time.sleep(self.updateinterval)
+            self._sleep(self.updateinterval)
             
         pass
+    def _sleep(self,sec):
+        #sleep but return quickly when stop
+        end = time.time() + sec
+        while not self._stop and time.time() < end:
+            time.sleep(min(0.1,max(0,end-time.time())))
     def _get(self,path):
         conn = http.client.HTTPConnection(self.ip,port=self.port,timeout=self.timeout)
         try:

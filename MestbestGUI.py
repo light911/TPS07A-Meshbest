@@ -85,6 +85,22 @@ def split_tcl_list(text):
         items.append(''.join(buf))
     return items
 
+def kill_children(logger,timeout=2):
+    #terminate all multiprocessing children still alive, kill if no response
+    children = mp.active_children()
+    if not children:
+        return
+    logger.warning(f'terminate children:{children}')
+    for p in children:
+        p.terminate()
+    end = time.time() + timeout
+    for p in children:
+        p.join(max(0,end-time.time()))
+        if p.is_alive():
+            logger.warning(f'kill child {p.name} pid={p.pid}')
+            p.kill()
+            p.join(1)
+
 class MainUI(QMainWindow,Ui_MainWindow):
     def __init__(self,folder,key,user,stra,beamline,info,passwd,base64passwd):
         super(MainUI,self).__init__()
@@ -234,6 +250,9 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.cal_SSX_Totaltime()
         self.SSX_LaserInitialState_Changed()
         self.initGuiEvent()
+        #adxv/bluice/meshbest set their own handler in __init__, set back to GUI
+        signal.signal(signal.SIGINT, self.quit)
+        signal.signal(signal.SIGTERM, self.quit)
         # self.checkRootFolder()
     def initGUI(self):
         self.setWindowState(QtCore.Qt.WindowMaximized)#max windows once active
@@ -5419,6 +5438,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
 
     def closeEvent(self, event):
         self.quit("","")
+        event.accept()
     def send_RasterInfo_to_meshbest(self,updatetype='all')  :
         par = variables.Raster_to_Meshbest_par(self.RasterPar, self.Par)
         # par =  copy.deepcopy(self.Par)
@@ -5960,7 +5980,22 @@ class MainUI(QMainWindow,Ui_MainWindow):
 
 
     def quit(self,signum,frame):
+        #called by closeEvent and SIGINT/SIGTERM, only run once
+        if getattr(self,'_quitting',False):
+            return
+        self._quitting = True
         self.logger.critical(f'Main GUi exit')
+        #stop video threads first, they finish in a few sec
+        try:
+            self.videoWatchdog.stop()
+        except Exception:
+            pass
+        imagethreads = []
+        for name in ['SampleImageServer','Hutchimage1_Server','Hutchimage2_Server']:
+            t = getattr(self,name,None)
+            if t is not None:
+                t.stop()
+                imagethreads.append((name,t))
         self.logger.critical(f'Call bluice closed')
         try:
             self.bluice.quit(signal.SIGINT, "exit_gracefully")
@@ -5976,20 +6011,28 @@ class MainUI(QMainWindow,Ui_MainWindow):
             traceback.print_exc()
             self.logger.warning(f'Unexpected error:{sys.exc_info()[0]}')
             self.logger.warning(f'Error:{e}')
-        self.logger.critical(f'Call SampleImageServer closed')
-        self.SampleImageServer.stop()
-        self.Hutchimage1_Server.stop()
-        self.Hutchimage2_Server.stop()
-        for handler in self.logger.handlers:
-            handler.close()
-        # time.sleep(1)
-        # sys.exit()
-        self.close()
-        # sys.exit(1)
-        self.logger.critical(f'm1 pid={self.m1._process.ident}')
-        self.m1.shutdown()
+        self.logger.critical(f'Call adxv closed')
+        try:
+            self.adxv.close()
+        except Exception as e:
+            self.logger.warning(f'adxv close error:{e}')
+        #wait QThreads end, a running QThread at exit will abort program
+        threads = imagethreads + [('bluice',getattr(self,'bluice',None)),
+                                  ('meshbest',getattr(self,'meshbest',None))]
+        for name,t in threads:
+            if t is not None and not t.wait(5000):
+                self.logger.warning(f'{name} thread still running')
+        try:
+            self.logger.critical(f'm1 pid={self.m1._process.ident}')
+            self.m1.shutdown()
+        except Exception as e:
+            self.logger.warning(f'm1 shutdown error:{e}')
         active_children = mp.active_children()
         self.logger.critical(f'active_children={active_children}')
+        # sys.exit()
+        self.close()
+        #also quit when other windows(dialog) still opened
+        QApplication.quit()
         if len(active_children)>0:
             for item in active_children:
                 self.logger.warning(f'Last try to kill {item.pid}')
@@ -6165,7 +6208,15 @@ if __name__ == "__main__":
         print(user)    
         window = MainUI(folder,key,user,stra,beamline,info,passwd,base64passwd)
         window.show()
-        sys.exit(app.exec_())
+        ret = app.exec_()
+        window.quit("","")
+        kill_children(window.logger)
+        for handler in window.logger.handlers:
+            handler.close()
+        sys.stdout.flush()
+        sys.stderr.flush()
+        #exit now, do not wait any non-daemon thread/process left
+        os._exit(ret)
         
         
         

@@ -122,6 +122,8 @@ class BluiceClient(QThread):
         self.logger.info("try to connect")
         trytime=0
         while True:
+            if self.closedbluice:
+                return
             try:
                 self.client.connect((self.host, self.port))
                 self.logger.info("try to Connect to %s:%d" % (self.host, self.port))
@@ -179,6 +181,8 @@ class BluiceClient(QThread):
 #        epcisPV_ = Process(target=self.epicsPV, args=(reciveQ,sendQ,epicsQ,self.client,))
         reciver_.start()
         sender_.start()
+        self.reciver_p = reciver_
+        self.sender_p = sender_
 #        test_.start()
 #        epcisPV_.start()
         self.logger.info(f'Bluice reciver PID = {reciver_.pid}')
@@ -195,6 +199,9 @@ class BluiceClient(QThread):
                 else:
                     pass
             except:
+                #queue is broken after manager shutdown
+                if self.closedbluice:
+                    break
                 pass
         
         
@@ -891,12 +898,29 @@ class BluiceClient(QThread):
     def quit(self,signum,frame):
         self.logger.critical(f'Quit Bluice Client')
         self.closedbluice = True
-        self.Qinfo["MainQ"].put("exit")
-        self.Qinfo["sendQ"].put("exit")
-        self.Qinfo["reciveQ"].put("exit")
-        self.client.close()
-        self.logger.critical(f'bluice m pid={self.m._process.ident}')
-        self.m.shutdown()
+        for name in ["MainQ","sendQ","reciveQ"]:
+            try:
+                self.Qinfo[name].put("exit")
+            except Exception:
+                pass
+        #wait reciver/sender get exit before shutdown manager,
+        #otherwise they loop forever on broken queue
+        #run2 thread also join them, so wait sentinel (not join) to avoid double waitpid
+        from multiprocessing.connection import wait as mp_wait
+        for p in [getattr(self,'reciver_p',None),getattr(self,'sender_p',None)]:
+            if p is None:
+                continue
+            if not mp_wait([p.sentinel],2):
+                self.logger.warning(f'force kill bluice child pid={p.pid}')
+                p.kill()
+                p.join(1)
+        try:
+            self.client.close()
+        except Exception:
+            pass
+        if hasattr(self,'m'):
+            self.logger.critical(f'bluice m pid={self.m._process.ident}')
+            self.m.shutdown()
         pass
     
 def quit(signum,frame):

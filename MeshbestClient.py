@@ -38,6 +38,9 @@ class MestbestClient(QThread):
         self.ClientQ = Queue()
         self.MainQ = Queue()
         self.ClientID = -1
+        self.closedmeshbest = False
+        self.p1 = None
+        self.p2 = None
         pass
     def run(self):
         self.start2()
@@ -45,11 +48,13 @@ class MestbestClient(QThread):
         #This start a process to send command to server
         p1 = Process(name='meshbestclient_ManagerServer',target=self.ManagerServer,args=(self.localPort,))
         p1.start()
+        self.p1 = p1
         
         #start monitor
         #this recvice the data from Server
         p2 = Process(name='meshbestclient_Monitor',target=self.Monitor,args=(self.ClientQ,self.MainQ,))
         p2.start()
+        self.p2 = p2
         
         self.ManagerClient(self.ServerQIP,port=self.ServerQPort)
         self.MonitorPID = p1.pid
@@ -70,6 +75,8 @@ class MestbestClient(QThread):
                 else:
                     pass
             except:
+                if self.closedmeshbest:
+                    break
                 pass
         
         
@@ -129,6 +136,8 @@ class MestbestClient(QThread):
             self.ServerQ = m.ServerQ()
 
         except ConnectionRefusedError:
+            if self.closedmeshbest:
+                return
             self.logger.warning(f'Meshbest Server ConnectionRefused,try 1sec later')
             time.sleep(1)
             self.ManagerClient(self.ServerQIP,port=self.ServerQPort)
@@ -172,11 +181,16 @@ class MestbestClient(QThread):
         self.logger.critical(f'meshbest client m pid={self.m._process.ident}')
         
         
-        try:
-            self.logger.info(f'try to kill MonitorPID = {self.MonitorPID}')
-            os.kill(self.MonitorPID,signal.SIGKILL)
-        except:
-            pass
+        #Monitor(p2) exit by ClientQ, ManagerServer(p1) serve_forever need kill
+        if self.p2 is not None:
+            self.p2.join(2)
+            if self.p2.is_alive():
+                self.logger.warning(f'force kill Monitor pid={self.p2.pid}')
+                self.p2.kill()
+        if self.p1 is not None:
+            self.logger.info(f'try to kill ManagerServer pid = {self.p1.pid}')
+            self.p1.kill()
+            self.p1.join(1)
         # time.sleep(1)
         self.m.shutdown()
         # sys.exit()

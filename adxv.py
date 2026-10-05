@@ -164,6 +164,22 @@ class adxv():
         s.close()
 
 
+    def close(self):
+        #close adxv window opened by this class
+        if not self.process.is_alive():
+            return
+        try:
+            self.sendcommand(self.port,['exit'])
+        except Exception:
+            pass
+        self.process.join(2)
+        if self.process.is_alive():
+            self.logger.warning(f'force kill adxv pid={self.process.pid}')
+            #kill adxv program started by this process, then this process
+            subprocess.run(['pkill','-KILL','-P',str(self.process.pid)])
+            self.process.kill()
+            self.process.join(1)
+
     def quit(self,signum,frame):
         self.logger.debug(f"PID : {os.getpid()} DHS closed, Par= {self.Par} TYPE:{type(self.Par)}")
         # self.logger.info(f'PID : {os.getpid()} DHS closed') 
