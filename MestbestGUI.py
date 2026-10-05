@@ -285,6 +285,9 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.collectAllpos_1.setEnabled(False)
         self.collectAllpos_2.setEnabled(False)
         self.RootPath_2.hide()
+        #True from SSX_StartCollect until ssx_state is done/stop or SSX_StopCollect is clicked
+        self.SSXcollecting = False
+        self.update_SSX_buttons()
         pass
     
     def initGuiEvent(self):
@@ -1626,6 +1629,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
                uiitem = getattr(self,item)
                uiitem.setEnabled(True)
             pass
+       self.update_SSX_buttons()
        self.reposition_view_cross()
                     
     def updateimage(self,image):
@@ -3817,7 +3821,14 @@ class MainUI(QMainWindow,Ui_MainWindow):
                     self.abort=True
                     self.collectPause = True
                     self.timer.singleShot(500,self.restAbort)
+                    self.SSXcollecting = False
+                    self.update_SSX_buttons()
                 # print(f'state = {state},color for text ={textc}, color for background = {bagc}')
+            elif name == 'ssx_state':
+                #collecting -> done after data download, stop when stopped by user
+                if self.bluiceData['string']['ssx_state']['txt'] in ('done', 'stop'):
+                    self.SSXcollecting = False
+                    self.update_SSX_buttons()
 
             # print(name,value)
 
@@ -5603,8 +5614,20 @@ class MainUI(QMainWindow,Ui_MainWindow):
         pass
 
     ####SSX section
+    def update_SSX_buttons(self):
+        #Start needs active and no SSX collect running, Stop only needs active
+        active = self.bluiceData['active']
+        self.SSX_StartCollect.setEnabled(active and not self.SSXcollecting)
+        self.SSX_StopCollect.setEnabled(active)
+
     def SSX_StartCollect_clicked(self):
         #start SSX_data collect
+        if not self.bluiceData['active']:
+            #auto repeat calls this directly, so check again here
+            self.logger.warning(f'SSX_StartCollect: not active, skip')
+            return
+        self.SSXcollecting = True
+        self.update_SSX_buttons()
         command = f"gtos_start_operation SSXCollect {self.bluiceID}.{self.bluiceCounter} "
         self.bluiceCounter += self.bluiceCounter
         pass
@@ -5773,6 +5796,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
         command = f"gtos_start_operation SSXStopCollect {self.bluiceID}.{self.bluiceCounter} "
         self.bluiceCounter += self.bluiceCounter
         self.Qinfo["sendQ"].put(command)
+        self.SSXcollecting = False
+        self.update_SSX_buttons()
 
         pass
     def SSX_LaserInitialState_Changed(self):
