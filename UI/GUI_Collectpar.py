@@ -16,6 +16,8 @@ from PyQt5.QtCore import QObject,QThread,pyqtSignal,pyqtSlot,QMutex,QMutexLocker
 
 from UI.GUI_Collectpar_tools import NormalApply,DoseApply,DoseRelateApply,BoolApply
 from UI.UI_CollectPar import Ui_Dialog
+from epics import caget
+import numpy as np
 #from GUIMain_collectpar_tools_dose import DoseApply
 # qtCreatorFile = "/data/program/MeshBestGUI/UI/CollectPar.ui"  
 # #print qtCreatorFile
@@ -70,7 +72,7 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
         item0=QtWidgets.QTableWidgetItem("X")
         item1=QtWidgets.QTableWidgetItem("Y")
         item2=QtWidgets.QTableWidgetItem("BeamSize")
-        item3=QtWidgets.QTableWidgetItem("Rought dose(byHoton) MGy")
+        item3=QtWidgets.QTableWidgetItem("Rough dose (by Holton) MGy")
         item4=QtWidgets.QTableWidgetItem("Absorbed Dose (MGy)")
         item5=QtWidgets.QTableWidgetItem("Atten%")
         item6=QtWidgets.QTableWidgetItem("Exposed Time")
@@ -474,9 +476,11 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
         dosefactor = 1
         bestdose = 10
         if beamsize == 1:
-            BeamFWHM = 2*2
+            BeamFWHM = 2*3
         else:
-            BeamFWHM = beamsize*beamsize
+            beamhor,beamver=self.get_beamprofile(beamsize)
+            # BeamFWHM = beamsize*beamsize
+            BeamFWHM = beamhor*beamver
         minExposedTime = self.beamlineinfo["minExposedTime"]
 #        Dose = Dose *1e6
         fluxden=flux/BeamFWHM
@@ -539,7 +543,21 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
             else:
                 FullFlux=par['Flux'][currentBeamsize]
             pass
+            currentBeamsizeindex = -1
+            Targetbeamsizeindex = -1
         else:
+            #update flux by ratio
+            currentBeamsizeindex = -1
+            Targetbeamsizeindex = -1
+            tempindex = 0
+            for item in par['Beamsizelist']:
+                if int(currentBeamsize) == int(item):
+                    currentBeamsizeindex = tempindex
+
+                if int(Targetbeamsize) == int(item):
+                    Targetbeamsizeindex = tempindex
+                # print(f'{tempindex=},{item=},{currentBeamsizeindex=},{Targetbeamsizeindex=},{currentBeamsize=},{Targetbeamsize=}')
+                tempindex += 1
             pass
         
         if currentBeamsize >= 30:
@@ -548,13 +566,25 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
         else:
             factor1 = par['Flux'][currentBeamsize]
 
+        if currentBeamsizeindex == -1:
+            pass
+        else:
+            factor1 = par['Fluxfactor'][currentBeamsizeindex]
+
         if Targetbeamsize >= 30:
             #Targetbeamsize factor at max
             factor2 = par['Flux'][100]
         else:
             factor2 = par['Flux'][Targetbeamsize]
         
+        if Targetbeamsizeindex == -1:
+            pass
+        else:
+            factor2 = par['Fluxfactor'][Targetbeamsizeindex]
+        
         flux = FullFlux / factor1 * factor2
+        # print(f'{currentBeamsizeindex=},{Targetbeamsizeindex=}')
+        # print(f'{flux=},{FullFlux=},{factor1=},{factor2=}')
         # if FullFlux == 0:
         #     #no beam or something else
         #     #using default
@@ -597,9 +627,11 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
         dosefactor = 1
         bestdose = 10
         if beamsize == 1:
-            BeamFWHM = 2*2
+            BeamFWHM = 2*3
         else:
-            BeamFWHM = beamsize*beamsize
+            beamhor,beamver=self.get_beamprofile(beamsize)
+            # BeamFWHM = beamsize*beamsize
+            BeamFWHM = beamhor*beamver
         minExposedTime = self.beamlineinfo["minExposedTime"]
 #        Dose = Dose *1e6
         fluxden=flux/BeamFWHM
@@ -657,9 +689,11 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
         dosefactor = 1
         bestdose = 10
         if beamsize == 1:
-            BeamFWHM = 2*2
+            BeamFWHM = 2*3
         else:
-            BeamFWHM = beamsize*beamsize
+            beamhor,beamver=self.get_beamprofile(beamsize)
+            # BeamFWHM = beamsize*beamsize
+            BeamFWHM = beamhor*beamver
         minExposedTime = self.beamlineinfo["minExposedTime"]
 #        Dose = Dose *1e6
         fluxden=flux/BeamFWHM
@@ -723,6 +757,22 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
     #         #shoud not got to here
     #             flux =FullFlux
     #     return flux
+    def get_beamprofile(self,beamsize):
+        BeamSizeNamePV = '07a-ES:Table:Beamsize'
+        # BeamSizeNamelist = self.ca.caget(PV=BeamSizeNamePV,format=float,array=True)
+        BeamSizeNamelist = caget(BeamSizeNamePV)
+        beamsizeindex = np.where(BeamSizeNamelist == beamsize)
+        # BeamSizeHorlist = self.ca.caget(PV='07a-ES:Table:BeamsizeX',format=float,array=True)
+        # BeamSizeVerlist = self.ca.caget(PV='07a-ES:Table:BeamsizeY',format=float,array=True)
+        BeamSizeHorlist = caget('07a-ES:Table:BeamsizeX')
+        BeamSizeVerlist = caget('07a-ES:Table:BeamsizeY')
+        beamhor = float(BeamSizeHorlist[beamsizeindex])
+        beamver = float(BeamSizeVerlist[beamsizeindex])
+        # beamver=beamsize
+        # beamhor=beamsize
+        # print(type(beamsizeindex))
+        # print(beamsize,beamhor,beamver)
+        return beamhor,beamver
 if __name__ == '__main__':
     # from .. import Config
     from GUI_Collectpar_tools import NormalApply,DoseApply,DoseRelateApply
