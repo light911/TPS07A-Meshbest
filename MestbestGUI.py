@@ -960,6 +960,13 @@ class MainUI(QMainWindow,Ui_MainWindow):
 
     def Rasterclicked(self):
         #this is get new image and has new setup
+        # take current image first, stop if image source is not available
+        try:
+            view1image = self.SampleImageServer.gethighresimage()
+        except Exception as e:
+            self.logger.warning(f'Rasterclicked can not get sample image:{e}')
+            QMessageBox.warning(self,'Sample video error',f'Can not get sample image, raster is canceled.\n{e}')
+            return
         # self.RootPathforRaster = self.getfolderforraster()
         self.RootPath_2.setText(self.getfolderforraster())
         self.clear_Raster_scence_item()
@@ -984,7 +991,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.plotbox(True)
         # take current image
         self.logger.debug('take current angle picture(view1)')
-        self.RasterView1QPixmap_ori,jpg = self.SampleImageServer.gethighresimage()
+        self.RasterView1QPixmap_ori,jpg = view1image
         self.RasterPar['View1']['gonio_phi']=self.bluiceData['motor']['gonio_phi']['pos']
         self.RasterPar['View1']['sample_x']=self.bluiceData['motor']['sample_x']['pos']
         self.RasterPar['View1']['sample_y']=self.bluiceData['motor']['sample_y']['pos']
@@ -1032,7 +1039,12 @@ class MainUI(QMainWindow,Ui_MainWindow):
     def Rasterclicked_step2(self):
         # self.timer.stop()
         self.logger.debug('take current angle picture(view2)')
-        self.RasterView2QPixmap_ori,jpg = self.SampleImageServer.gethighresimage()
+        try:
+            self.RasterView2QPixmap_ori,jpg = self.SampleImageServer.gethighresimage()
+        except Exception as e:
+            self.logger.warning(f'Rasterclicked_step2 can not get sample image:{e}')
+            QMessageBox.warning(self,'Sample video error',f'Can not get sample image of view2, raster is canceled.\n{e}')
+            return
         self.RasterPar['View2']['gonio_phi']=self.bluiceData['motor']['gonio_phi']['pos']
         self.RasterPar['View2']['sample_x']=self.bluiceData['motor']['sample_x']['pos']
         self.RasterPar['View2']['sample_y']=self.bluiceData['motor']['sample_y']['pos']
@@ -1270,6 +1282,9 @@ class MainUI(QMainWindow,Ui_MainWindow):
         
     def SampleViedoClicked(self,event)    :
         self.logger.info(f'Click on Image Sample Viedo')
+        if self.videoInfo['sample']['disconnected']:
+            self.logger.warning(f'Sample video disconnected, ignore click')
+            return
         # print("--------SampleViedoClicked")
         # print(f'button={event.button()} ,posx={event.pos().x()},\
               # posy={event.pos().y()}')
@@ -1430,24 +1445,121 @@ class MainUI(QMainWindow,Ui_MainWindow):
         pass
 
     def setSampleimage(self):
-        
+        self.initVideoWatchdog()
         self.SampleImageServer = webimage.image(self.Par)
         self.SampleImageServer.updateimage.connect(self.updateimage)
+        self.SampleImageServer.imageerror.connect(partial(self.videoError,'sample'))
         self.SampleImageServer.start()
 
     def setHutchimage(self):
+        self.initVideoWatchdog()
         self.Hutchimage1_Server = webimage.image(self.Par)
         self.Hutchimage1_Server.ip = '10.7.1.105'
         self.Hutchimage1_Server.port = 80
         self.Hutchimage1_Server.path = '/snap'
         self.Hutchimage1_Server.updateimage.connect(self.updateHutchimage1)
+        self.Hutchimage1_Server.imageerror.connect(partial(self.videoError,'hutch1'))
         self.Hutchimage1_Server.start()
         self.Hutchimage2_Server = webimage.image(self.Par)
         self.Hutchimage2_Server.ip = '10.7.1.106'
         self.Hutchimage2_Server.port = 80
         self.Hutchimage2_Server.path = '/snap'
         self.Hutchimage2_Server.updateimage.connect(self.updateHutchimage2)
+        self.Hutchimage2_Server.imageerror.connect(partial(self.videoError,'hutch2'))
         self.Hutchimage2_Server.start()
+
+    def initVideoWatchdog(self):
+        #show a disconnected image on video view if source has error or no new frame
+        if hasattr(self,'videoWatchdog'):
+            return
+        self.videoStaleTime = 5 #sec without new frame => disconnected
+        now = time.time()
+        self.videoInfo = {
+            'sample':{'view':self.SampleViedo,'scene':self.scene,'name':'Sample video',
+                      'last':now,'disconnected':False,'reason':''},
+            'hutch1':{'view':self.hutchvideo1,'scene':self.hutchvideo1scene,'name':'Hutch video 1',
+                      'last':now,'disconnected':False,'reason':''},
+            'hutch2':{'view':self.hutchvideo2,'scene':self.hutchvideo2scene,'name':'Hutch video 2',
+                      'last':now,'disconnected':False,'reason':''},
+            }
+        for info in self.videoInfo.values():
+            info['overlay'] = info['scene'].addPixmap(QtGui.QPixmap())
+            info['overlay'].setZValue(1000)#above image and cross
+            info['overlay'].hide()
+        self.videoWatchdog = QTimer(self)
+        self.videoWatchdog.timeout.connect(self.checkVideoWatchdog)
+        self.videoWatchdog.start(1000)
+
+    def checkVideoWatchdog(self):
+        now = time.time()
+        for key,info in self.videoInfo.items():
+            if now - info['last'] > self.videoStaleTime:
+                self.videoError(key,f'No new image for {now - info["last"]:.0f} sec')
+
+    def videoError(self,key,reason):
+        try:
+            info = self.videoInfo[key]
+            info['reason'] = reason
+            if not info['disconnected']:
+                self.logger.warning(f'{info["name"]} disconnected: {reason}')
+                info['disconnected'] = True
+                if key == 'sample':
+                    self.SampleViedo.setCursor(QCursor(QtCore.Qt.ForbiddenCursor))
+                    self.SampleViedo.setToolTip('Sample video disconnected')
+            self.showVideoDisconnected(key)
+        except Exception as e:
+            self.logger.warning(f'videoError {key} error:{e}')
+
+    def videoUpdated(self,key):
+        #call when a new frame shown
+        info = self.videoInfo[key]
+        info['last'] = time.time()
+        if info['disconnected']:
+            self.logger.warning(f'{info["name"]} reconnected')
+            info['disconnected'] = False
+            info['overlay'].hide()
+            if key == 'sample':
+                if self.bluiceData.get('active',False):
+                    self.SampleViedo.setCursor(QCursor(QtCore.Qt.CrossCursor))
+                    self.SampleViedo.setToolTip('Click will move the pos. to center')
+                else:
+                    self.SampleViedo.setCursor(QCursor(QtCore.Qt.ForbiddenCursor))
+                    self.SampleViedo.setToolTip('Active is needed')
+
+    def showVideoDisconnected(self,key):
+        info = self.videoInfo[key]
+        view = info['view']
+        size = view.viewport().size()
+        w = max(size.width(),160)
+        h = max(size.height(),120)
+        pixmap = QtGui.QPixmap(w,h)
+        pixmap.fill(QColor(40,40,40))
+        painter = QPainter(pixmap)
+        painter.setPen(QPen(QColor('red'),4))
+        painter.drawRect(2,2,w-4,h-4)
+        painter.drawLine(0,0,w,h)
+        painter.drawLine(w,0,0,h)
+        font = QFont()
+        font.setBold(True)
+        font.setPixelSize(max(12,min(w//14,h//6)))
+        painter.setFont(font)
+        textrect = QtCore.QRect(0,0,w,h*2//3)
+        painter.fillRect(QtCore.QRect(0,h//4,w,h//2),QColor(0,0,0,200))
+        painter.setPen(QColor('red'))
+        painter.drawText(textrect.adjusted(0,h//4,0,0),Qt.AlignHCenter|Qt.AlignTop,
+                         f'{info["name"]}\nDISCONNECTED')
+        font.setBold(False)
+        font.setPixelSize(max(10,font.pixelSize()//3))
+        painter.setFont(font)
+        painter.setPen(QColor('white'))
+        last = datetime.fromtimestamp(info['last']).strftime('%H:%M:%S')
+        painter.drawText(QtCore.QRect(4,h//2,w-8,h//4),Qt.AlignCenter|Qt.TextWordWrap,
+                         f'{info["reason"]}\nLast image: {last}, reconnecting...')
+        painter.end()
+        info['overlay'].setPixmap(pixmap)
+        #put on visible area (hutch view can be scrolled)
+        info['overlay'].setPos(view.mapToScene(0,0))
+        info['overlay'].show()
     
     def updateUI(self):
        for motor in  self.bluiceData['motor']:
@@ -1633,14 +1745,22 @@ class MainUI(QMainWindow,Ui_MainWindow):
        self.reposition_view_cross()
                     
     def updateimage(self,image):
-        self.oriImageSize=image.size()
+        try:
+            self._updateimage(image)
+        except Exception as e:
+            self.videoError('sample',f'Update image error: {e}')
+    def _updateimage(self,image):
+        if image.isNull():
+            raise ValueError('null image')
         TargetImageSize = self.SampleViedo.viewport().size()
-        newimage = image.scaled(TargetImageSize,QtCore.Qt.KeepAspectRatio)
+        newimage = QPixmap.fromImage(image.scaled(TargetImageSize,QtCore.Qt.KeepAspectRatio))
         # newimage = image.scaled(TargetImageSize,QtCore.Qt.KeepAspectRatioByExpanding)
         # newimage = image.scaled(TargetImageSize,QtCore.Qt.IgnoreAspectRatio)
-        
+        self.oriImageSize=image.size()
+
         self.sampleQPixmapSize = newimage.size()
         self.sampleQPixmap.setPixmap(newimage)
+        self.videoUpdated('sample')
         # self.sampleQPixmap.setPixmap(image)
         # newscale = image.size().width()/TargetImageSize.width() 
         # print(newscale)
@@ -1681,17 +1801,24 @@ class MainUI(QMainWindow,Ui_MainWindow):
         #     self.RasterView2QPixmap.setPixmap(newimage)
         # pass
     def updateHutchimage1(self,image):
+        try:
+            self._updateHutchimage1(image)
+        except Exception as e:
+            self.videoError('hutch1',f'Update image error: {e}')
+    def _updateHutchimage1(self,image):
+        if image.isNull():
+            raise ValueError('null image')
         # oriImageSize=image.size()
         TargetImageSize = self.hutchvideo1.viewport().size()
         # old size?
         
-        scale = image.size().width()/TargetImageSize.width()
+        scale = image.size().width()/max(TargetImageSize.width(),1)
         # if self.hutchvideo1_scale.value() == 0:
         #     newscale = 1
         # else:
         newscale = 1+ self.hutchvideo1_scale.value()/100*scale
 
-        newimage = image.scaled(TargetImageSize*newscale,QtCore.Qt.KeepAspectRatio)
+        newimage = QPixmap.fromImage(image.scaled(TargetImageSize*newscale,QtCore.Qt.KeepAspectRatio))
         if self.hutchvideoPixmap1.pixmap().size().width() != newimage.size().width():
             self.hutchvideo1scene.setSceneRect(0,0,newimage.size().width(),newimage.size().height())
         # newimage = image
@@ -1701,15 +1828,23 @@ class MainUI(QMainWindow,Ui_MainWindow):
         
         # self.sampleQPixmapSize = newimage.size()
         self.hutchvideoPixmap1.setPixmap(newimage)
+        self.videoUpdated('hutch1')
         # print(self.hutchvideo1scene.sceneRect())
 
     def updateHutchimage2(self,image):
+        try:
+            self._updateHutchimage2(image)
+        except Exception as e:
+            self.videoError('hutch2',f'Update image error: {e}')
+    def _updateHutchimage2(self,image):
+        if image.isNull():
+            raise ValueError('null image')
         # oriImageSize=image.size()
         
         TargetImageSize = self.hutchvideo2.viewport().size()
-        scale = image.size().width()/TargetImageSize.width()
+        scale = image.size().width()/max(TargetImageSize.width(),1)
         newscale = 1+ self.hutchvideo2_scale.value()/100*scale
-        newimage = image.scaled(TargetImageSize*newscale,QtCore.Qt.KeepAspectRatio)
+        newimage = QPixmap.fromImage(image.scaled(TargetImageSize*newscale,QtCore.Qt.KeepAspectRatio))
         # newimage = image.scaled(TargetImageSize,QtCore.Qt.KeepAspectRatioByExpanding)
         # newimage = image.scaled(TargetImageSize,QtCore.Qt.IgnoreAspectRatio)
         if self.hutchvideoPixmap2.pixmap().size().width() != newimage.size().width():
@@ -1719,6 +1854,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
             # print(self.hutchvideo2.geometry())
         # self.sampleQPixmapSize = newimage.size()
         self.hutchvideoPixmap2.setPixmap(newimage)
+        self.videoUpdated('hutch2')
 
     def RasterView1Resize(self,event):
         # print('****************')
@@ -5842,6 +5978,8 @@ class MainUI(QMainWindow,Ui_MainWindow):
             self.logger.warning(f'Error:{e}')
         self.logger.critical(f'Call SampleImageServer closed')
         self.SampleImageServer.stop()
+        self.Hutchimage1_Server.stop()
+        self.Hutchimage2_Server.stop()
         for handler in self.logger.handlers:
             handler.close()
         # time.sleep(1)

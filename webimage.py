@@ -14,7 +14,10 @@ import time,os
 # import io
 
 class image(QThread):
-    updateimage = pyqtSignal(QPixmap)
+    #emit QImage (QPixmap is not thread safe outside GUI thread)
+    updateimage = pyqtSignal(QImage)
+    #emit error reason when image source can not be reached/decoded
+    imageerror = pyqtSignal(str)
     def __init__(self,par):
         super(image,self).__init__()
        
@@ -29,37 +32,52 @@ class image(QThread):
         self.path = '/image1.cgi?stream=MD3Image'
         self.highrespath = '/image1.cgi?stream=MD3Image'
         self.updateinterval = 0.1 #sec
+        self.timeout = 3 #sec, http connect/read timeout
+        self.retryinterval = 1 #sec, wait before reconnect after error
         
     def run(self):
         self.logger.info(f'webimaage PID = {os.getpid()}')
+        connected = True
         while not self._stop:
-            jpg = self.getimg()
-            # f = io.BytesIO(jpg)
-            # print("IMAGE type == ",type(jpg))
-            tempq = QPixmap()
-            tempq.loadFromData(jpg,format='jpg')
+            try:
+                jpg = self.getimg()
+                tempq = QImage.fromData(jpg,'jpg')
+                if tempq.isNull():
+                    raise ValueError(f'can not decode image ({len(jpg)} bytes)')
+            except Exception as e:
+                reason = f'{type(e).__name__}: {e}'
+                if connected:
+                    self.logger.warning(f'image source {self.ip}:{self.port}{self.path} lost, {reason}')
+                    connected = False
+                self.imageerror.emit(reason)
+                time.sleep(self.retryinterval)
+                continue
+            if not connected:
+                self.logger.warning(f'image source {self.ip}:{self.port}{self.path} reconnected')
+                connected = True
             self.updateimage.emit(tempq)
             time.sleep(self.updateinterval)
-            # f.close()
             
         pass
-    def getimg(self):
-        conn = http.client.HTTPConnection(self.ip,port=self.port)
-        conn.request("GET", self.path)
-        r1 = conn.getresponse()
-        # print(r1.status, r1.reason)
-        jpg = r1.read()  # This will return entire content.
-        # print("Get IMAGE type == ",type(jpg))
-        conn.close()
+    def _get(self,path):
+        conn = http.client.HTTPConnection(self.ip,port=self.port,timeout=self.timeout)
+        try:
+            conn.request("GET", path)
+            r1 = conn.getresponse()
+            jpg = r1.read()  # This will return entire content.
+            if r1.status != 200:
+                raise IOError(f'HTTP {r1.status} {r1.reason}')
+        finally:
+            conn.close()
         return jpg
+    def getimg(self):
+        return self._get(self.path)
     def gethighresimage(self):
-        conn = http.client.HTTPConnection(self.ip,port=self.port)
-        conn.request("GET", self.highrespath)
-        r1 = conn.getresponse()
-        jpg = r1.read()
-        conn.close()
+        #raise exception if image source is not available
+        jpg = self._get(self.highrespath)
         tempq = QPixmap()
-        tempq.loadFromData(jpg,format='jpg')
+        if not tempq.loadFromData(jpg,format='jpg'):
+            raise ValueError(f'can not decode image ({len(jpg)} bytes)')
         return tempq,jpg
     def stop(self):
         self._stop = True
