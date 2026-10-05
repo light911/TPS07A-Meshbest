@@ -82,7 +82,11 @@ def defCmap():
     map_object = LinearSegmentedColormap.from_list(name='hot_with_alpha',colors=color_array)
 
     # register this new colormap with matplotlib
-    plt.register_cmap(cmap=map_object)
+    try:
+        import matplotlib
+        matplotlib.colormaps.register(cmap=map_object, force=True)
+    except AttributeError:
+        plt.register_cmap(cmap=map_object)
 #    f,ax = plt.subplots()
 #    h = ax.imshow(np.random.rand(100,100),cmap='rainbow_alpha')
 #    plt.colorbar(mappable=h)

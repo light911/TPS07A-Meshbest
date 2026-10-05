@@ -192,7 +192,6 @@ def SaltRingCheck_MP(queue, BeamCenter, Buffer):
                     density[i] = numpy.mean(detector[y0 - 5:y0 + 5, x0 - 5:x0 + 5])
 
                 HIST = stats.histogram(radius_array, numbins=400, defaultlimits=(10, min(BeamCenter)), weights=(density))[0]
-
 #---SALT_RING_CHECK_ANALYSIS---
 
                 M = numpy.mean(HIST)

@@ -86,7 +86,7 @@ def DistanceCalc_MP(queue):
             
             output = numpy.array(output)
             F = numpy.sqrt(numpy.mean(output))*180/3.14159
-            
+            F = numpy.nan_to_num(F)
             Buffer[int(bufcoord)] = F
 
         else:

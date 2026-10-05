@@ -142,7 +142,7 @@ def check2(jsondata, jobtype='simple'):
     
     check = True
     runreport = {}
-    difminpar = 0.2
+    difminpar = 1
     # jsondata = {}
     
     # if os.path.isfile(jsonFilePath):

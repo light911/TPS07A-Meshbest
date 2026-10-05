@@ -574,6 +574,7 @@ class MestbestSever():
                             pass
                 elif last_stream_info['name'] != last_stream_id:
                     last_stream_id = last_stream_info['name']
+                    time.sleep(0.1)
                     stream_meta = consumer.get_stream_meta(last_stream_id)
                     self.logger.info(f"New stream: {last_stream_info['name']} with runIndex = {stream_meta['runIndex']}")
                     # check is data come from raster scan 
