@@ -5661,6 +5661,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         SSX_PeakSearch_min_snr_peak_pix = self.SSX_PeakSearch_min_snr_peak_pix.value()
         SSX_PeakSearch_min_sig = self.SSX_PeakSearch_min_sig.value()
         runIndex = int(105) #105 for SSX collect ,view1 =101 view2 =102
+        SSX_autoreapeat = int(self.SSXAutoRepeat.isChecked())
         parlist.append(filename)
         parlist.append(directory)
         parlist.append(userName)
@@ -5691,6 +5692,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
         parlist.append(SSX_PeakSearch_min_snr_peak_pix)
         parlist.append(SSX_PeakSearch_min_sig)
         parlist.append(runIndex)
+        parlist.append(SSX_autoreapeat)
         for item in parlist:
             command = command + str(item) + " "
 
@@ -5709,6 +5711,35 @@ class MainUI(QMainWindow,Ui_MainWindow):
         # self.timer.singleShot(100, partial(self.waitOperationDone
         #                                     ,oplist,callback,callbackarg))
         self.SSX_Fileindex.setValue(fileindex+1)
+        # wait SSX collect done(operation) , mean data start to collect
+        self.logger.info(f'Wait for SSX Collect operation')
+        oplist=['SSXCollect']
+        callback = self.after_SSX_collectdone
+        callbackarg = ()
+        self.timer.singleShot(100, partial(self.waitOperationDone,oplist,callback,callbackarg))
+
+    def after_SSX_collectdone(self):
+        self.logger.info(f'SSX Collect OP done')#mean start to collect, not mean collect all done. ssx_state = collecting in beginning, after data download, ssx_state = done
+        if self.SSXAutoRepeat.isChecked():
+            #wait for data download done
+            self.logger.info(f'SSXAutoRepeat is ON, wait for data download done')
+            self.timer.singleShot(100, partial(self.check_ssx_data_download_done))
+            #check stop click or not
+            # self.SSX_StartCollect_clicked()
+            pass
+    def check_ssx_data_download_done(self):
+        self.logger.info(f'Checking SSX data download state')
+        self.logger.info(f'ssx_state= {self.bluiceData["string"]["ssx_state"]["txt"]}')
+        if self.bluiceData['string']['ssx_state']["txt"] == 'done':
+            self.logger.info(f'SSX data download done')
+            if self.SSXAutoRepeat.isChecked():
+                self.SSX_StartCollect_clicked()
+        elif self.bluiceData['string']['ssx_state']["txt"] == 'stop':
+            self.logger.info(f'SSX collect stop by user')
+        else:
+            self.timer.singleShot(100, partial(self.check_ssx_data_download_done))
+
+        pass
     def cal_SSX_Totaltime(self):
         Totaltime = self.SSX_NumberFrames.value() * self.SSX_Time.value() /1000
         self.SSX_Totaltime.setValue(Totaltime)
@@ -5745,14 +5776,14 @@ class MainUI(QMainWindow,Ui_MainWindow):
             self.SSX_LaserInitialState_2.setCurrentIndex(0)
         pass
 
-    def SSX_DetectorMode_Changed(sefl):
-        if sefl.SSX_DetectorMode.currentIndex() == 0:
+    def SSX_DetectorMode_Changed(self):
+        if self.SSX_DetectorMode.currentIndex() == 0:
             #16M
-            sefl.SSX_Time.setMinimum(8)
-        elif sefl.SSX_DetectorMode.currentIndex() == 1:
-            sefl.SSX_Time.setMinimum(2)
+            self.SSX_Time.setMinimum(8)
+        elif self.SSX_DetectorMode.currentIndex() == 1:
+            self.SSX_Time.setMinimum(2)
         else:
-            sefl.SSX_Time.setMinimum(2)
+            self.SSX_Time.setMinimum(2)
         pass
 
 
