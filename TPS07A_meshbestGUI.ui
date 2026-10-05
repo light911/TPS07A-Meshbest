@@ -322,9 +322,12 @@
        <attribute name="title">
         <string>Crystal Center and Raster</string>
        </attribute>
-       <layout class="QGridLayout" name="gridLayout_5" columnstretch="0,0,50,50" rowminimumheight="140,0,0,0" columnminimumwidth="0,0,0,0">
+       <layout class="QGridLayout" name="gridLayout_5" columnstretch="0,0,50,50">
         <item row="0" column="0" rowspan="2">
-         <layout class="QGridLayout" name="gridLayout_4">
+         <layout class="QGridLayout" name="gridLayout_4" columnminimumwidth="0,0,0,100">
+          <property name="sizeConstraint">
+           <enum>QLayout::SetDefaultConstraint</enum>
+          </property>
           <item row="13" column="2">
            <widget class="QPushButton" name="Focus_pos_s">
             <property name="text">
@@ -560,7 +563,7 @@
           <item row="0" column="0" colspan="4">
            <widget class="QGraphicsView" name="SampleViedo">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+             <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -689,7 +692,7 @@
         <item row="0" column="2" colspan="2">
          <widget class="QToolBox" name="toolBox">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -732,14 +735,14 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>130</width>
-             <height>74</height>
+             <width>214</width>
+             <height>70</height>
             </rect>
            </property>
            <attribute name="label">
             <string>File Setup</string>
            </attribute>
-           <layout class="QGridLayout" name="gridLayout_12">
+           <layout class="QGridLayout" name="gridLayout_12" rowstretch="0,0">
             <item row="0" column="0">
              <widget class="QLineEdit" name="RootPath"/>
             </item>
@@ -758,8 +761,27 @@
             </item>
             <item row="0" column="1">
              <widget class="QPushButton" name="GetDefalutFolder">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="text">
                <string>Defalut</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QPushButton" name="UpdateFolder">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Update</string>
               </property>
              </widget>
             </item>
@@ -770,8 +792,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1360</width>
-             <height>77</height>
+             <width>1383</width>
+             <height>73</height>
             </rect>
            </property>
            <property name="sizePolicy">
@@ -1805,8 +1827,17 @@
         </item>
         <item row="3" column="0">
          <layout class="QVBoxLayout" name="verticalLayout_6" stretch="100,0,100,0,0">
+          <property name="sizeConstraint">
+           <enum>QLayout::SetFixedSize</enum>
+          </property>
           <item>
            <widget class="QGraphicsView" name="hutchvideo1">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="sizeAdjustPolicy">
              <enum>QAbstractScrollArea::AdjustIgnored</enum>
             </property>
@@ -1836,6 +1867,12 @@
           </item>
           <item>
            <widget class="QGraphicsView" name="hutchvideo2">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="dragMode">
              <enum>QGraphicsView::ScrollHandDrag</enum>
             </property>
@@ -2656,7 +2693,7 @@
      <x>0</x>
      <y>0</y>
      <width>1864</width>
-     <height>22</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMeshBestGUI">

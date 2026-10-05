@@ -47,6 +47,44 @@ def QPointI(x, y):
     """QPoint wrapper that tolerates float inputs."""
     return QPoint(int(x), int(y))
 
+def split_tcl_list(text):
+    """Split a DCSS string into its top level fields.
+
+    DCSS strings are Tcl lists, so a plain str.split() breaks on fields that
+    are brace grouped (screeningParameters field 0 holds the whole action
+    list) and drops the empty {} fields that crystalStatus uses.
+    """
+    items, buf, depth, started, i = [], [], 0, False, 0
+    n = len(text)
+    while i < n:
+        c = text[i]
+        if c == '\\' and i + 1 < n:
+            buf.append(text[i + 1])
+            started = True
+            i += 2
+            continue
+        if depth == 0 and c.isspace():
+            if started:
+                items.append(''.join(buf))
+                buf, started = [], False
+            i += 1
+            continue
+        started = True
+        if c == '{':
+            depth += 1
+            if depth > 1:
+                buf.append(c)
+        elif c == '}':
+            depth -= 1
+            if depth > 0:
+                buf.append(c)
+        else:
+            buf.append(c)
+        i += 1
+    if started:
+        items.append(''.join(buf))
+    return items
+
 class MainUI(QMainWindow,Ui_MainWindow):
     def __init__(self,folder,key,user,stra,beamline,info,passwd,base64passwd):
         super(MainUI,self).__init__()
@@ -353,6 +391,7 @@ class MainUI(QMainWindow,Ui_MainWindow):
 
         self.RootPath.textChanged.connect(self.checkRootFolder)
         self.GetDefalutFolder.clicked.connect(self.GetDefalutFolder_clicked)
+        self.UpdateFolder.clicked.connect(self.UpdateFolder_clicked)
         self.Abort.clicked.connect(self.Abort_clicked)
 
         self.Focus_neg_l.clicked.connect(self.Focus_neg_l_clicked)
@@ -405,6 +444,73 @@ class MainUI(QMainWindow,Ui_MainWindow):
         self.update_ui_par_to_meshbest()
         self.Par['StateCtl']['reciveserverupdate'] = True
         pass
+    def UpdateFolder_clicked(self):
+        """Fill RootPath with the data folder of the sample the robot mounted.
+
+        Same rule Blu-Ice uses in DCS::RunView::updateDefinition:
+            directory = screeningParameters[2] / crystalStatus[4]
+        and crystalStatus[0] (the sample name) tells us whether anything is
+        mounted at all.  Read only, so no gtos_become_master needed.
+        Only the folder is touched, the file prefix is left alone.
+        """
+        self.UpdateFolder.setChecked(False)
+
+        if not self.bluiceData['active']:
+            QMessageBox.warning(self, "Update Folder", "Blu-Ice/DCSS is not connected.(please active bluice2)")
+            return
+
+        try:
+            crystal = split_tcl_list(self.bluiceData['string']['crystalStatus']['txt'])
+            scnpar = split_tcl_list(self.bluiceData['string']['screeningParameters']['txt'])
+        except KeyError:
+            self.logger.warning("UpdateFolder: crystalStatus/screeningParameters not received yet")
+            QMessageBox.warning(self, "Update Folder",
+                                "crystalStatus / screeningParameters not received yet.")
+            return
+
+        # crystalStatus        P03 c_mA1 robot 0 CPS5629/P03 yes 0 {} {} 11006
+        #                      ↑欄0=prefix            ↑欄4=子目錄
+        # screeningParameters  {{MountNextCrystal {}} ... {Pause {}}} 0 /data/sywu/20231006_07A 250 42.005 0
+        #                                                                ↑欄2=root dir
+
+        mounted = crystal[0] if len(crystal) > 0 else ''
+        subdir = crystal[4] if len(crystal) > 4 else ''
+        rootdir = scnpar[2] if len(scnpar) > 2 else ''
+        self.logger.info(f"UpdateFolder: {mounted=} {rootdir=} {subdir=}")
+
+        if not mounted:
+            #same as Blu-Ice, leave the path alone when nothing is mounted
+            self.logger.warning("UpdateFolder: no sample mounted, keep current path")
+            QMessageBox.information(self, "Update Folder",
+                                    "No sample on the goniometer, path unchanged.\n"
+                                    "(Is the Blu-Ice robot panel open?)")
+            return
+        if not rootdir:
+            QMessageBox.warning(self, "Update Folder",
+                                "screeningParameters has no root directory set.")
+            return
+
+        newpath = os.path.normpath(os.path.join(rootdir, subdir)) if subdir else rootdir
+
+        ans = re.match(r"/data/([^/]+)/(.{8})_07A", newpath)
+        if not ans or ans[1] != str(self.user):
+            self.logger.critical(f"UpdateFolder: {newpath} does not belong to {self.user}")
+            QMessageBox.warning(self, "Update Folder",
+                                f"Screening root does not belong to the current user "
+                                f"{self.user}:\n{newpath}")
+            return
+
+        oldpath = self.RootPath.text()
+        if newpath == oldpath:
+            return
+
+        txt = f"Program want to change data folder!\nFrom\t{oldpath}\t\nTo\t{newpath}\t\n"
+        mesbox = QMessageBox.question(self, "Change Data Folder", txt,
+                                      QMessageBox.No, QMessageBox.Yes,)
+        if mesbox == QMessageBox.Yes:
+            #textChanged fires checkRootFolder, which calls update_ui_par_to_meshbest
+            self.RootPath.setText(newpath)
+
     def GetDefalutFolder_clicked(self,addtext = None):
         # QtGui.QMessageBox.critical
         

@@ -315,6 +315,8 @@ class BluiceClient(QThread):
                             elif command[1] == 'sampleFlux':
                                 self.info['sampleFlux'] = float(command[3])
                                 # ['stog_configure_string', 'sampleFlux', 'ringstatus', '8001179775619.493']
+                            else:
+                                self.info[command[1]] = command[3]
                             pass                                   
                         elif command[0] == "stog_configure_ion_chamber":
                             self.logger.debug(command)
