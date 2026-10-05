@@ -766,10 +766,13 @@ class collectparui(QtWidgets.QDialog, Ui_Dialog,QThread):
         # BeamSizeVerlist = self.ca.caget(PV='07a-ES:Table:BeamsizeY',format=float,array=True)
         BeamSizeHorlist = caget('07a-ES:Table:BeamsizeX')
         BeamSizeVerlist = caget('07a-ES:Table:BeamsizeY')
-        beamhor = float(BeamSizeHorlist[beamsizeindex])
-        beamver = float(BeamSizeVerlist[beamsizeindex])
-        # beamver=beamsize
-        # beamhor=beamsize
+        try:
+            #caget returns None when the PV is unreachable, and beamsizeindex is empty when beamsize is not in the table
+            beamhor = float(BeamSizeHorlist[beamsizeindex][0])
+            beamver = float(BeamSizeVerlist[beamsizeindex][0])
+        except (TypeError, IndexError, ValueError) as e:
+            print(f'get_beamprofile: no profile for beamsize {beamsize} ({e!r}), use {beamsize}x{beamsize}')
+            beamhor = beamver = float(beamsize)
         # print(type(beamsizeindex))
         # print(beamsize,beamhor,beamver)
         return beamhor,beamver

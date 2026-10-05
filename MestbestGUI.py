@@ -5723,23 +5723,29 @@ class MainUI(QMainWindow,Ui_MainWindow):
         if self.SSXAutoRepeat.isChecked():
             #wait for data download done
             self.logger.info(f'SSXAutoRepeat is ON, wait for data download done')
-            self.timer.singleShot(100, partial(self.check_ssx_data_download_done))
-            #check stop click or not
-            # self.SSX_StartCollect_clicked()
+            #give up if ssx_state never reaches done/stop (collect time + 10 min for download)
+            deadline = time.time() + self.SSX_Totaltime.value() + 600
+            self.timer.singleShot(100, partial(self.check_ssx_data_download_done,deadline,None))
             pass
-    def check_ssx_data_download_done(self):
-        self.logger.info(f'Checking SSX data download state')
-        self.logger.info(f'ssx_state= {self.bluiceData["string"]["ssx_state"]["txt"]}')
-        if self.bluiceData['string']['ssx_state']["txt"] == 'done':
+    def check_ssx_data_download_done(self,deadline,laststate):
+        if not self.SSXAutoRepeat.isChecked():
+            self.logger.info(f'SSXAutoRepeat turned OFF, stop waiting')
+            return
+        try:
+            state = self.bluiceData['string']['ssx_state']["txt"]
+        except KeyError:
+            state = None
+        if state != laststate:
+            self.logger.info(f'ssx_state= {state}')
+        if state == 'done':
             self.logger.info(f'SSX data download done')
-            if self.SSXAutoRepeat.isChecked():
-                self.SSX_StartCollect_clicked()
-        elif self.bluiceData['string']['ssx_state']["txt"] == 'stop':
+            self.SSX_StartCollect_clicked()
+        elif state == 'stop':
             self.logger.info(f'SSX collect stop by user')
+        elif time.time() > deadline:
+            self.logger.warning(f'SSXAutoRepeat: ssx_state still {state} after timeout, stop auto repeat')
         else:
-            self.timer.singleShot(100, partial(self.check_ssx_data_download_done))
-
-        pass
+            self.timer.singleShot(100, partial(self.check_ssx_data_download_done,deadline,state))
     def cal_SSX_Totaltime(self):
         Totaltime = self.SSX_NumberFrames.value() * self.SSX_Time.value() /1000
         self.SSX_Totaltime.setValue(Totaltime)
